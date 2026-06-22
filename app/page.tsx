@@ -49,11 +49,11 @@ export default function Home() {
         // Bezpieczna nazwa pliku — tylko litery, cyfry i kropka
         const ext = (photo.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
         const safeExt = ['jpg','jpeg','png','gif','webp','heic'].includes(ext) ? ext : 'jpg'
-        const fileName = `orders/${Date.now()}-${Math.random().toString(36).slice(2)}.${safeExt}`
+        const fileName = `${Date.now()}${Math.random().toString(36).slice(2)}.${safeExt}`
 
         const { error: uploadError } = await supabase.storage
           .from('order-photos')
-          .upload(fileName, photo, { contentType: photo.type || 'image/jpeg' })
+          .upload(fileName, photo, { contentType: photo.type || 'image/jpeg', upsert: false })
 
         if (uploadError) {
           console.error('Upload error:', uploadError)
