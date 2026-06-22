@@ -62,6 +62,22 @@ export default function Home() {
         throw new Error(`Błąd zapisu: ${insertError.message}`)
       }
 
+      // Wyślij maile
+      await fetch("/api/send-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          address: form.address,
+          cardText: form.cardText,
+          notes: form.notes,
+          theme,
+          orderId: orderData?.id,
+        }),
+      })
+
       // Potem uploaduj zdjęcie jeśli jest
       if (photo && orderData?.id) {
         const ext = (photo.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
