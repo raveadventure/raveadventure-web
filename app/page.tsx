@@ -46,15 +46,24 @@ export default function Home() {
     try {
       let photoUrl = null
       if (photo) {
-        const ext = photo.name.split('.').pop()
-        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+        // Bezpieczna nazwa pliku — tylko litery, cyfry i kropka
+        const ext = (photo.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
+        const safeExt = ['jpg','jpeg','png','gif','webp','heic'].includes(ext) ? ext : 'jpg'
+        const fileName = `orders/${Date.now()}-${Math.random().toString(36).slice(2)}.${safeExt}`
+
         const { error: uploadError } = await supabase.storage
           .from('order-photos')
-          .upload(fileName, photo)
-        if (uploadError) throw uploadError
+          .upload(fileName, photo, { contentType: photo.type || 'image/jpeg' })
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError)
+          throw new Error(`Błąd uploadu zdjęcia: ${uploadError.message}`)
+        }
+
         const { data: urlData } = supabase.storage.from('order-photos').getPublicUrl(fileName)
         photoUrl = urlData.publicUrl
       }
+
       const { error: insertError } = await supabase.from('orders').insert([{
         theme,
         name: form.name,
@@ -66,10 +75,16 @@ export default function Home() {
         photo_url: photoUrl,
         status: 'new',
       }])
-      if (insertError) throw insertError
+
+      if (insertError) {
+        console.error('Insert error:', insertError)
+        throw new Error(`Błąd zapisu: ${insertError.message}`)
+      }
+
       setSent(true)
     } catch (err: unknown) {
-      setError('Coś poszło nie tak. Spróbuj jeszcze raz lub napisz na kontakt@raveadventure.pl')
+      const msg = err instanceof Error ? err.message : 'Nieznany błąd'
+      setError(`Coś poszło nie tak: ${msg}. Napisz na kontakt@raveadventure.pl`)
       console.error(err)
     } finally {
       setSending(false)
