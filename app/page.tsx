@@ -44,27 +44,8 @@ export default function Home() {
     setSending(true)
     setError(null)
     try {
-      let photoUrl = null
-      if (photo) {
-        // Bezpieczna nazwa pliku — tylko litery, cyfry i kropka
-        const ext = (photo.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
-        const safeExt = ['jpg','jpeg','png','gif','webp','heic'].includes(ext) ? ext : 'jpg'
-        const fileName = `${Date.now()}${Math.random().toString(36).slice(2)}.${safeExt}`
-
-        const { error: uploadError } = await supabase.storage
-          .from('order-photos')
-          .upload(fileName, photo, { contentType: photo.type || 'image/jpeg', upsert: false })
-
-        if (uploadError) {
-          console.error('Upload error:', uploadError)
-          throw new Error(`Błąd uploadu zdjęcia: ${uploadError.message}`)
-        }
-
-        const { data: urlData } = supabase.storage.from('order-photos').getPublicUrl(fileName)
-        photoUrl = urlData.publicUrl
-      }
-
-      const { error: insertError } = await supabase.from('orders').insert([{
+      // Najpierw zapisz zamówienie bez zdjęcia
+      const { data: orderData, error: insertError } = await supabase.from('orders').insert([{
         theme,
         name: form.name,
         email: form.email,
@@ -72,13 +53,32 @@ export default function Home() {
         address: form.address,
         card_text: form.cardText,
         notes: form.notes,
-        photo_url: photoUrl,
+        photo_url: null,
         status: 'new',
-      }])
+      }]).select('id').single()
 
       if (insertError) {
         console.error('Insert error:', insertError)
         throw new Error(`Błąd zapisu: ${insertError.message}`)
+      }
+
+      // Potem uploaduj zdjęcie jeśli jest
+      if (photo && orderData?.id) {
+        const ext = (photo.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
+        const safeExt = ['jpg','jpeg','png','gif','webp','heic'].includes(ext) ? ext : 'jpg'
+        const fileName = `${orderData.id}.${safeExt}`
+
+        const { error: uploadError } = await supabase.storage
+          .from('order-photos')
+          .upload(fileName, photo)
+
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from('order-photos').getPublicUrl(fileName)
+          await supabase.from('orders').update({ photo_url: urlData.publicUrl }).eq('id', orderData.id)
+        } else {
+          console.error('Upload error:', uploadError)
+          // Zamówienie już zapisane — tylko logujemy błąd zdjęcia
+        }
       }
 
       setSent(true)
@@ -194,7 +194,6 @@ export default function Home() {
         <p className={styles.sectionEye}>// zamówienie</p>
         <h2 className={styles.sectionTitle}>Zamów swoją kartę</h2>
 
-        {/* Step indicator */}
         <div className={styles.stepIndicator}>
           {([1,2,3] as Step[]).map(n => (
             <div key={n} className={`${styles.stepDot} ${step === n ? styles.stepDotActive : ''} ${step > n ? styles.stepDotDone : ''}`}>
@@ -208,7 +207,6 @@ export default function Home() {
         </div>
 
         <div className={styles.formBox}>
-          {/* STEP 1 — theme */}
           {step === 1 && (
             <div className={styles.formStep}>
               <p className={styles.formStepTitle}>Potwierdzasz motyw</p>
@@ -236,7 +234,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* STEP 2 — contact */}
           {step === 2 && (
             <div className={styles.formStep}>
               <p className={styles.formStepTitle}>Dane kontaktowe i adres</p>
@@ -277,7 +274,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* STEP 3 — photo + submit */}
           {step === 3 && (
             <div className={styles.formStep}>
               <p className={styles.formStepTitle}>Dodaj swoje zdjęcie</p>
