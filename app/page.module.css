@@ -199,3 +199,22 @@
   .formBox { padding: 20px; }
   .stepDot { margin-right: 36px; }
 }
+
+/* ── FILE ADDED ── */
+.fileAdded {
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(0,229,160,0.08);
+  border: 1.5px solid rgba(0,229,160,0.4);
+  border-radius: var(--radius-lg); padding: 16px 20px;
+}
+.fileIcon { font-size: 28px; flex-shrink: 0; }
+.fileInfo { flex: 1; min-width: 0; }
+.fileAddedTitle { font-size: 13px; font-weight: 600; color: var(--success); margin: 0 0 3px; }
+.fileName { font-size: 12px; color: var(--text-muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fileRemove {
+  background: transparent; border: 1px solid rgba(255,77,109,0.3);
+  color: var(--error); padding: 5px 10px; border-radius: 6px;
+  font-size: 12px; cursor: pointer; flex-shrink: 0;
+  font-family: var(--font-body); transition: background 0.15s;
+}
+.fileRemove:hover { background: rgba(255,77,109,0.1); }
