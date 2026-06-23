@@ -1,21 +1,18 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 
 const STATUSES = [
-  { id: 'new',        label: 'Nowe',           color: '#f59e0b' },
-  { id: 'in_project', label: 'W projekcie',     color: '#3b82f6' },
-  { id: 'approval',   label: 'Do akceptacji',   color: '#8b5cf6' },
-  { id: 'production', label: 'Produkcja',        color: '#f97316' },
-  { id: 'shipped',    label: 'Wysłane',          color: '#10b981' },
-  { id: 'done',       label: 'Zakończone',       color: '#6b7280' },
+  { id: 'new',        label: 'Nowe',         color: '#f59e0b' },
+  { id: 'in_project', label: 'W projekcie',   color: '#3b82f6' },
+  { id: 'approval',   label: 'Do akceptacji', color: '#8b5cf6' },
+  { id: 'production', label: 'Produkcja',      color: '#f97316' },
+  { id: 'shipped',    label: 'Wysłane',        color: '#10b981' },
+  { id: 'done',       label: 'Zakończone',     color: '#6b7280' },
 ]
 
 const THEMES: Record<string, string> = {
-  techno: 'Techno',
-  rave: 'Rave',
-  festival: 'Festival',
-  travel: 'Adventure',
+  techno: 'Techno', rave: 'Rave', festival: 'Festival', travel: 'Adventure',
 }
 
 type Order = {
@@ -29,6 +26,8 @@ type Order = {
   card_text: string
   notes: string
   photo_url: string | null
+  design_url: string | null
+  review_notes: string | null
   status: string
 }
 
@@ -38,13 +37,15 @@ export default function AdminPage() {
   const [filter, setFilter] = useState('all')
   const [selected, setSelected] = useState<Order | null>(null)
   const [updating, setUpdating] = useState<string | null>(null)
+  const [designFile, setDesignFile] = useState<File | null>(null)
+  const [designPreview, setDesignPreview] = useState<string | null>(null)
+  const [sending, setSending] = useState(false)
+  const [sendMsg, setSendMsg] = useState<{ type: 'ok' | 'err', text: string } | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const fetchOrders = async () => {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false })
     if (!error && data) setOrders(data)
     setLoading(false)
   }
@@ -61,19 +62,43 @@ export default function AdminPage() {
     setUpdating(null)
   }
 
+  const handleDesignFile = (file: File) => {
+    setDesignFile(file)
+    const reader = new FileReader()
+    reader.onload = e => setDesignPreview(e.target?.result as string)
+    reader.readAsDataURL(file)
+    setSendMsg(null)
+  }
+
+  const handleSendDesign = async () => {
+    if (!selected || !designFile) return
+    setSending(true)
+    setSendMsg(null)
+    try {
+      const fd = new FormData()
+      fd.append('orderId', selected.id)
+      fd.append('design', designFile)
+      const res = await fetch('/api/send-design', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (res.ok) {
+        setSendMsg({ type: 'ok', text: 'Projekt wysłany do klienta! Status zmieniony na "Do akceptacji".' })
+        setOrders(prev => prev.map(o => o.id === selected.id ? { ...o, status: 'approval', design_url: data.designUrl } : o))
+        setSelected(prev => prev ? { ...prev, status: 'approval', design_url: data.designUrl } : null)
+        setDesignFile(null)
+        setDesignPreview(null)
+      } else {
+        setSendMsg({ type: 'err', text: data.error || 'Błąd wysyłki.' })
+      }
+    } catch {
+      setSendMsg({ type: 'err', text: 'Błąd połączenia.' })
+    }
+    setSending(false)
+  }
+
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter)
-
   const statusObj = (id: string) => STATUSES.find(s => s.id === id) || STATUSES[0]
-
-  const formatDate = (d: string) => new Date(d).toLocaleString('pl-PL', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit'
-  })
-
-  const counts = STATUSES.reduce((acc, s) => {
-    acc[s.id] = orders.filter(o => o.status === s.id).length
-    return acc
-  }, {} as Record<string, number>)
+  const formatDate = (d: string) => new Date(d).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  const counts = STATUSES.reduce((acc, s) => { acc[s.id] = orders.filter(o => o.status === s.id).length; return acc }, {} as Record<string, number>)
 
   return (
     <div style={{ minHeight: '100vh', background: '#080810', color: '#f0eeff', fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -82,50 +107,36 @@ export default function AdminPage() {
       {/* NAV */}
       <nav style={{ background: '#0e0e1a', borderBottom: '1px solid rgba(180,77,255,0.2)', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <a href="/" style={{ fontSize: '18px', fontWeight: 700, color: '#f0eeff', textDecoration: 'none' }}>
-            Rave<span style={{ color: '#b44dff' }}>Adventure</span>
-          </a>
+          <a href="/" style={{ fontSize: '18px', fontWeight: 700, color: '#f0eeff', textDecoration: 'none' }}>Rave<span style={{ color: '#b44dff' }}>Adventure</span></a>
           <span style={{ fontSize: '11px', color: '#b44dff', fontFamily: 'Space Mono', letterSpacing: '2px' }}>// admin</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '13px', color: 'rgba(240,238,255,0.4)' }}>
-            {orders.length} zamówień łącznie
-          </span>
-          <button onClick={fetchOrders} style={{ background: 'rgba(180,77,255,0.15)', border: '1px solid rgba(180,77,255,0.3)', color: '#b44dff', padding: '6px 14px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>
-            ↻ Odśwież
-          </button>
+          <span style={{ fontSize: '13px', color: 'rgba(240,238,255,0.4)' }}>{orders.length} zamówień</span>
+          <button onClick={fetchOrders} style={{ background: 'rgba(180,77,255,0.15)', border: '1px solid rgba(180,77,255,0.3)', color: '#b44dff', padding: '6px 14px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>↻ Odśwież</button>
         </div>
       </nav>
 
-      <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 380px' : '1fr', gap: '0', minHeight: 'calc(100vh - 57px)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 400px' : '1fr', minHeight: 'calc(100vh - 57px)' }}>
 
         {/* LEWA KOLUMNA */}
         <div style={{ padding: '24px' }}>
-
           {/* STATYSTYKI */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px', marginBottom: '24px' }}>
-            <div
-              onClick={() => setFilter('all')}
-              style={{ background: filter === 'all' ? 'rgba(180,77,255,0.15)' : '#0e0e1a', border: `1px solid ${filter === 'all' ? '#b44dff' : 'rgba(255,255,255,0.08)'}`, borderRadius: '10px', padding: '14px 16px', cursor: 'pointer' }}
-            >
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '10px', marginBottom: '24px' }}>
+            <div onClick={() => setFilter('all')} style={{ background: filter === 'all' ? 'rgba(180,77,255,0.15)' : '#0e0e1a', border: `1px solid ${filter === 'all' ? '#b44dff' : 'rgba(255,255,255,0.08)'}`, borderRadius: '10px', padding: '14px 16px', cursor: 'pointer' }}>
               <p style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: 700, color: '#f0eeff' }}>{orders.length}</p>
               <p style={{ margin: 0, fontSize: '12px', color: 'rgba(240,238,255,0.5)' }}>Wszystkie</p>
             </div>
             {STATUSES.map(s => (
-              <div
-                key={s.id}
-                onClick={() => setFilter(filter === s.id ? 'all' : s.id)}
-                style={{ background: filter === s.id ? `${s.color}22` : '#0e0e1a', border: `1px solid ${filter === s.id ? s.color : 'rgba(255,255,255,0.08)'}`, borderRadius: '10px', padding: '14px 16px', cursor: 'pointer' }}
-              >
+              <div key={s.id} onClick={() => setFilter(filter === s.id ? 'all' : s.id)} style={{ background: filter === s.id ? `${s.color}22` : '#0e0e1a', border: `1px solid ${filter === s.id ? s.color : 'rgba(255,255,255,0.08)'}`, borderRadius: '10px', padding: '14px 16px', cursor: 'pointer' }}>
                 <p style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: 700, color: s.color }}>{counts[s.id] || 0}</p>
                 <p style={{ margin: 0, fontSize: '12px', color: 'rgba(240,238,255,0.5)' }}>{s.label}</p>
               </div>
             ))}
           </div>
 
-          {/* LISTA ZAMÓWIEŃ */}
+          {/* LISTA */}
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '60px', color: 'rgba(240,238,255,0.3)' }}>Ładowanie zamówień...</div>
+            <div style={{ textAlign: 'center', padding: '60px', color: 'rgba(240,238,255,0.3)' }}>Ładowanie...</div>
           ) : filtered.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '60px', color: 'rgba(240,238,255,0.3)' }}>Brak zamówień</div>
           ) : (
@@ -134,52 +145,24 @@ export default function AdminPage() {
                 const st = statusObj(order.status)
                 const isSelected = selected?.id === order.id
                 return (
-                  <div
-                    key={order.id}
-                    onClick={() => setSelected(isSelected ? null : order)}
-                    style={{
-                      background: isSelected ? '#16162a' : '#0e0e1a',
-                      border: `1px solid ${isSelected ? '#b44dff' : 'rgba(255,255,255,0.08)'}`,
-                      borderRadius: '10px', padding: '16px 20px', cursor: 'pointer',
-                      display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '16px',
-                      transition: 'border-color 0.15s'
-                    }}
-                  >
-                    <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', gap: '16px' }}>
-                      {/* Zdjęcie */}
-                      {order.photo_url ? (
-                        <img src={order.photo_url} alt="" style={{ width: '44px', height: '44px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
-                      ) : (
-                        <div style={{ width: '44px', height: '44px', borderRadius: '8px', background: '#16162a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>🎴</div>
-                      )}
-                      {/* Dane */}
-                      <div>
-                        <p style={{ margin: '0 0 3px', fontWeight: 600, fontSize: '15px', color: '#f0eeff' }}>{order.name}</p>
-                        <p style={{ margin: 0, fontSize: '12px', color: 'rgba(240,238,255,0.4)' }}>
-                          {THEMES[order.theme] || order.theme} · {formatDate(order.created_at)}
-                        </p>
-                      </div>
-                      {/* Status badge */}
-                      <span style={{ background: `${st.color}22`, color: st.color, border: `1px solid ${st.color}44`, padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                        {st.label}
-                      </span>
+                  <div key={order.id} onClick={() => setSelected(isSelected ? null : order)}
+                    style={{ background: isSelected ? '#16162a' : '#0e0e1a', border: `1px solid ${isSelected ? '#b44dff' : 'rgba(255,255,255,0.08)'}`, borderRadius: '10px', padding: '14px 18px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                    {order.photo_url
+                      ? <img src={order.photo_url} alt="" style={{ width: '42px', height: '42px', borderRadius: '7px', objectFit: 'cover', flexShrink: 0 }} />
+                      : <div style={{ width: '42px', height: '42px', borderRadius: '7px', background: '#16162a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>🎴</div>
+                    }
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: '0 0 2px', fontWeight: 600, fontSize: '14px', color: '#f0eeff' }}>{order.name}</p>
+                      <p style={{ margin: 0, fontSize: '12px', color: 'rgba(240,238,255,0.4)' }}>{THEMES[order.theme] || order.theme} · {formatDate(order.created_at)}</p>
                     </div>
-
-                    {/* Szybka zmiana statusu */}
-                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-end' }} onClick={e => e.stopPropagation()}>
+                    {order.review_notes && (
+                      <span title={order.review_notes} style={{ fontSize: '16px' }}>💬</span>
+                    )}
+                    <span style={{ background: `${st.color}22`, color: st.color, border: `1px solid ${st.color}44`, padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, whiteSpace: 'nowrap' }}>{st.label}</span>
+                    <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
                       {STATUSES.map(s => (
-                        <button
-                          key={s.id}
-                          onClick={() => updateStatus(order.id, s.id)}
-                          disabled={order.status === s.id || updating === order.id}
-                          style={{
-                            background: order.status === s.id ? `${s.color}33` : 'transparent',
-                            border: `1px solid ${order.status === s.id ? s.color : 'rgba(255,255,255,0.1)'}`,
-                            color: order.status === s.id ? s.color : 'rgba(240,238,255,0.4)',
-                            padding: '4px 10px', borderRadius: '5px', fontSize: '11px', cursor: order.status === s.id ? 'default' : 'pointer',
-                            fontFamily: 'inherit', transition: 'all 0.15s'
-                          }}
-                        >
+                        <button key={s.id} onClick={() => updateStatus(order.id, s.id)} disabled={order.status === s.id || updating === order.id}
+                          style={{ background: order.status === s.id ? `${s.color}33` : 'transparent', border: `1px solid ${order.status === s.id ? s.color : 'rgba(255,255,255,0.1)'}`, color: order.status === s.id ? s.color : 'rgba(240,238,255,0.4)', padding: '3px 8px', borderRadius: '5px', fontSize: '11px', cursor: order.status === s.id ? 'default' : 'pointer', fontFamily: 'inherit' }}>
                           {s.label}
                         </button>
                       ))}
@@ -191,50 +174,83 @@ export default function AdminPage() {
           )}
         </div>
 
-        {/* PRAWY PANEL — SZCZEGÓŁY */}
+        {/* PANEL SZCZEGÓŁÓW */}
         {selected && (
           <div style={{ background: '#0e0e1a', borderLeft: '1px solid rgba(180,77,255,0.2)', padding: '24px', position: 'sticky', top: '57px', height: 'calc(100vh - 57px)', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <p style={{ margin: 0, fontSize: '11px', color: '#b44dff', fontFamily: 'Space Mono', letterSpacing: '2px' }}>// szczegóły</p>
-              <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', color: 'rgba(240,238,255,0.4)', fontSize: '18px', cursor: 'pointer' }}>✕</button>
+              <button onClick={() => { setSelected(null); setDesignFile(null); setDesignPreview(null); setSendMsg(null) }} style={{ background: 'none', border: 'none', color: 'rgba(240,238,255,0.4)', fontSize: '18px', cursor: 'pointer' }}>✕</button>
             </div>
 
-            {/* Zdjęcie */}
+            {/* Zdjęcie klienta */}
             {selected.photo_url && (
-              <div style={{ marginBottom: '20px' }}>
-                <img src={selected.photo_url} alt="Zdjęcie klienta" style={{ width: '100%', borderRadius: '10px', objectFit: 'cover', maxHeight: '200px' }} />
-                <a href={selected.photo_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', marginTop: '8px', fontSize: '12px', color: '#b44dff', textDecoration: 'none' }}>
-                  Otwórz pełne zdjęcie →
-                </a>
+              <div style={{ marginBottom: '16px' }}>
+                <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'rgba(240,238,255,0.4)' }}>Zdjęcie klienta</p>
+                <img src={selected.photo_url} alt="" style={{ width: '100%', borderRadius: '10px', objectFit: 'cover', maxHeight: '160px' }} />
+                <a href={selected.photo_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', marginTop: '6px', fontSize: '12px', color: '#b44dff', textDecoration: 'none' }}>Otwórz pełne zdjęcie →</a>
               </div>
             )}
 
-            {/* Status */}
+            {/* Uwagi klienta (jeśli są) */}
+            {selected.review_notes && (
+              <div style={{ background: 'rgba(255,77,109,0.08)', border: '1px solid rgba(255,77,109,0.3)', borderRadius: '10px', padding: '14px 16px', marginBottom: '16px' }}>
+                <p style={{ margin: '0 0 6px', fontSize: '12px', color: '#ff4d6d', fontWeight: 600 }}>💬 Uwagi klienta do projektu</p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#f0eeff', lineHeight: '1.6' }}>{selected.review_notes}</p>
+              </div>
+            )}
+
+            {/* Aktualny projekt (jeśli wysłany) */}
+            {selected.design_url && (
+              <div style={{ marginBottom: '16px' }}>
+                <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'rgba(240,238,255,0.4)' }}>Ostatni wysłany projekt</p>
+                <img src={selected.design_url} alt="Projekt" style={{ width: '100%', borderRadius: '10px', border: '1px solid rgba(180,77,255,0.3)' }} />
+              </div>
+            )}
+
+            {/* UPLOAD I WYŚLIJ PROJEKT */}
             <div style={{ background: '#16162a', borderRadius: '10px', padding: '16px', marginBottom: '16px' }}>
-              <p style={{ margin: '0 0 10px', fontSize: '12px', color: 'rgba(240,238,255,0.4)' }}>Zmień status</p>
+              <p style={{ margin: '0 0 12px', fontSize: '13px', fontWeight: 600, color: '#f0eeff' }}>
+                {selected.design_url ? '🔄 Wyślij poprawiony projekt' : '📤 Wyślij projekt do zatwierdzenia'}
+              </p>
+              <div
+                onClick={() => fileRef.current?.click()}
+                style={{ border: `1.5px dashed ${designPreview ? '#00e5a0' : 'rgba(180,77,255,0.3)'}`, borderRadius: '8px', padding: designPreview ? '8px' : '24px 16px', textAlign: 'center', cursor: 'pointer', background: designPreview ? 'rgba(0,229,160,0.05)' : 'transparent', marginBottom: '12px' }}
+              >
+                {designPreview
+                  ? <img src={designPreview} alt="Podgląd projektu" style={{ width: '100%', borderRadius: '6px', maxHeight: '140px', objectFit: 'contain' }} />
+                  : <>
+                    <p style={{ margin: '0 0 4px', fontSize: '14px', color: 'rgba(240,238,255,0.6)' }}>Kliknij aby wybrać grafikę</p>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'rgba(240,238,255,0.3)' }}>JPG, PNG · projekt karty</p>
+                  </>
+                }
+              </div>
+              <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handleDesignFile(e.target.files[0]) }} />
+              <button
+                onClick={handleSendDesign}
+                disabled={!designFile || sending}
+                style={{ width: '100%', background: designFile ? '#b44dff' : 'rgba(180,77,255,0.2)', color: designFile ? '#0a0014' : 'rgba(240,238,255,0.3)', border: 'none', borderRadius: '8px', padding: '12px', fontSize: '14px', fontWeight: 700, cursor: designFile ? 'pointer' : 'not-allowed', fontFamily: 'inherit' }}
+              >
+                {sending ? 'Wysyłam...' : '✉ Wyślij projekt do klienta'}
+              </button>
+              {sendMsg && (
+                <p style={{ margin: '10px 0 0', fontSize: '13px', color: sendMsg.type === 'ok' ? '#00e5a0' : '#ff4d6d', textAlign: 'center' }}>{sendMsg.text}</p>
+              )}
+            </div>
+
+            {/* Zmiana statusu */}
+            <div style={{ background: '#16162a', borderRadius: '10px', padding: '16px', marginBottom: '16px' }}>
+              <p style={{ margin: '0 0 10px', fontSize: '12px', color: 'rgba(240,238,255,0.4)' }}>Zmień status ręcznie</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {STATUSES.map(s => (
-                  <button
-                    key={s.id}
-                    onClick={() => updateStatus(selected.id, s.id)}
-                    disabled={selected.status === s.id || updating === selected.id}
-                    style={{
-                      background: selected.status === s.id ? `${s.color}22` : 'transparent',
-                      border: `1px solid ${selected.status === s.id ? s.color : 'rgba(255,255,255,0.1)'}`,
-                      color: selected.status === s.id ? s.color : 'rgba(240,238,255,0.6)',
-                      padding: '8px 14px', borderRadius: '7px', fontSize: '13px',
-                      cursor: selected.status === s.id ? 'default' : 'pointer',
-                      fontFamily: 'inherit', textAlign: 'left', fontWeight: selected.status === s.id ? 600 : 400,
-                      transition: 'all 0.15s'
-                    }}
-                  >
+                  <button key={s.id} onClick={() => updateStatus(selected.id, s.id)} disabled={selected.status === s.id || updating === selected.id}
+                    style={{ background: selected.status === s.id ? `${s.color}22` : 'transparent', border: `1px solid ${selected.status === s.id ? s.color : 'rgba(255,255,255,0.1)'}`, color: selected.status === s.id ? s.color : 'rgba(240,238,255,0.6)', padding: '8px 14px', borderRadius: '7px', fontSize: '13px', cursor: selected.status === s.id ? 'default' : 'pointer', fontFamily: 'inherit', textAlign: 'left', fontWeight: selected.status === s.id ? 600 : 400 }}>
                     {selected.status === s.id ? '● ' : '○ '}{s.label}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Dane */}
+            {/* Dane klienta */}
             <div style={{ background: '#16162a', borderRadius: '10px', overflow: 'hidden' }}>
               {[
                 { label: 'ID', value: selected.id.slice(0, 8) + '...' },
@@ -248,7 +264,7 @@ export default function AdminPage() {
                 { label: 'Uwagi', value: selected.notes || '—' },
               ].map((row, i) => (
                 <div key={i} style={{ display: 'flex', gap: '12px', padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <span style={{ fontSize: '12px', color: 'rgba(240,238,255,0.4)', minWidth: '60px', flexShrink: 0 }}>{row.label}</span>
+                  <span style={{ fontSize: '12px', color: 'rgba(240,238,255,0.4)', minWidth: '55px', flexShrink: 0 }}>{row.label}</span>
                   {row.link
                     ? <a href={row.link} style={{ fontSize: '13px', color: '#00f0ff', textDecoration: 'none', wordBreak: 'break-all' }}>{row.value}</a>
                     : <span style={{ fontSize: '13px', color: '#f0eeff', wordBreak: 'break-word' }}>{row.value}</span>
@@ -256,14 +272,6 @@ export default function AdminPage() {
                 </div>
               ))}
             </div>
-
-            {/* Wyślij maila do klienta */}
-            <a
-              href={`mailto:${selected.email}?subject=Twój projekt karty RaveAdventure&body=Hej ${selected.name.split(' ')[0]},%0A%0APrzygotowaliśmy projekt Twojej karty do zatwierdzenia.%0A%0APozdrawiamy,%0ARaveAdventure`}
-              style={{ display: 'block', textAlign: 'center', background: '#b44dff', color: '#0a0014', padding: '12px', borderRadius: '8px', fontWeight: 700, fontSize: '14px', textDecoration: 'none', marginTop: '16px' }}
-            >
-              ✉ Wyślij projekt do klienta
-            </a>
           </div>
         )}
       </div>
