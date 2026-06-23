@@ -18,19 +18,23 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Upload grafiki do Supabase Storage
-    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
-    const fileName = `designs/${orderId}.${ext}`
+    // Timestamp w nazwie pliku = zawsze unikalny URL, brak problemów z cache
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
+    const safeExt = ['jpg','jpeg','png','gif','webp'].includes(ext) ? ext : 'jpg'
+    const timestamp = Date.now()
+    const fileName = `designs/${orderId}-${timestamp}.${safeExt}`
 
     const { error: uploadError } = await supabase.storage
       .from('order-photos')
-      .upload(fileName, file, { upsert: true })
+      .upload(fileName, file, { upsert: false })
 
     if (uploadError) {
       return NextResponse.json({ error: 'Błąd uploadu: ' + uploadError.message }, { status: 500 })
     }
 
     const { data: urlData } = supabase.storage.from('order-photos').getPublicUrl(fileName)
-    const designUrl = urlData.publicUrl
+    // Dodaj cache-buster do URL żeby maile zawsze pokazywały świeżą grafikę
+    const designUrl = urlData.publicUrl + `?v=${timestamp}`
 
     // 2. Generuj unikalny token do zatwierdzenia
     const token = crypto.randomBytes(32).toString('hex')
