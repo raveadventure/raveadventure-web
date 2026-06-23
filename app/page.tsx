@@ -3,25 +3,66 @@ import { useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import styles from './page.module.css'
 
-const THEMES = [
-  { id: 'techno', label: 'Techno', desc: 'Grid, beton, ciemność', accent: '#b44dff' },
-  { id: 'rave',   label: 'Rave',   desc: 'Nocna impreza, laser', accent: '#00f0ff' },
-  { id: 'festival', label: 'Festival', desc: 'Scena, tłum, światła', accent: '#ff6b35' },
-  { id: 'travel', label: 'Adventure', desc: 'Droga, wolność, natura', accent: '#00e5a0' },
+const CARD_TYPES = [
+  {
+    id: 'pvc',
+    label: 'Karta PVC',
+    price: 89,
+    dims: '85.6 × 54 mm · grubość 0.76 mm',
+    desc: 'Format karty kredytowej. Twarda, wodoodporna, mieści się w każdym portfelu.',
+    accent: '#b44dff',
+  },
+  {
+    id: 'laminated',
+    label: 'Karta Laminowana',
+    price: 40,
+    dims: '63 × 88 mm',
+    desc: 'Większy format, lżejsza produkcja. Idealna na festiwal lub jako zakładka.',
+    accent: '#00f0ff',
+  },
 ]
 
-type Step = 1 | 2 | 3
+const FRONT_THEMES = [
+  { id: 'techno_rave', label: 'Techno / Rave', desc: 'Nocny klimat, laser, dark vibe', accent: '#b44dff' },
+  { id: 'festival',    label: 'Festiwal',       desc: 'Scena, tłum, światła, energia', accent: '#ff6b35' },
+  { id: 'adventure',   label: 'Adventure / Travel', desc: 'Droga, natura, wolność', accent: '#00e5a0' },
+  { id: 'custom',      label: 'Custom',          desc: 'Twój własny pomysł na projekt', accent: '#f59e0b' },
+]
+
+const BACK_OPTIONS = [
+  { id: 'logo',         label: 'RaveAdventure Logo',       price: 0,  desc: 'Nasze logo na rewersie karty' },
+  { id: 'dedication',   label: 'Personal Dedication',      price: 15, desc: 'Dedykacja, cytat lub tekst osobisty' },
+  { id: 'custom_back',  label: 'Custom Artwork',           price: 30, desc: 'Własna grafika lub motyw na rewersie' },
+  { id: 'qr',          label: 'QR Code',                  price: 40, desc: 'Link do social media, strony lub portfolio' },
+]
+
+type Step = 1 | 2 | 3 | 4 | 5
 
 export default function Home() {
   const [step, setStep] = useState<Step>(1)
-  const [theme, setTheme] = useState('techno')
-  const [form, setForm] = useState({ name: '', email: '', phone: '', address: '', cardText: '', notes: '' })
+  const [cardType, setCardType] = useState('pvc')
+  const [frontTheme, setFrontTheme] = useState('techno_rave')
+  const [backOption, setBackOption] = useState('logo')
+  const [quantity, setQuantity] = useState(1)
+  const [form, setForm] = useState({
+    name: '', email: '', phone: '', address: '',
+    cardText: '', notes: '', customDesc: '', qrLink: '',
+  })
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [refFile, setRefFile] = useState<File | null>(null)
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const refFileRef = useRef<HTMLInputElement>(null)
+
+  const cardObj = CARD_TYPES.find(c => c.id === cardType)!
+  const backObj = BACK_OPTIONS.find(b => b.id === backOption)!
+  const unitPrice = cardObj.price + backObj.price
+  const hasDiscount = quantity >= 3
+  const totalPrice = hasDiscount ? Math.round(unitPrice * quantity * 0.5) : unitPrice * quantity
+  const savedAmount = hasDiscount ? Math.round(unitPrice * quantity * 0.5) : 0
 
   const handlePhoto = (file: File) => {
     setPhoto(file)
@@ -44,70 +85,70 @@ export default function Home() {
     setSending(true)
     setError(null)
     try {
-      // Najpierw zapisz zamówienie bez zdjęcia
       const { data: orderData, error: insertError } = await supabase.from('orders').insert([{
-        theme,
+        theme: frontTheme,
+        card_type: cardType,
+        back_option: backOption,
+        quantity,
+        unit_price: unitPrice,
+        total_price: totalPrice,
+        has_discount: hasDiscount,
         name: form.name,
         email: form.email,
         phone: form.phone,
         address: form.address,
         card_text: form.cardText,
         notes: form.notes,
+        custom_desc: form.customDesc,
+        qr_link: form.qrLink,
         photo_url: null,
         status: 'new',
       }]).select('id').single()
 
-      if (insertError) {
-        console.error('Insert error:', insertError)
-        throw new Error(`Błąd zapisu: ${insertError.message}`)
-      }
+      if (insertError) throw new Error(insertError.message)
 
-      // Wyślij maile
-      await fetch("/api/send-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          phone: form.phone,
-          address: form.address,
-          cardText: form.cardText,
-          notes: form.notes,
-          theme,
-          orderId: orderData?.id,
-        }),
-      })
-
-      // Potem uploaduj zdjęcie jeśli jest
+      // Upload zdjęcia
       if (photo && orderData?.id) {
         const ext = (photo.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
         const safeExt = ['jpg','jpeg','png','gif','webp','heic'].includes(ext) ? ext : 'jpg'
-        const fileName = `${orderData.id}.${safeExt}`
-
         const { error: uploadError } = await supabase.storage
           .from('order-photos')
-          .upload(fileName, photo)
-
+          .upload(`${orderData.id}.${safeExt}`, photo)
         if (!uploadError) {
-          const { data: urlData } = supabase.storage.from('order-photos').getPublicUrl(fileName)
+          const { data: urlData } = supabase.storage.from('order-photos').getPublicUrl(`${orderData.id}.${safeExt}`)
           await supabase.from('orders').update({ photo_url: urlData.publicUrl }).eq('id', orderData.id)
-        } else {
-          console.error('Upload error:', uploadError)
-          // Zamówienie już zapisane — tylko logujemy błąd zdjęcia
         }
       }
+
+      // Upload pliku referencyjnego
+      if (refFile && orderData?.id) {
+        const ext = (refFile.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
+        const safeExt = ['jpg','jpeg','png','gif','webp','pdf'].includes(ext) ? ext : 'jpg'
+        await supabase.storage.from('order-photos').upload(`${orderData.id}-ref.${safeExt}`, refFile)
+      }
+
+      // Wyślij maile
+      await fetch('/api/send-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name, email: form.email, phone: form.phone,
+          address: form.address, cardText: form.cardText, notes: form.notes,
+          theme: frontTheme, orderId: orderData?.id,
+          cardType, backOption, quantity, unitPrice, totalPrice, hasDiscount, savedAmount,
+        }),
+      })
 
       setSent(true)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Nieznany błąd'
-      setError(`Coś poszło nie tak: ${msg}. Napisz na kontakt@raveadventure.pl`)
-      console.error(err)
+      setError(`Coś poszło nie tak: ${msg}`)
     } finally {
       setSending(false)
     }
   }
 
-  const selectedTheme = THEMES.find(t => t.id === theme)!
+  const themeObj = FRONT_THEMES.find(t => t.id === frontTheme)!
 
   if (sent) {
     return (
@@ -116,13 +157,19 @@ export default function Home() {
           <div className={styles.sentIcon}>✓</div>
           <h2>Zamówienie wysłane!</h2>
           <p>Odezwiemy się w ciągu 24h na adres <strong>{form.email}</strong> z projektem karty do zatwierdzenia.</p>
-          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',phone:'',address:'',cardText:'',notes:'' }); setPhoto(null); setPhotoPreview(null) }}>
+          <div className={styles.sentSummary}>
+            <span>{cardObj.label} × {quantity}</span>
+            <strong>{totalPrice} zł</strong>
+          </div>
+          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',phone:'',address:'',cardText:'',notes:'',customDesc:'',qrLink:'' }); setPhoto(null); setPhotoPreview(null); setRefFile(null); setQuantity(1) }}>
             Zamów kolejną kartę
           </button>
         </div>
       </div>
     )
   }
+
+  const steps = ['Typ karty', 'Motyw frontu', 'Rewers', 'Ilość', 'Dane']
 
   return (
     <main className={styles.main}>
@@ -142,45 +189,39 @@ export default function Home() {
             <span className={styles.neon}>Twoja karta.</span>
           </h1>
           <p className={styles.heroSub}>
-            Personalizowane karty wielkości karty kredytowej z klimatem techno i rave.
-            Mieszczą się w portfelu — zabierasz ze sobą na każdy event.
+            Personalizowane karty z klimatem techno i rave. Mieszczą się w portfelu — zabierasz ze sobą na każdy event.
           </p>
           <div className={styles.heroBadges}>
-            <span className={styles.badge}>Format karty kredytowej</span>
-            <span className={styles.badge}>Druk PVC</span>
+            <span className={styles.badge}>Karta PVC od 89 zł</span>
+            <span className={styles.badge}>Karta Laminowana od 40 zł</span>
+            <span className={styles.badge}>-50% przy 3+ sztukach</span>
             <span className={styles.badge}>Projekt w 24h</span>
           </div>
           <a href="#order" className={styles.btnHero}>Zamów swoją kartę →</a>
         </div>
         <div className={styles.heroCard} aria-hidden="true">
-          <div className={styles.previewCard} style={{ '--accent': selectedTheme.accent } as React.CSSProperties}>
-            <span className={styles.previewThemeLabel}>{selectedTheme.label}</span>
+          <div className={styles.previewCard} style={{ '--accent': themeObj.accent } as React.CSSProperties}>
+            <span className={styles.previewThemeLabel}>{themeObj.label}</span>
             <span className={styles.previewScan}>▓▓▓ ▓▓▓▓ ▓▓▓▓</span>
             <span className={styles.previewName}>RAVE ADVENTURE</span>
           </div>
         </div>
       </section>
 
-      {/* THEMES */}
-      <section className={styles.section} id="themes">
-        <p className={styles.sectionEye}>// motywy</p>
-        <h2 className={styles.sectionTitle}>Wybierz swój klimat</h2>
-        <div className={styles.themesGrid}>
-          {THEMES.map(t => (
-            <div
-              key={t.id}
-              className={`${styles.themeCard} ${theme === t.id ? styles.themeSelected : ''}`}
-              style={{ '--accent': t.accent } as React.CSSProperties}
-              onClick={() => setTheme(t.id)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={e => e.key === 'Enter' && setTheme(t.id)}
-              aria-pressed={theme === t.id}
-            >
+      {/* TYPY KART */}
+      <section className={styles.section} id="cards">
+        <p className={styles.sectionEye}>// rodzaje kart</p>
+        <h2 className={styles.sectionTitle}>Wybierz format</h2>
+        <div className={styles.cardTypesGrid}>
+          {CARD_TYPES.map(c => (
+            <div key={c.id} className={styles.cardTypeCard} style={{ '--accent': c.accent } as React.CSSProperties}>
               <div className={styles.themeAccentBar} />
-              <p className={styles.themeLabel}>{t.label}</p>
-              <p className={styles.themeDesc}>{t.desc}</p>
-              {theme === t.id && <span className={styles.themeCheck}>✓</span>}
+              <div className={styles.cardTypeHeader}>
+                <p className={styles.themeLabel}>{c.label}</p>
+                <span className={styles.cardTypePrice}>{c.price} zł</span>
+              </div>
+              <p className={styles.cardTypeDims}>{c.dims}</p>
+              <p className={styles.themeDesc}>{c.desc}</p>
             </div>
           ))}
         </div>
@@ -192,8 +233,8 @@ export default function Home() {
         <h2 className={styles.sectionTitle}>Trzy kroki do karty</h2>
         <div className={styles.stepsGrid}>
           {[
-            { n: '01', t: 'Zamów online', d: 'Wybierz motyw, wypełnij formularz, dodaj zdjęcie.' },
-            { n: '02', t: 'Zatwierdzasz projekt', d: 'W ciągu 24h wysyłamy projekt do akceptacji. Możesz prosić o poprawki.' },
+            { n: '01', t: 'Zamów online', d: 'Wybierz typ, motyw, rewers i dodaj zdjęcie.' },
+            { n: '02', t: 'Zatwierdzasz projekt', d: 'W ciągu 24h wysyłamy projekt. Możesz prosić o poprawki.' },
             { n: '03', t: 'Karta do Ciebie', d: 'Produkujemy i wysyłamy. Czas realizacji: 3–5 dni roboczych.' },
           ].map(s => (
             <div key={s.n} className={styles.stepCard}>
@@ -205,54 +246,199 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ORDER FORM */}
+      {/* FORMULARZ */}
       <section className={styles.section} id="order">
         <p className={styles.sectionEye}>// zamówienie</p>
         <h2 className={styles.sectionTitle}>Zamów swoją kartę</h2>
 
-        <div className={styles.stepIndicator}>
-          {([1,2,3] as Step[]).map(n => (
-            <div key={n} className={`${styles.stepDot} ${step === n ? styles.stepDotActive : ''} ${step > n ? styles.stepDotDone : ''}`}>
-              {step > n ? '✓' : n}
-            </div>
-          ))}
-          <div className={styles.stepLine} style={{ width: `${((step - 1) / 2) * 100}%` }} />
-        </div>
-        <div className={styles.stepLabels}>
-          <span>Motyw</span><span>Dane</span><span>Zdjęcie</span>
+        {/* Progress */}
+        <div className={styles.progressWrap}>
+          {steps.map((s, i) => {
+            const n = (i + 1) as Step
+            return (
+              <div key={n} className={styles.progressItem}>
+                <div className={`${styles.stepDot} ${step === n ? styles.stepDotActive : ''} ${step > n ? styles.stepDotDone : ''}`}>
+                  {step > n ? '✓' : n}
+                </div>
+                <span className={styles.progressLabel}>{s}</span>
+              </div>
+            )
+          })}
         </div>
 
         <div className={styles.formBox}>
+
+          {/* KROK 1 — TYP KARTY */}
           {step === 1 && (
             <div className={styles.formStep}>
-              <p className={styles.formStepTitle}>Potwierdzasz motyw</p>
-              <div className={styles.themesGridSm}>
-                {THEMES.map(t => (
-                  <div
-                    key={t.id}
-                    className={`${styles.themeCard} ${theme === t.id ? styles.themeSelected : ''}`}
-                    style={{ '--accent': t.accent } as React.CSSProperties}
-                    onClick={() => setTheme(t.id)}
+              <p className={styles.formStepTitle}>Wybierz typ karty</p>
+              <div className={styles.cardTypesGrid}>
+                {CARD_TYPES.map(c => (
+                  <div key={c.id}
+                    className={`${styles.cardTypeCard} ${cardType === c.id ? styles.themeSelected : ''}`}
+                    style={{ '--accent': c.accent } as React.CSSProperties}
+                    onClick={() => setCardType(c.id)}
                     role="button" tabIndex={0}
-                    onKeyDown={e => e.key === 'Enter' && setTheme(t.id)}
-                    aria-pressed={theme === t.id}
+                    onKeyDown={e => e.key === 'Enter' && setCardType(c.id)}
+                    aria-pressed={cardType === c.id}
+                  >
+                    <div className={styles.themeAccentBar} />
+                    <div className={styles.cardTypeHeader}>
+                      <p className={styles.themeLabel}>{c.label}</p>
+                      <span className={styles.cardTypePrice}>{c.price} zł</span>
+                    </div>
+                    <p className={styles.cardTypeDims}>{c.dims}</p>
+                    <p className={styles.themeDesc}>{c.desc}</p>
+                    {cardType === c.id && <span className={styles.themeCheck}>✓</span>}
+                  </div>
+                ))}
+              </div>
+              <button className={styles.btnPrimary} onClick={() => setStep(2)}>Dalej — wybierz motyw →</button>
+            </div>
+          )}
+
+          {/* KROK 2 — MOTYW FRONTU */}
+          {step === 2 && (
+            <div className={styles.formStep}>
+              <p className={styles.formStepTitle}>Motyw frontu karty</p>
+              <div className={styles.themesGrid}>
+                {FRONT_THEMES.map(t => (
+                  <div key={t.id}
+                    className={`${styles.themeCard} ${frontTheme === t.id ? styles.themeSelected : ''}`}
+                    style={{ '--accent': t.accent } as React.CSSProperties}
+                    onClick={() => setFrontTheme(t.id)}
+                    role="button" tabIndex={0}
+                    onKeyDown={e => e.key === 'Enter' && setFrontTheme(t.id)}
+                    aria-pressed={frontTheme === t.id}
                   >
                     <div className={styles.themeAccentBar} />
                     <p className={styles.themeLabel}>{t.label}</p>
                     <p className={styles.themeDesc}>{t.desc}</p>
-                    {theme === t.id && <span className={styles.themeCheck}>✓</span>}
+                    {frontTheme === t.id && <span className={styles.themeCheck}>✓</span>}
                   </div>
                 ))}
               </div>
-              <button className={styles.btnPrimary} onClick={() => setStep(2)}>
-                Dalej — dane kontaktowe →
-              </button>
+              {frontTheme === 'custom' && (
+                <div className={styles.field} style={{ marginTop: '4px' }}>
+                  <label className={styles.label}>Opisz swój pomysł na motyw *</label>
+                  <textarea value={form.customDesc} onChange={e => setForm({...form, customDesc: e.target.value})} placeholder="Opisz klimat, kolory, styl, inspiracje..." />
+                  <p style={{ fontSize: '12px', color: 'var(--text-faint)', marginTop: '6px' }}>Opcjonalnie dodaj plik referencyjny (zdjęcie, inspiracja):</p>
+                  <button className={styles.btnSecondary} style={{ width: 'auto', padding: '7px 16px', fontSize: '13px', marginTop: '6px' }} onClick={() => refFileRef.current?.click()}>
+                    {refFile ? `✓ ${refFile.name}` : '+ Dodaj plik referencyjny'}
+                  </button>
+                  <input ref={refFileRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) setRefFile(e.target.files[0]) }} />
+                </div>
+              )}
+              <div className={styles.formButtons}>
+                <button className={styles.btnSecondary} onClick={() => setStep(1)}>← Wstecz</button>
+                <button className={styles.btnPrimary} onClick={() => setStep(3)}>Dalej — rewers →</button>
+              </div>
             </div>
           )}
 
-          {step === 2 && (
+          {/* KROK 3 — BACK SIDE */}
+          {step === 3 && (
             <div className={styles.formStep}>
-              <p className={styles.formStepTitle}>Dane kontaktowe i adres</p>
+              <p className={styles.formStepTitle}>Co ma być na rewersie?</p>
+              <div className={styles.backGrid}>
+                {BACK_OPTIONS.map(b => (
+                  <div key={b.id}
+                    className={`${styles.backCard} ${backOption === b.id ? styles.backCardSelected : ''}`}
+                    onClick={() => setBackOption(b.id)}
+                    role="button" tabIndex={0}
+                    onKeyDown={e => e.key === 'Enter' && setBackOption(b.id)}
+                    aria-pressed={backOption === b.id}
+                  >
+                    <div className={styles.backCardTop}>
+                      <p className={styles.backCardLabel}>{b.label}</p>
+                      <span className={styles.backCardPrice}>{b.price === 0 ? 'gratis' : `+${b.price} zł`}</span>
+                    </div>
+                    <p className={styles.backCardDesc}>{b.desc}</p>
+                    {backOption === b.id && <span className={styles.themeCheck}>✓</span>}
+                  </div>
+                ))}
+              </div>
+
+              {backOption === 'dedication' && (
+                <div className={styles.field}>
+                  <label className={styles.label}>Tekst dedykacji *</label>
+                  <textarea value={form.cardText} onChange={e => setForm({...form, cardText: e.target.value})} placeholder="np. 'Za każdy rave z Tobą' lub imię + data..." />
+                </div>
+              )}
+              {backOption === 'qr' && (
+                <div className={styles.field}>
+                  <label className={styles.label}>Link do QR kodu *</label>
+                  <input type="url" value={form.qrLink} onChange={e => setForm({...form, qrLink: e.target.value})} placeholder="https://instagram.com/twojprofil" />
+                  <p style={{ fontSize: '12px', color: 'var(--text-faint)', marginTop: '6px' }}>Wygenerujemy QR kod na podstawie podanego linku.</p>
+                </div>
+              )}
+              {backOption === 'custom_back' && (
+                <div className={styles.field}>
+                  <label className={styles.label}>Opisz grafikę na rewersie *</label>
+                  <textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} placeholder="Opisz co chcesz na rewersie — styl, kolory, elementy..." />
+                  <button className={styles.btnSecondary} style={{ width: 'auto', padding: '7px 16px', fontSize: '13px', marginTop: '8px' }} onClick={() => refFileRef.current?.click()}>
+                    {refFile ? `✓ ${refFile.name}` : '+ Dodaj plik referencyjny'}
+                  </button>
+                  <input ref={refFileRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) setRefFile(e.target.files[0]) }} />
+                </div>
+              )}
+
+              <div className={styles.formButtons}>
+                <button className={styles.btnSecondary} onClick={() => setStep(2)}>← Wstecz</button>
+                <button className={styles.btnPrimary} onClick={() => setStep(4)}>Dalej — ilość →</button>
+              </div>
+            </div>
+          )}
+
+          {/* KROK 4 — ILOŚĆ I CENA */}
+          {step === 4 && (
+            <div className={styles.formStep}>
+              <p className={styles.formStepTitle}>Ile kart zamawiasz?</p>
+
+              <div className={styles.quantityWrap}>
+                <button className={styles.qtyBtn} onClick={() => setQuantity(q => Math.max(1, q - 1))}>−</button>
+                <span className={styles.qtyValue}>{quantity}</span>
+                <button className={styles.qtyBtn} onClick={() => setQuantity(q => q + 1)}>+</button>
+              </div>
+
+              {hasDiscount && (
+                <div className={styles.discountBadge}>
+                  🎉 Rabat 50% aktywny — zamawiasz {quantity} sztuki tego samego typu!
+                </div>
+              )}
+              {quantity === 2 && (
+                <div className={styles.discountHint}>
+                  Dodaj jeszcze 1 kartę i oszczędź 50% na całości!
+                </div>
+              )}
+
+              <div className={styles.priceSummary}>
+                <p className={styles.summaryRow}><span>Typ karty</span><strong>{cardObj.label}</strong></p>
+                <p className={styles.summaryRow}><span>Motyw frontu</span><strong>{FRONT_THEMES.find(t=>t.id===frontTheme)?.label}</strong></p>
+                <p className={styles.summaryRow}><span>Rewers</span><strong>{backObj.label}</strong></p>
+                <p className={styles.summaryRow}><span>Cena za sztukę</span><strong>{unitPrice} zł</strong></p>
+                <p className={styles.summaryRow}><span>Ilość</span><strong>× {quantity}</strong></p>
+                {hasDiscount && (
+                  <p className={styles.summaryRow}><span>Rabat 50%</span><strong className={styles.discount}>−{savedAmount} zł</strong></p>
+                )}
+                <div className={styles.summaryTotal}>
+                  <span>Łącznie</span>
+                  <strong className={styles.totalPrice}>{totalPrice} zł</strong>
+                </div>
+                <p className={styles.summaryNote}>Płatność przelewem po zatwierdzeniu projektu.</p>
+              </div>
+
+              <div className={styles.formButtons}>
+                <button className={styles.btnSecondary} onClick={() => setStep(3)}>← Wstecz</button>
+                <button className={styles.btnPrimary} onClick={() => setStep(5)}>Dalej — dane i zdjęcie →</button>
+              </div>
+            </div>
+          )}
+
+          {/* KROK 5 — DANE I ZDJĘCIE */}
+          {step === 5 && (
+            <div className={styles.formStep}>
+              <p className={styles.formStepTitle}>Dane kontaktowe i zdjęcie</p>
               <div className={styles.fieldGrid}>
                 <div className={styles.field}>
                   <label className={styles.label}>Imię i nazwisko *</label>
@@ -271,54 +457,32 @@ export default function Home() {
                   <input value={form.address} onChange={e => setForm({...form, address: e.target.value})} placeholder="ul. Przykładowa 1, 00-000 Warszawa" />
                 </div>
                 <div className={`${styles.field} ${styles.fieldFull}`}>
-                  <label className={styles.label}>Tekst na karcie <span className={styles.optional}>(opcjonalnie — maks. 3 słowa)</span></label>
-                  <input value={form.cardText} onChange={e => setForm({...form, cardText: e.target.value})} placeholder="np. imię, rok, hasło..." />
-                </div>
-                <div className={`${styles.field} ${styles.fieldFull}`}>
                   <label className={styles.label}>Dodatkowe uwagi <span className={styles.optional}>(opcjonalnie)</span></label>
                   <textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} placeholder="Opisz swój pomysł, okazję, kolorystykę..." />
                 </div>
               </div>
-              <div className={styles.formButtons}>
-                <button className={styles.btnSecondary} onClick={() => setStep(1)}>← Wstecz</button>
-                <button className={styles.btnPrimary} onClick={() => {
-                  if (!form.name || !form.email || !form.address) { setError('Uzupełnij imię, email i adres.'); return; }
-                  setError(null); setStep(3)
-                }}>Dalej — dodaj zdjęcie →</button>
-              </div>
-              {error && <p className={styles.errorMsg}>{error}</p>}
-            </div>
-          )}
 
-          {step === 3 && (
-            <div className={styles.formStep}>
-              <p className={styles.formStepTitle}>Dodaj swoje zdjęcie</p>
-              {!photo ? (
-                <div
-                  className={styles.dropZone}
-                  onClick={() => fileRef.current?.click()}
-                  onDragOver={e => e.preventDefault()}
-                  onDrop={handleDrop}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={e => e.key === 'Enter' && fileRef.current?.click()}
-                  aria-label="Kliknij lub przeciągnij zdjęcie"
-                >
-                  <span className={styles.dropIcon}>↑</span>
-                  <p className={styles.dropTitle}>Kliknij lub przeciągnij zdjęcie</p>
-                  <p className={styles.dropSub}>JPG, PNG, HEIC · maks. 20 MB · min. 1500 × 1000 px</p>
-                </div>
-              ) : (
-                <div className={styles.fileAdded}>
-                  <span className={styles.fileIcon}>🖼</span>
-                  <div className={styles.fileInfo}>
-                    <p className={styles.fileAddedTitle}>Plik dodany ✓</p>
-                    <p className={styles.fileName}>{photo.name}</p>
+              {/* Upload zdjęcia */}
+              <div className={styles.field} style={{ marginTop: '8px' }}>
+                <label className={styles.label}>Twoje zdjęcie <span className={styles.optional}>(opcjonalnie — dodasz też później)</span></label>
+                {!photo ? (
+                  <div className={styles.dropZone} onClick={() => fileRef.current?.click()} onDragOver={e => e.preventDefault()} onDrop={handleDrop} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && fileRef.current?.click()} aria-label="Kliknij lub przeciągnij zdjęcie">
+                    <span className={styles.dropIcon}>↑</span>
+                    <p className={styles.dropTitle}>Kliknij lub przeciągnij zdjęcie</p>
+                    <p className={styles.dropSub}>JPG, PNG, HEIC · maks. 20 MB</p>
                   </div>
-                  <button className={styles.fileRemove} onClick={() => { setPhoto(null); setPhotoPreview(null) }}>✕ Usuń</button>
-                </div>
-              )}
-              <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handlePhoto(e.target.files[0]) }} />
+                ) : (
+                  <div className={styles.fileAdded}>
+                    <span className={styles.fileIcon}>🖼</span>
+                    <div className={styles.fileInfo}>
+                      <p className={styles.fileAddedTitle}>Plik dodany ✓</p>
+                      <p className={styles.fileName}>{photo.name}</p>
+                    </div>
+                    <button className={styles.fileRemove} onClick={() => { setPhoto(null); setPhotoPreview(null) }}>✕ Usuń</button>
+                  </div>
+                )}
+                <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handlePhoto(e.target.files[0]) }} />
+              </div>
 
               <div className={styles.photoTips}>
                 <p className={styles.tipsTitle}>Wskazówki do zdjęcia</p>
@@ -329,19 +493,11 @@ export default function Home() {
                 </ul>
               </div>
 
-              <div className={styles.summary}>
-                <p className={styles.summaryRow}><span>Motyw</span><strong>{selectedTheme.label}</strong></p>
-                <p className={styles.summaryRow}><span>Zamawia</span><strong>{form.name}</strong></p>
-                <p className={styles.summaryRow}><span>Email</span><strong>{form.email}</strong></p>
-                <p className={styles.summaryRow}><span>Cena</span><strong className={styles.price}>89 zł</strong></p>
-                <p className={styles.summaryNote}>Płatność przelewem po zatwierdzeniu projektu.</p>
-              </div>
-
               {error && <p className={styles.errorMsg}>{error}</p>}
               <div className={styles.formButtons}>
-                <button className={styles.btnSecondary} onClick={() => setStep(2)}>← Wstecz</button>
+                <button className={styles.btnSecondary} onClick={() => setStep(4)}>← Wstecz</button>
                 <button className={styles.btnPrimary} onClick={handleSubmit} disabled={sending}>
-                  {sending ? 'Wysyłam...' : 'Wyślij zamówienie →'}
+                  {sending ? 'Wysyłam...' : `Wyślij zamówienie (${totalPrice} zł) →`}
                 </button>
               </div>
             </div>
@@ -349,7 +505,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FOOTER */}
       <footer className={styles.footer}>
         <p className={styles.footerLogo}>RaveAdventure</p>
         <p className={styles.footerSub}>kontakt@raveadventure.pl</p>
