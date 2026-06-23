@@ -218,3 +218,42 @@
   font-family: var(--font-body); transition: background 0.15s;
 }
 .fileRemove:hover { background: rgba(255,77,109,0.1); }
+
+/* ── CARD TYPES ── */
+.cardTypesGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.cardTypeCard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; cursor: pointer; position: relative; transition: border-color 0.2s, transform 0.15s; overflow: hidden; }
+.cardTypeCard:hover { border-color: color-mix(in srgb, var(--accent) 50%, transparent); transform: translateY(-2px); }
+.cardTypeHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.cardTypePrice { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--accent); }
+.cardTypeDims { font-size: 11px; color: var(--text-faint); font-family: var(--font-display); letter-spacing: 1px; margin-bottom: 8px; }
+
+/* ── BACK OPTIONS ── */
+.backGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.backCard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; cursor: pointer; position: relative; transition: border-color 0.2s, transform 0.15s; }
+.backCard:hover { border-color: rgba(180,77,255,0.4); transform: translateY(-2px); }
+.backCardSelected { border-color: var(--neon) !important; background: var(--neon-dim); }
+.backCardTop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.backCardLabel { font-size: 14px; font-weight: 600; color: var(--text); }
+.backCardPrice { font-size: 13px; font-weight: 700; color: var(--neon); }
+.backCardDesc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+/* ── QUANTITY ── */
+.quantityWrap { display: flex; align-items: center; gap: 20px; justify-content: center; margin: 16px 0; }
+.qtyBtn { width: 44px; height: 44px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s; font-family: var(--font-body); }
+.qtyBtn:hover { border-color: var(--neon); color: var(--neon); }
+.qtyValue { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: var(--text); min-width: 60px; text-align: center; }
+.discountBadge { background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.3); border-radius: 8px; padding: 10px 16px; font-size: 14px; color: var(--success); text-align: center; margin-bottom: 16px; }
+.discountHint { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: 8px; padding: 10px 16px; font-size: 13px; color: #f59e0b; text-align: center; margin-bottom: 16px; }
+
+/* ── PRICE SUMMARY ── */
+.priceSummary { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 20px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
+.discount { color: var(--success) !important; }
+.summaryTotal { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border); font-size: 16px; }
+.totalPrice { color: var(--success) !important; font-size: 22px !important; }
+.sentSummary { display: flex; justify-content: space-between; background: var(--surface2); border-radius: 8px; padding: 10px 16px; margin-bottom: 20px; font-size: 14px; color: var(--text-muted); }
+.sentSummary strong { color: var(--success); }
+
+/* ── PROGRESS ── */
+.progressWrap { display: flex; align-items: flex-start; gap: 0; margin-bottom: 28px; overflow-x: auto; padding-bottom: 4px; }
+.progressItem { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; min-width: 60px; }
+.progressLabel { font-size: 11px; color: var(--text-faint); font-family: var(--font-display); text-align: center; white-space: nowrap; }
