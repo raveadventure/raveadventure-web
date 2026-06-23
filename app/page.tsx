@@ -293,31 +293,32 @@ export default function Home() {
           {step === 3 && (
             <div className={styles.formStep}>
               <p className={styles.formStepTitle}>Dodaj swoje zdjęcie</p>
-              <div
-                className={`${styles.dropZone} ${photoPreview ? styles.dropZoneFilled : ''}`}
-                onClick={() => fileRef.current?.click()}
-                onDragOver={e => e.preventDefault()}
-                onDrop={handleDrop}
-                role="button"
-                tabIndex={0}
-                onKeyDown={e => e.key === 'Enter' && fileRef.current?.click()}
-                aria-label="Kliknij lub przeciągnij zdjęcie"
-              >
-                {photoPreview
-                  ? <img src={photoPreview} alt="Podgląd zdjęcia" className={styles.photoPreview} />
-                  : <>
-                      <span className={styles.dropIcon}>↑</span>
-                      <p className={styles.dropTitle}>Kliknij lub przeciągnij zdjęcie</p>
-                      <p className={styles.dropSub}>JPG, PNG, HEIC · maks. 20 MB · min. 1500 × 1000 px</p>
-                    </>
-                }
-              </div>
-              <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handlePhoto(e.target.files[0]) }} />
-              {photoPreview && (
-                <button className={styles.btnSecondary} style={{ marginTop: '8px', width: 'auto', padding: '6px 16px', fontSize: '13px' }} onClick={() => { setPhoto(null); setPhotoPreview(null) }}>
-                  Usuń zdjęcie
-                </button>
+              {!photo ? (
+                <div
+                  className={styles.dropZone}
+                  onClick={() => fileRef.current?.click()}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={handleDrop}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={e => e.key === 'Enter' && fileRef.current?.click()}
+                  aria-label="Kliknij lub przeciągnij zdjęcie"
+                >
+                  <span className={styles.dropIcon}>↑</span>
+                  <p className={styles.dropTitle}>Kliknij lub przeciągnij zdjęcie</p>
+                  <p className={styles.dropSub}>JPG, PNG, HEIC · maks. 20 MB · min. 1500 × 1000 px</p>
+                </div>
+              ) : (
+                <div className={styles.fileAdded}>
+                  <span className={styles.fileIcon}>🖼</span>
+                  <div className={styles.fileInfo}>
+                    <p className={styles.fileAddedTitle}>Plik dodany ✓</p>
+                    <p className={styles.fileName}>{photo.name}</p>
+                  </div>
+                  <button className={styles.fileRemove} onClick={() => { setPhoto(null); setPhotoPreview(null) }}>✕ Usuń</button>
+                </div>
               )}
+              <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handlePhoto(e.target.files[0]) }} />
 
               <div className={styles.photoTips}>
                 <p className={styles.tipsTitle}>Wskazówki do zdjęcia</p>
