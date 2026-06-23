@@ -50,12 +50,14 @@ export default function Home() {
   })
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
-  const [refFile, setRefFile] = useState<File | null>(null)
+  const [refFileFront, setRefFileFront] = useState<File | null>(null)
+  const [refFileBack, setRefFileBack] = useState<File | null>(null)
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
-  const refFileRef = useRef<HTMLInputElement>(null)
+  const refFileFrontRef = useRef<HTMLInputElement>(null)
+  const refFileBackRef = useRef<HTMLInputElement>(null)
 
   const cardObj = CARD_TYPES.find(c => c.id === cardType)!
   const backObj = BACK_OPTIONS.find(b => b.id === backOption)!
@@ -120,11 +122,17 @@ export default function Home() {
         }
       }
 
-      // Upload pliku referencyjnego
-      if (refFile && orderData?.id) {
-        const ext = (refFile.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
+      // Upload pliku referencyjnego frontu
+      if (refFileFront && orderData?.id) {
+        const ext = (refFileFront.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
         const safeExt = ['jpg','jpeg','png','gif','webp','pdf'].includes(ext) ? ext : 'jpg'
-        await supabase.storage.from('order-photos').upload(`${orderData.id}-ref.${safeExt}`, refFile)
+        await supabase.storage.from('order-photos').upload(`${orderData.id}-ref-front.${safeExt}`, refFileFront)
+      }
+      // Upload pliku referencyjnego tyłu
+      if (refFileBack && orderData?.id) {
+        const ext = (refFileBack.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
+        const safeExt = ['jpg','jpeg','png','gif','webp','pdf'].includes(ext) ? ext : 'jpg'
+        await supabase.storage.from('order-photos').upload(`${orderData.id}-ref-back.${safeExt}`, refFileBack)
       }
 
       // Wyślij maile
@@ -161,7 +169,7 @@ export default function Home() {
             <span>{cardObj.label} × {quantity}</span>
             <strong>{totalPrice} zł</strong>
           </div>
-          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',phone:'',address:'',cardText:'',notes:'',customDesc:'',qrLink:'' }); setPhoto(null); setPhotoPreview(null); setRefFile(null); setQuantity(1) }}>
+          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',phone:'',address:'',cardText:'',notes:'',customDesc:'',qrLink:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setQuantity(1) }}>
             Zamów kolejną kartę
           </button>
         </div>
@@ -323,10 +331,10 @@ export default function Home() {
                   <label className={styles.label}>Opisz swój pomysł na motyw *</label>
                   <textarea value={form.customDesc} onChange={e => setForm({...form, customDesc: e.target.value})} placeholder="Opisz klimat, kolory, styl, inspiracje..." />
                   <p style={{ fontSize: '12px', color: 'var(--text-faint)', marginTop: '6px' }}>Opcjonalnie dodaj plik referencyjny (zdjęcie, inspiracja):</p>
-                  <button className={styles.btnSecondary} style={{ width: 'auto', padding: '7px 16px', fontSize: '13px', marginTop: '6px' }} onClick={() => refFileRef.current?.click()}>
-                    {refFile ? `✓ ${refFile.name}` : '+ Dodaj plik referencyjny'}
+                  <button className={styles.btnSecondary} style={{ width: 'auto', padding: '7px 16px', fontSize: '13px', marginTop: '6px' }} onClick={() => refFileFrontRef.current?.click()}>
+                    {refFileFront ? `✓ ${refFileFront.name}` : '+ Dodaj plik referencyjny (front)'}
                   </button>
-                  <input ref={refFileRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) setRefFile(e.target.files[0]) }} />
+                  <input ref={refFileFrontRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) setRefFileFront(e.target.files[0]) }} />
                 </div>
               )}
               <div className={styles.formButtons}>
@@ -376,10 +384,10 @@ export default function Home() {
                 <div className={styles.field}>
                   <label className={styles.label}>Opisz grafikę na rewersie *</label>
                   <textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} placeholder="Opisz co chcesz na rewersie — styl, kolory, elementy..." />
-                  <button className={styles.btnSecondary} style={{ width: 'auto', padding: '7px 16px', fontSize: '13px', marginTop: '8px' }} onClick={() => refFileRef.current?.click()}>
-                    {refFile ? `✓ ${refFile.name}` : '+ Dodaj plik referencyjny'}
+                  <button className={styles.btnSecondary} style={{ width: 'auto', padding: '7px 16px', fontSize: '13px', marginTop: '8px' }} onClick={() => refFileBackRef.current?.click()}>
+                    {refFileBack ? `✓ ${refFileBack.name}` : '+ Dodaj plik referencyjny (tył)'}
                   </button>
-                  <input ref={refFileRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) setRefFile(e.target.files[0]) }} />
+                  <input ref={refFileBackRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) setRefFileBack(e.target.files[0]) }} />
                 </div>
               )}
 
