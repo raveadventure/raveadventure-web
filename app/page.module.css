@@ -257,3 +257,9 @@
 .progressWrap { display: flex; align-items: flex-start; gap: 0; margin-bottom: 28px; overflow-x: auto; padding-bottom: 4px; }
 .progressItem { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; min-width: 60px; }
 .progressLabel { font-size: 11px; color: var(--text-faint); font-family: var(--font-display); text-align: center; white-space: nowrap; }
+
+/* ── FOOTER LINKS ── */
+.footerLinks { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+.footerLink { font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color .15s; }
+.footerLink:hover { color: var(--neon); }
+.footerDot { color: var(--text-faint); font-size: 12px; }
