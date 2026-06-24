@@ -216,8 +216,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-     {/* PORTFOLIO CAROUSEL */}
-      <PortfolioCarousel />
+
       {/* TYPY KART */}
       <section className={styles.section} id="cards">
         <p className={styles.sectionEye}>// rodzaje kart</p>
@@ -255,7 +254,7 @@ export default function Home() {
           ))}
         </div>
       </section>
-   
+
       {/* FORMULARZ */}
       <section className={styles.section} id="order">
         <p className={styles.sectionEye}>// zamówienie</p>
@@ -518,6 +517,13 @@ export default function Home() {
       <footer className={styles.footer}>
         <p className={styles.footerLogo}>RaveAdventure</p>
         <p className={styles.footerSub}>kontakt@raveadventure.pl</p>
+        <div className={styles.footerLinks}>
+          <a href="/regulamin" className={styles.footerLink}>Regulamin</a>
+          <span className={styles.footerDot}>·</span>
+          <a href="/polityka-prywatnosci" className={styles.footerLink}>Polityka prywatności</a>
+          <span className={styles.footerDot}>·</span>
+          <a href="/portfolio" className={styles.footerLink}>Portfolio</a>
+        </div>
         <p className={styles.footerCopy}>© 2025 RaveAdventure. Wszystkie prawa zastrzeżone.</p>
       </footer>
     </main>
