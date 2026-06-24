@@ -254,7 +254,8 @@ export default function Home() {
           ))}
         </div>
       </section>
-
+      {/* PORTFOLIO CAROUSEL */}
+      <PortfolioCarousel />
       {/* FORMULARZ */}
       <section className={styles.section} id="order">
         <p className={styles.sectionEye}>// zamówienie</p>
