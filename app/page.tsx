@@ -216,7 +216,8 @@ export default function Home() {
           </div>
         </div>
       </section>
-
+       {/* PORTFOLIO CAROUSEL */}
+      <PortfolioCarousel />
       {/* TYPY KART */}
       <section className={styles.section} id="cards">
         <p className={styles.sectionEye}>// rodzaje kart</p>
@@ -235,8 +236,7 @@ export default function Home() {
           ))}
         </div>
       </section>
-      {/* PORTFOLIO CAROUSEL */}
-      <PortfolioCarousel />
+     
       {/* HOW IT WORKS */}
       <section className={styles.section}>
         <p className={styles.sectionEye}>// jak to działa</p>
