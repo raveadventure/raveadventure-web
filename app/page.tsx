@@ -235,7 +235,8 @@ export default function Home() {
           ))}
         </div>
       </section>
-
+      {/* PORTFOLIO CAROUSEL */}
+      <PortfolioCarousel />
       {/* HOW IT WORKS */}
       <section className={styles.section}>
         <p className={styles.sectionEye}>// jak to działa</p>
