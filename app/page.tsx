@@ -188,6 +188,26 @@ export default function Home() {
         <a href="#order" className={styles.navCta}>Zamów kartę</a>
       </nav>
 
+      {/* LOGO BANNER */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '80px 5vw 0',
+        marginTop: '57px',
+      }}>
+        <img
+          src="/logo.png"
+          alt="RaveAdventure — Sierra, learn to see beauty at every height"
+          style={{
+            maxWidth: '100%',
+            width: '900px',
+            height: 'auto',
+            display: 'block',
+          }}
+        />
+      </div>
+
       {/* HERO */}
       <section className={styles.hero}>
         <div className={styles.heroGrid} aria-hidden="true" />
@@ -216,7 +236,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-       {/* PORTFOLIO CAROUSEL */}
+      {/* PORTFOLIO CAROUSEL */}
       <PortfolioCarousel />
       {/* TYPY KART */}
       <section className={styles.section} id="cards">
@@ -236,7 +256,7 @@ export default function Home() {
           ))}
         </div>
       </section>
-     
+
       {/* HOW IT WORKS */}
       <section className={styles.section}>
         <p className={styles.sectionEye}>// jak to działa</p>
