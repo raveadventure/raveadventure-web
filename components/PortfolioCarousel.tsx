@@ -11,9 +11,25 @@ export default function PortfolioCarousel() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    supabase.from('portfolio').select('id,name,card_url,theme').eq('active', true).order('sort_order').then(({ data }) => {
-      if (data && data.length > 0) setItems(data)
-    })
+    const loadPortfolio = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('portfolio')
+          .select('id,name,card_url,theme')
+          .eq('active', true)
+          .order('sort_order', { ascending: true })
+        if (error) {
+          console.error('Portfolio carousel error:', error)
+          return
+        }
+        if (data && data.length > 0) {
+          setItems(data)
+        }
+      } catch (err) {
+        console.error('Portfolio carousel exception:', err)
+      }
+    }
+    loadPortfolio()
   }, [])
 
   useEffect(() => {
@@ -30,7 +46,7 @@ export default function PortfolioCarousel() {
     setTimeout(() => setPaused(false), 5000)
   }
 
-  if (items.length === 0) return null
+  if (items.length === 0) return null // no items yet
 
   return (
     <section style={{ padding: '80px 5vw', maxWidth: '1100px', margin: '0 auto' }}>
