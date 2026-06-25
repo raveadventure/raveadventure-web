@@ -48,6 +48,7 @@ export default function Home() {
   const [form, setForm] = useState({
     name: '', email: '', phone: '', address: '',
     cardText: '', notes: '', customDesc: '', qrLink: '',
+    cardYear: '2025', cardRarity: 'RARE', cardName: '', attr1Label: '', attr1Value: '', cardSkill: '', attr2Label: '', attr2Value: '',
   })
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
@@ -104,6 +105,14 @@ export default function Home() {
         notes: form.notes,
         custom_desc: form.customDesc,
         qr_link: form.qrLink,
+        card_year: form.cardYear,
+        card_rarity: form.cardRarity,
+        card_name_custom: form.cardName,
+        attr1_label: form.attr1Label,
+        attr1_value: form.attr1Value,
+        card_skill: form.cardSkill,
+        attr2_label: form.attr2Label,
+        attr2_value: form.attr2Value,
         photo_url: null,
         status: 'new',
       }]).select('id').single()
@@ -145,6 +154,9 @@ export default function Home() {
           address: form.address, cardText: form.cardText, notes: form.notes,
           theme: frontTheme, orderId: orderData?.id,
           cardType, backOption, quantity, unitPrice, totalPrice, hasDiscount, savedAmount,
+          cardYear: form.cardYear, cardRarity: form.cardRarity, cardName: form.cardName,
+          attr1Label: form.attr1Label, attr1Value: form.attr1Value,
+          cardSkill: form.cardSkill, attr2Label: form.attr2Label, attr2Value: form.attr2Value,
         }),
       })
 
@@ -170,7 +182,7 @@ export default function Home() {
             <span>{cardObj.label} × {quantity}</span>
             <strong>{totalPrice} zł</strong>
           </div>
-          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',phone:'',address:'',cardText:'',notes:'',customDesc:'',qrLink:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setQuantity(1) }}>
+          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',phone:'',address:'',cardText:'',notes:'',customDesc:'',qrLink:'',cardYear:'2025',cardRarity:'RARE',cardName:'',attr1Label:'',attr1Value:'',cardSkill:'',attr2Label:'',attr2Value:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setQuantity(1) }}>
             Zamów kolejną kartę
           </button>
         </div>
@@ -207,7 +219,8 @@ export default function Home() {
           }}
         />
       </div>
-
+      {/* PORTFOLIO CAROUSEL */}
+      <PortfolioCarousel />
       {/* HERO */}
       <section className={styles.hero}>
         <div className={styles.heroGrid} aria-hidden="true" />
@@ -236,8 +249,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      {/* PORTFOLIO CAROUSEL */}
-      <PortfolioCarousel />
+
       {/* TYPY KART */}
       <section className={styles.section} id="cards">
         <p className={styles.sectionEye}>// rodzaje kart</p>
@@ -359,6 +371,45 @@ export default function Home() {
                   <input ref={refFileFrontRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) setRefFileFront(e.target.files[0]) }} />
                 </div>
               )}
+              {/* PERSONALIZACJA KARTY */}
+              <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '20px', marginTop: '8px' }}>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 16px' }}>// personalizacja karty</p>
+                <div className={styles.fieldGrid}>
+                  <div className={styles.field}>
+                    <label className={styles.label}>① Rok / wartość <span className={styles.optional}>(lewy górny róg)</span></label>
+                    <input value={form.cardYear} onChange={e => setForm({...form, cardYear: e.target.value})} placeholder="np. 2025 · SEASON 1" />
+                  </div>
+                  <div className={styles.field}>
+                    <label className={styles.label}>② Rzadkość <span className={styles.optional}>(prawy górny róg)</span></label>
+                    <input value={form.cardRarity} onChange={e => setForm({...form, cardRarity: e.target.value})} placeholder="COMMON · RARE · EPIC · LEGENDARY" />
+                  </div>
+                  <div className={`${styles.field} ${styles.fieldFull}`}>
+                    <label className={styles.label}>③ Nazwa karty <span className={styles.optional}>(środek — Twój pseudonim, imię lub nazwa grupy)</span></label>
+                    <input value={form.cardName} onChange={e => setForm({...form, cardName: e.target.value})} placeholder="np. BARON VON KOCH · RAVE FAMILY · ADE 2025" />
+                  </div>
+                  <div className={styles.field}>
+                    <label className={styles.label}>④ Atrybut 1 — nazwa</label>
+                    <input value={form.attr1Label} onChange={e => setForm({...form, attr1Label: e.target.value})} placeholder="np. ENERGY · VIBE · BPM" />
+                  </div>
+                  <div className={styles.field}>
+                    <label className={styles.label}>④ Atrybut 1 — wartość</label>
+                    <input value={form.attr1Value} onChange={e => setForm({...form, attr1Value: e.target.value})} placeholder="np. x3 · x5 · 140" />
+                  </div>
+                  <div className={`${styles.field} ${styles.fieldFull}`}>
+                    <label className={styles.label}>⑤ Umiejętność <span className={styles.optional}>(środkowy pasek — specjalna cecha)</span></label>
+                    <input value={form.cardSkill} onChange={e => setForm({...form, cardSkill: e.target.value})} placeholder="np. HARD TECHNO MASTER · FRIENDS VIBE · PURE FUN" />
+                  </div>
+                  <div className={styles.field}>
+                    <label className={styles.label}>⑥ Atrybut 2 — nazwa</label>
+                    <input value={form.attr2Label} onChange={e => setForm({...form, attr2Label: e.target.value})} placeholder="np. HAPPINESS · SUCCESS RATE" />
+                  </div>
+                  <div className={styles.field}>
+                    <label className={styles.label}>⑥ Atrybut 2 — wartość</label>
+                    <input value={form.attr2Value} onChange={e => setForm({...form, attr2Value: e.target.value})} placeholder="np. x2 · x4" />
+                  </div>
+                </div>
+              </div>
+
               <div className={styles.formButtons}>
                 <button className={styles.btnSecondary} onClick={() => setStep(1)}>← Wstecz</button>
                 <button className={styles.btnPrimary} onClick={() => setStep(3)}>Dalej — rewers →</button>
