@@ -48,7 +48,7 @@ export default function Home() {
   const [form, setForm] = useState({
     name: '', email: '', phone: '', address: '',
     cardText: '', notes: '', customDesc: '', qrLink: '',
-    cardYear: '2025', cardRarity: 'RARE', cardName: '', attr1Label: '', attr1Value: '', cardSkill: '', attr2Label: '', attr2Value: '',
+    cardYear: '2025', cardRarity: 'RARE', cardName: '', attr1Label: '', attr1Value: '', cardSkill: '', attr2Label: '', attr2Value: '', cardDesc: '',
   })
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
