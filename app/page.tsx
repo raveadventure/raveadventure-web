@@ -245,13 +245,7 @@ export default function Home() {
           </div>
           <a href="#order" className={styles.btnHero}>Zamów swoją kartę →</a>
         </div>
-        <div className={styles.heroCard} aria-hidden="true">
-          <div className={styles.previewCard} style={{ '--accent': themeObj.accent } as React.CSSProperties}>
-            <span className={styles.previewThemeLabel}>{themeObj.label}</span>
-            <span className={styles.previewScan}>▓▓▓ ▓▓▓▓ ▓▓▓▓</span>
-            <span className={styles.previewName}>RAVE ADVENTURE</span>
-          </div>
-        </div>
+
       </section>
 
       {/* TYPY KART */}
