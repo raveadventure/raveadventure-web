@@ -41,7 +41,48 @@ export default function AdminPage() {
   const [designPreview, setDesignPreview] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
   const [sendMsg, setSendMsg] = useState<{ type: 'ok' | 'err', text: string } | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  const deleteOrder = async (id: string) => {
+    // Pobierz dane zlecenia żeby wiedzieć jakie pliki usunąć
+    const order = orders.find(o => o.id === id)
+
+    // Usuń pliki ze Storage
+    const filesToDelete: string[] = []
+    const exts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'pdf']
+
+    // Zdjęcie klienta
+    exts.forEach(ext => filesToDelete.push(`${id}.${ext}`))
+    // Pliki referencyjne
+    exts.forEach(ext => {
+      filesToDelete.push(`${id}-ref-front.${ext}`)
+      filesToDelete.push(`${id}-ref-back.${ext}`)
+    })
+    // Projekt graficzny (design) — może mieć timestamp w nazwie
+    if (order?.design_url) {
+      const match = order.design_url.match(/order-photos\/(.+?)(\?|$)/)
+      if (match) filesToDelete.push(match[1])
+    }
+
+    // Usuń wszystkie pliki (ignorujemy błędy — plik może nie istnieć)
+    if (filesToDelete.length > 0) {
+      await supabase.storage.from('order-photos').remove(filesToDelete)
+    }
+
+    // Usuń rekord z bazy
+    const { error } = await supabase.from('orders').delete().eq('id', id)
+    if (!error) {
+      setOrders(prev => prev.filter(o => o.id !== id))
+      if (selected?.id === id) {
+        setSelected(null)
+        setDesignFile(null)
+        setDesignPreview(null)
+        setSendMsg(null)
+      }
+    }
+    setConfirmDelete(null)
+  }
 
   const fetchOrders = async () => {
     setLoading(true)
@@ -160,13 +201,19 @@ export default function AdminPage() {
                       <span title={order.review_notes} style={{ fontSize: '16px' }}>💬</span>
                     )}
                     <span style={{ background: `${st.color}22`, color: st.color, border: `1px solid ${st.color}44`, padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, whiteSpace: 'nowrap' }}>{st.label}</span>
-                    <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
+                    <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
                       {STATUSES.map(s => (
                         <button key={s.id} onClick={() => updateStatus(order.id, s.id)} disabled={order.status === s.id || updating === order.id}
                           style={{ background: order.status === s.id ? `${s.color}33` : 'transparent', border: `1px solid ${order.status === s.id ? s.color : 'rgba(255,255,255,0.1)'}`, color: order.status === s.id ? s.color : 'rgba(240,238,255,0.4)', padding: '3px 8px', borderRadius: '5px', fontSize: '11px', cursor: order.status === s.id ? 'default' : 'pointer', fontFamily: 'inherit' }}>
                           {s.label}
                         </button>
                       ))}
+                      <button
+                        onClick={() => setConfirmDelete(order.id)}
+                        style={{ background: 'transparent', border: '1px solid rgba(255,77,109,0.3)', color: '#ff4d6d', padding: '3px 10px', borderRadius: '5px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit', marginLeft: '4px' }}
+                      >
+                        🗑
+                      </button>
                     </div>
                   </div>
                 )
@@ -276,6 +323,36 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+      {/* MODAL POTWIERDZENIA USUNIĘCIA */}
+      {confirmDelete && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(8,8,16,0.85)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ background: '#0e0e1a', border: '1px solid rgba(255,77,109,0.4)', borderRadius: '14px', padding: '32px 28px', maxWidth: '400px', width: '100%', textAlign: 'center', fontFamily: "'Space Grotesk', sans-serif" }}>
+            <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(255,77,109,0.12)', border: '1px solid rgba(255,77,109,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '22px' }}>🗑</div>
+            <p style={{ fontSize: '17px', fontWeight: 700, color: '#f0eeff', margin: '0 0 10px' }}>Usunąć zlecenie?</p>
+            <p style={{ fontSize: '14px', color: 'rgba(240,238,255,0.5)', margin: '0 0 8px', lineHeight: '1.6' }}>
+              To działanie jest <strong style={{ color: '#ff4d6d' }}>nieodwracalne</strong>.<br />
+              Zlecenie zostanie trwale usunięte z bazy danych.
+            </p>
+            <p style={{ fontSize: '12px', color: 'rgba(240,238,255,0.3)', margin: '0 0 24px', fontFamily: 'monospace' }}>
+              {orders.find(o => o.id === confirmDelete)?.name} — {orders.find(o => o.id === confirmDelete)?.email}
+            </p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+              <button
+                onClick={() => setConfirmDelete(null)}
+                style={{ padding: '10px 24px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(240,238,255,0.6)', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}
+              >
+                Anuluj
+              </button>
+              <button
+                onClick={() => deleteOrder(confirmDelete)}
+                style={{ padding: '10px 24px', borderRadius: '8px', border: 'none', background: '#ff4d6d', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+              >
+                Tak, usuń trwale
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
