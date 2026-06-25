@@ -113,6 +113,7 @@ export default function Home() {
         card_skill: form.cardSkill,
         attr2_label: form.attr2Label,
         attr2_value: form.attr2Value,
+        card_desc: form.cardDesc,
         photo_url: null,
         status: 'new',
       }]).select('id').single()
@@ -157,6 +158,7 @@ export default function Home() {
           cardYear: form.cardYear, cardRarity: form.cardRarity, cardName: form.cardName,
           attr1Label: form.attr1Label, attr1Value: form.attr1Value,
           cardSkill: form.cardSkill, attr2Label: form.attr2Label, attr2Value: form.attr2Value,
+          cardDesc: form.cardDesc,
         }),
       })
 
@@ -182,7 +184,7 @@ export default function Home() {
             <span>{cardObj.label} × {quantity}</span>
             <strong>{totalPrice} zł</strong>
           </div>
-          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',phone:'',address:'',cardText:'',notes:'',customDesc:'',qrLink:'',cardYear:'2025',cardRarity:'RARE',cardName:'',attr1Label:'',attr1Value:'',cardSkill:'',attr2Label:'',attr2Value:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setQuantity(1) }}>
+          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',phone:'',address:'',cardText:'',notes:'',customDesc:'',qrLink:'',cardYear:'2025',cardRarity:'RARE',cardName:'',attr1Label:'',attr1Value:'',cardSkill:'',attr2Label:'',attr2Value:'',cardDesc:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setQuantity(1) }}>
             Zamów kolejną kartę
           </button>
         </div>
@@ -205,7 +207,7 @@ export default function Home() {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '80px 5vw 0',
+        padding: '72px 5vw 0',
         marginTop: '57px',
       }}>
         <img
@@ -219,8 +221,10 @@ export default function Home() {
           }}
         />
       </div>
+
       {/* PORTFOLIO CAROUSEL */}
       <PortfolioCarousel />
+
       {/* HERO */}
       <section className={styles.hero}>
         <div className={styles.heroGrid} aria-hidden="true" />
@@ -406,6 +410,10 @@ export default function Home() {
                   <div className={styles.field}>
                     <label className={styles.label}>⑥ Atrybut 2 — wartość</label>
                     <input value={form.attr2Value} onChange={e => setForm({...form, attr2Value: e.target.value})} placeholder="np. x2 · x4" />
+                  </div>
+                  <div className={`${styles.field} ${styles.fieldFull}`}>
+                    <label className={styles.label}>Ogólny opis / uwagi do projektu <span className={styles.optional}>(opcjonalnie)</span></label>
+                    <textarea value={form.cardDesc} onChange={e => setForm({...form, cardDesc: e.target.value})} placeholder="np. Zamiast atrybutów wpisz krótką dedykację. Albo: zmień układ dolnej sekcji na cytat. Twoja interpretacja jest mile widziana!" />
                   </div>
                 </div>
               </div>
