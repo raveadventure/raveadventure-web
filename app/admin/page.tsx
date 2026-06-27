@@ -28,6 +28,8 @@ type Order = {
   photo_url: string | null
   design_url: string | null
   review_notes: string | null
+  approved_at: string | null
+  shipped_at: string | null
   status: string
 }
 
@@ -39,6 +41,7 @@ export default function AdminPage() {
   const [updating, setUpdating] = useState<string | null>(null)
   const [designFile, setDesignFile] = useState<File | null>(null)
   const [designPreview, setDesignPreview] = useState<string | null>(null)
+  const [designNote, setDesignNote] = useState('')
   const [sending, setSending] = useState(false)
   const [sendMsg, setSendMsg] = useState<{ type: 'ok' | 'err', text: string } | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
@@ -78,6 +81,7 @@ export default function AdminPage() {
         setSelected(null)
         setDesignFile(null)
         setDesignPreview(null)
+        setDesignNote('')
         setSendMsg(null)
       }
     }
@@ -122,6 +126,7 @@ export default function AdminPage() {
       const fd = new FormData()
       fd.append('orderId', selected.id)
       fd.append('design', designFile)
+      fd.append('note', designNote)
       const res = await fetch('/api/send-design', { method: 'POST', body: fd })
       const data = await res.json()
       if (res.ok) {
@@ -130,6 +135,7 @@ export default function AdminPage() {
         setSelected(prev => prev ? { ...prev, status: 'approval', design_url: data.designUrl } : null)
         setDesignFile(null)
         setDesignPreview(null)
+        setDesignNote('')
       } else {
         setSendMsg({ type: 'err', text: data.error || 'Błąd wysyłki.' })
       }
@@ -142,6 +148,17 @@ export default function AdminPage() {
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter)
   const statusObj = (id: string) => STATUSES.find(s => s.id === id) || STATUSES[0]
   const formatDate = (d: string) => new Date(d).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+
+  const timeSince = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime()
+    const mins = Math.floor(diff / 60000)
+    const hours = Math.floor(diff / 3600000)
+    const days = Math.floor(diff / 86400000)
+    if (days > 0) return `${days}d`
+    if (hours > 0) return `${hours}h`
+    if (mins > 0) return `${mins}m`
+    return 'teraz'
+  }
   const counts = STATUSES.reduce((acc, s) => { acc[s.id] = orders.filter(o => o.status === s.id).length; return acc }, {} as Record<string, number>)
 
   return (
@@ -198,7 +215,10 @@ export default function AdminPage() {
                     }
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ margin: '0 0 2px', fontWeight: 600, fontSize: '14px', color: '#f0eeff' }}>{order.name}</p>
-                      <p style={{ margin: 0, fontSize: '12px', color: 'rgba(240,238,255,0.4)' }}>{THEMES[order.theme] || order.theme} · {formatDate(order.created_at)}</p>
+                      <p style={{ margin: 0, fontSize: '12px', color: 'rgba(240,238,255,0.4)' }}>
+                        {THEMES[order.theme] || order.theme} · {formatDate(order.created_at)} <span style={{ color: '#f59e0b' }}>({timeSince(order.created_at)} od złożenia)</span>
+                        {order.approved_at && <span style={{ color: '#f97316', marginLeft: '6px' }}>· {timeSince(order.approved_at)} od produkcji</span>}
+                      </p>
                     </div>
                     {order.review_notes && (
                       <span title={order.review_notes} style={{ fontSize: '16px' }}>💬</span>
@@ -276,6 +296,12 @@ export default function AdminPage() {
                 }
               </div>
               <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handleDesignFile(e.target.files[0]) }} />
+              <textarea
+                value={designNote}
+                onChange={e => setDesignNote(e.target.value)}
+                placeholder="Opcjonalna wiadomość do klienta — pytania, wskazówki, prośby o dodatkowe info..."
+                style={{ width: '100%', boxSizing: 'border-box', background: '#0e0e1a', border: '1px solid rgba(180,77,255,0.2)', borderRadius: '8px', color: '#f0eeff', padding: '10px 12px', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical', minHeight: '80px', outline: 'none', marginBottom: '10px' }}
+              />
               <button
                 onClick={handleSendDesign}
                 disabled={!designFile || sending}
