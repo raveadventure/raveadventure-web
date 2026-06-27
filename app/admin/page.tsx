@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 
 const STATUSES = [
@@ -33,6 +33,48 @@ type Order = {
   status: string
 }
 
+function RefFiles({ orderId, backOption }: { orderId: string; backOption: string }) {
+  const [files, setFiles] = React.useState<string[]>([])
+
+  React.useEffect(() => {
+    supabase.storage.from('order-photos').list('', { search: orderId })
+      .then(({ data }) => {
+        if (data) {
+          const refs = data
+            .filter(f => f.name.includes('-ref-'))
+            .map(f => f.name)
+          setFiles(refs)
+        }
+      })
+  }, [orderId])
+
+  if (files.length === 0) return null
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+  return (
+    <div style={{ marginBottom: '12px' }}>
+      <p style={{ margin: '0 0 8px', fontSize: '11px', color: 'rgba(240,238,255,0.4)', letterSpacing: '1px' }}>PLIKI REFERENCYJNE OD KLIENTA</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        {files.map(f => {
+          const url = `${supabaseUrl}/storage/v1/object/public/order-photos/${f}`
+          const label = f.includes('ref-front') ? '📎 Plik ref. front' : f.includes('ref-back') ? '📎 Plik ref. tył' : `📎 ${f}`
+          const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(f)
+          return (
+            <div key={f}>
+              {isImage && <img src={url} alt={label} style={{ width: '100%', borderRadius: '8px', marginBottom: '4px', border: '1px solid rgba(180,77,255,0.2)' }} />}
+              <a href={url} target="_blank" rel="noopener noreferrer"
+                style={{ fontSize: '12px', color: '#b44dff', textDecoration: 'none', display: 'block' }}>
+                {label} — otwórz →
+              </a>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
@@ -41,11 +83,14 @@ export default function AdminPage() {
   const [updating, setUpdating] = useState<string | null>(null)
   const [designFile, setDesignFile] = useState<File | null>(null)
   const [designPreview, setDesignPreview] = useState<string | null>(null)
+  const [designFileBack, setDesignFileBack] = useState<File | null>(null)
+  const [designPreviewBack, setDesignPreviewBack] = useState<string | null>(null)
   const [designNote, setDesignNote] = useState('')
   const [sending, setSending] = useState(false)
   const [sendMsg, setSendMsg] = useState<{ type: 'ok' | 'err', text: string } | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const fileBackRef = useRef<HTMLInputElement>(null)
 
   const deleteOrder = async (id: string) => {
     // Pobierz dane zlecenia żeby wiedzieć jakie pliki usunąć
@@ -81,6 +126,8 @@ export default function AdminPage() {
         setSelected(null)
         setDesignFile(null)
         setDesignPreview(null)
+        setDesignFileBack(null)
+        setDesignPreviewBack(null)
         setDesignNote('')
         setSendMsg(null)
       }
@@ -118,6 +165,13 @@ export default function AdminPage() {
     setSendMsg(null)
   }
 
+  const handleDesignFileBack = (file: File) => {
+    setDesignFileBack(file)
+    const reader = new FileReader()
+    reader.onload = e => setDesignPreviewBack(e.target?.result as string)
+    reader.readAsDataURL(file)
+  }
+
   const handleSendDesign = async () => {
     if (!selected || !designFile) return
     setSending(true)
@@ -127,6 +181,7 @@ export default function AdminPage() {
       fd.append('orderId', selected.id)
       fd.append('design', designFile)
       fd.append('note', designNote)
+      if (designFileBack) fd.append('designBack', designFileBack)
       const res = await fetch('/api/send-design', { method: 'POST', body: fd })
       const data = await res.json()
       if (res.ok) {
@@ -135,6 +190,8 @@ export default function AdminPage() {
         setSelected(prev => prev ? { ...prev, status: 'approval', design_url: data.designUrl } : null)
         setDesignFile(null)
         setDesignPreview(null)
+        setDesignFileBack(null)
+        setDesignPreviewBack(null)
         setDesignNote('')
       } else {
         setSendMsg({ type: 'err', text: data.error || 'Błąd wysyłki.' })
@@ -262,6 +319,16 @@ export default function AdminPage() {
               </div>
             )}
 
+            {/* Pliki referencyjne */}
+            {(selected as any).custom_desc && (
+              <div style={{ background: 'rgba(83,74,183,0.08)', border: '1px solid rgba(83,74,183,0.3)', borderRadius: '10px', padding: '12px 14px', marginBottom: '12px' }}>
+                <p style={{ margin: '0 0 5px', fontSize: '12px', color: '#b44dff', fontWeight: 600 }}>📝 Opis custom motywu</p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#f0eeff', lineHeight: '1.6' }}>{(selected as any).custom_desc}</p>
+              </div>
+            )}
+            {/* Pliki referencyjne — linki do Storage */}
+            <RefFiles orderId={selected.id} backOption={(selected as any).back_option} />
+
             {/* Uwagi klienta (jeśli są) */}
             {selected.review_notes && (
               <div style={{ background: 'rgba(255,77,109,0.08)', border: '1px solid rgba(255,77,109,0.3)', borderRadius: '10px', padding: '14px 16px', marginBottom: '16px' }}>
@@ -296,6 +363,35 @@ export default function AdminPage() {
                 }
               </div>
               <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handleDesignFile(e.target.files[0]) }} />
+
+              {/* TYŁ KARTY — tylko gdy nie jest standardowe logo */}
+              {(selected as any).back_option && (selected as any).back_option !== 'logo' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'rgba(240,238,255,0.5)' }}>
+                    Tył karty ({(selected as any).back_option === 'dedication' ? 'Dedykacja' : (selected as any).back_option === 'custom_back' ? 'Custom Artwork' : (selected as any).back_option === 'qr' ? 'QR Code' : (selected as any).back_option})
+                  </p>
+                  <div
+                    onClick={() => fileBackRef.current?.click()}
+                    style={{ border: `1.5px dashed ${designPreviewBack ? '#00f0ff' : 'rgba(0,240,255,0.2)'}`, borderRadius: '8px', padding: designPreviewBack ? '8px' : '16px', textAlign: 'center', cursor: 'pointer', background: designPreviewBack ? 'rgba(0,240,255,0.05)' : 'transparent' }}
+                  >
+                    {designPreviewBack
+                      ? <img src={designPreviewBack} alt="Tył karty" style={{ width: '100%', borderRadius: '6px', maxHeight: '120px', objectFit: 'contain' }} />
+                      : <>
+                        <p style={{ margin: '0 0 3px', fontSize: '13px', color: 'rgba(240,238,255,0.5)' }}>Kliknij aby wybrać tył karty</p>
+                        <p style={{ margin: 0, fontSize: '11px', color: 'rgba(240,238,255,0.3)' }}>opcjonalnie — jeśli tył jest osobnym projektem</p>
+                      </>
+                    }
+                  </div>
+                  <input ref={fileBackRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handleDesignFileBack(e.target.files[0]) }} />
+                  {designPreviewBack && (
+                    <button onClick={() => { setDesignFileBack(null); setDesignPreviewBack(null) }}
+                      style={{ marginTop: '6px', background: 'transparent', border: '1px solid rgba(255,77,109,0.3)', color: '#ff4d6d', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                      Usuń tył
+                    </button>
+                  )}
+                </div>
+              )}
+
               <textarea
                 value={designNote}
                 onChange={e => setDesignNote(e.target.value)}
