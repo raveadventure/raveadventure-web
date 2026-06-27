@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData()
     const orderId = formData.get('orderId') as string
     const file = formData.get('design') as File
+    const adminNote = (formData.get('note') as string) || ''
 
     if (!orderId || !file) {
       return NextResponse.json({ error: 'Brak danych' }, { status: 400 })
@@ -74,7 +75,18 @@ export async function POST(req: NextRequest) {
   <!-- BODY -->
   <tr><td style="background:#0e0e1a;padding:32px;">
     <p style="font-size:16px;color:#f0eeff;margin:0 0 8px;">Hej <strong>${order.name.split(' ')[0]}</strong>! 👋</p>
-    <p style="font-size:15px;color:rgba(240,238,255,0.7);margin:0 0 28px;line-height:1.7;">Przygotowaliśmy indywidualny projekt Twojej karty. Sprawdź jak wygląda i daj nam znać czy wszystko gra.</p>
+    <p style="font-size:15px;color:rgba(240,238,255,0.7);margin:0 0 ${adminNote ? '16px' : '28px'};line-height:1.7;">Przygotowaliśmy indywidualny projekt Twojej karty. Sprawdź jak wygląda i daj nam znać czy wszystko gra.</p>
+
+    ${adminNote ? `
+    <!-- NOTATKA OD NAS -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+      <tr><td style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-left:3px solid #f59e0b;border-radius:0 10px 10px 0;padding:16px 20px;">
+        <p style="margin:0 0 8px;font-size:11px;color:#f59e0b;letter-spacing:2px;font-family:monospace;">// wiadomość od nas</p>
+        <p style="margin:0;font-size:14px;color:#f0eeff;line-height:1.7;">${adminNote.replace(/
+/g, '<br>')}</p>
+      </td></tr>
+    </table>
+    ` : ''}
 
     <!-- PODGLĄD GRAFIKI -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
