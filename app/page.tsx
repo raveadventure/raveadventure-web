@@ -57,6 +57,31 @@ export default function Home() {
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [agreed, setAgreed] = useState(false)
+  const [discountCode, setDiscountCode] = useState('')
+  const [discountApplied, setDiscountApplied] = useState(false)
+  const [discountPct, setDiscountPct] = useState(0)
+  const [discountMsg, setDiscountMsg] = useState<string | null>(null)
+
+  const DISCOUNT_CODES: Record<string, number> = {
+    'RAVE10': 10,
+    'SIERRA20': 20,
+    'AWAKENINGS': 15,
+    'FRIENDS50': 50,
+  }
+
+  const applyDiscount = () => {
+    const code = discountCode.trim().toUpperCase()
+    if (DISCOUNT_CODES[code]) {
+      setDiscountPct(DISCOUNT_CODES[code])
+      setDiscountApplied(true)
+      setDiscountMsg(`Kod aktywny! Rabat ${DISCOUNT_CODES[code]}% zastosowany.`)
+    } else {
+      setDiscountPct(0)
+      setDiscountApplied(false)
+      setDiscountMsg('Nieprawidłowy kod rabatowy.')
+    }
+  }
   const fileRef = useRef<HTMLInputElement>(null)
   const refFileFrontRef = useRef<HTMLInputElement>(null)
   const refFileBackRef = useRef<HTMLInputElement>(null)
@@ -65,8 +90,10 @@ export default function Home() {
   const backObj = BACK_OPTIONS.find(b => b.id === backOption)!
   const unitPrice = cardObj.price + backObj.price
   const hasDiscount = quantity >= 3
-  const totalPrice = hasDiscount ? Math.round(unitPrice * quantity * 0.5) : unitPrice * quantity
+  const baseTotal = hasDiscount ? Math.round(unitPrice * quantity * 0.5) : unitPrice * quantity
   const savedAmount = hasDiscount ? Math.round(unitPrice * quantity * 0.5) : 0
+  const discountSaved = discountApplied ? Math.round(baseTotal * discountPct / 100) : 0
+  const totalPrice = baseTotal - discountSaved
 
   const handlePhoto = (file: File) => {
     setPhoto(file)
@@ -84,6 +111,10 @@ export default function Home() {
   const handleSubmit = async () => {
     if (!form.name || !form.email || !form.address) {
       setError('Uzupełnij imię, email i adres wysyłki.')
+      return
+    }
+    if (!agreed) {
+      setError('Zaakceptuj regulamin i politykę prywatności aby kontynuować.')
       return
     }
     setSending(true)
@@ -114,6 +145,8 @@ export default function Home() {
         attr2_label: form.attr2Label,
         attr2_value: form.attr2Value,
         card_desc: form.cardDesc,
+        discount_code: discountApplied ? discountCode.trim().toUpperCase() : null,
+        discount_pct: discountPct,
         photo_url: null,
         status: 'new',
       }]).select('id').single()
@@ -184,7 +217,7 @@ export default function Home() {
             <span>{cardObj.label} × {quantity}</span>
             <strong>{totalPrice} zł</strong>
           </div>
-          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',phone:'',address:'',cardText:'',notes:'',customDesc:'',qrLink:'',cardYear:'2025',cardRarity:'RARE',cardName:'',attr1Label:'',attr1Value:'',cardSkill:'',attr2Label:'',attr2Value:'',cardDesc:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setQuantity(1) }}>
+          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',phone:'',address:'',cardText:'',notes:'',customDesc:'',qrLink:'',cardYear:'2025',cardRarity:'RARE',cardName:'',attr1Label:'',attr1Value:'',cardSkill:'',attr2Label:'',attr2Value:'',cardDesc:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setQuantity(1); setAgreed(false); setDiscountCode(''); setDiscountApplied(false); setDiscountPct(0); setDiscountMsg(null) }}>
             Zamów kolejną kartę
           </button>
         </div>
@@ -576,10 +609,74 @@ export default function Home() {
                 </ul>
               </div>
 
+              {/* KOD RABATOWY */}
+              <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '16px', marginTop: '8px' }}>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>// kod rabatowy</p>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    value={discountCode}
+                    onChange={e => { setDiscountCode(e.target.value.toUpperCase()); setDiscountMsg(null); setDiscountApplied(false); setDiscountPct(0) }}
+                    placeholder="np. RAVE10"
+                    style={{ flex: 1, textTransform: 'uppercase', letterSpacing: '2px' }}
+                    disabled={discountApplied}
+                  />
+                  <button
+                    onClick={applyDiscount}
+                    disabled={!discountCode.trim() || discountApplied}
+                    className={styles.btnSecondary}
+                    style={{ width: 'auto', padding: '10px 18px', fontSize: '13px', flexShrink: 0 }}
+                  >
+                    {discountApplied ? '✓ Aktywny' : 'Zastosuj'}
+                  </button>
+                </div>
+                {discountMsg && (
+                  <p style={{ margin: '8px 0 0', fontSize: '12px', color: discountApplied ? 'var(--success)' : 'var(--error)' }}>
+                    {discountMsg}
+                  </p>
+                )}
+              </div>
+
+              {/* PODSUMOWANIE CENY */}
+              <div className={styles.priceSummary} style={{ marginTop: '8px' }}>
+                <p className={styles.summaryRow}><span>{cardObj.label}</span><strong>{cardObj.price} zł</strong></p>
+                <p className={styles.summaryRow}><span>Rewers — {backObj.label}</span><strong>{backObj.price === 0 ? 'gratis' : `+${backObj.price} zł`}</strong></p>
+                <p className={styles.summaryRow}><span>Cena za sztukę</span><strong>{unitPrice} zł</strong></p>
+                <p className={styles.summaryRow}><span>Ilość</span><strong>× {quantity}</strong></p>
+                {hasDiscount && (
+                  <p className={styles.summaryRow}><span>Rabat ilościowy (50%)</span><strong className={styles.discount}>−{savedAmount} zł</strong></p>
+                )}
+                {discountApplied && (
+                  <p className={styles.summaryRow}><span>Kod rabatowy ({discountCode.toUpperCase()} −{discountPct}%)</span><strong className={styles.discount}>−{discountSaved} zł</strong></p>
+                )}
+                <div className={styles.summaryTotal}>
+                  <span>Do zapłaty</span>
+                  <strong className={styles.totalPrice}>{totalPrice} zł</strong>
+                </div>
+                <p className={styles.summaryNote}>Płatność przelewem lub BLIK po zatwierdzeniu projektu. Dane do płatności wyślemy mailem.</p>
+              </div>
+
+              {/* ZGODA RODO */}
+              <div
+                style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'var(--surface2)', border: `1px solid ${agreed ? 'rgba(0,229,160,0.3)' : 'var(--border)'}`, borderRadius: 'var(--radius)', padding: '14px', cursor: 'pointer' }}
+                onClick={() => setAgreed(a => !a)}
+              >
+                <div style={{ width: '20px', height: '20px', borderRadius: '4px', border: `2px solid ${agreed ? 'var(--success)' : 'var(--border)'}`, background: agreed ? 'var(--success)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px', transition: 'all .15s' }}>
+                  {agreed && <span style={{ color: '#0a0014', fontSize: '13px', fontWeight: 700 }}>✓</span>}
+                </div>
+                <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+                  Zapoznałem/am się z <a href="/regulamin" target="_blank" style={{ color: 'var(--neon)' }} onClick={e => e.stopPropagation()}>regulaminem</a> oraz <a href="/polityka-prywatnosci" target="_blank" style={{ color: 'var(--neon)' }} onClick={e => e.stopPropagation()}>polityką prywatności</a> i akceptuję warunki zamówienia. Wyrażam zgodę na przetwarzanie moich danych osobowych w celu realizacji zamówienia.
+                </p>
+              </div>
+
               {error && <p className={styles.errorMsg}>{error}</p>}
               <div className={styles.formButtons}>
                 <button className={styles.btnSecondary} onClick={() => setStep(4)}>← Wstecz</button>
-                <button className={styles.btnPrimary} onClick={handleSubmit} disabled={sending}>
+                <button
+                  className={styles.btnPrimary}
+                  onClick={handleSubmit}
+                  disabled={sending || !agreed}
+                  style={{ opacity: !agreed ? 0.5 : 1 }}
+                >
                   {sending ? 'Wysyłam...' : `Wyślij zamówienie (${totalPrice} zł) →`}
                 </button>
               </div>
