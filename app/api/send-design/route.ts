@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     // 3. Zapisz design_url, token i zmień status
     const { data: order, error: updateError } = await supabase
       .from('orders')
-      .update({ design_url: designUrl, review_token: token, status: 'approval' })
+      .update({ design_url: designUrl, design_back_url: designUrlBack, review_token: token, status: 'approval' })
       .eq('id', orderId)
       .select('*')
       .single()
