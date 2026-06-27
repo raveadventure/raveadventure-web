@@ -390,12 +390,9 @@ export default function AdminPage() {
                       <div style={{ width: '100%', aspectRatio: '0.7', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)', background: '#0d0d1a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', boxSizing: 'border-box' }}>
                         <span style={{ fontSize: '24px' }}>🎴</span>
                         <p style={{ margin: 0, fontSize: '11px', color: 'rgba(240,238,255,0.4)', textAlign: 'center', lineHeight: '1.5' }}>
-                          {(selected as any).back_option === 'logo' ? 'Standard
-RaveAdventure Logo' :
-                           (selected as any).back_option === 'dedication' ? `Dedykacja:
-"${(selected as any).card_text || '—'}"` :
-                           (selected as any).back_option === 'qr' ? `QR Code:
-${(selected as any).qr_link || '—'}` :
+                          {(selected as any).back_option === 'logo' ? 'Standard — RaveAdventure Logo' :
+                           (selected as any).back_option === 'dedication' ? ('Dedykacja: ' + ((selected as any).card_text || '—')) :
+                           (selected as any).back_option === 'qr' ? ('QR: ' + ((selected as any).qr_link || '—')) :
                            'Custom Artwork'}
                         </p>
                       </div>
