@@ -34,6 +34,32 @@ type Order = {
   status: string
 }
 
+function RefInspiration({ orderId }: { orderId: string }) {
+  const [url, setUrl] = React.useState<string | null>(null)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+  React.useEffect(() => {
+    supabase.storage.from('order-photos').list('', { search: orderId })
+      .then(({ data }) => {
+        if (data) {
+          const ref = data.find(f => f.name.includes('-ref-front') || f.name.includes('-ref-back'))
+          if (ref) setUrl(`${supabaseUrl}/storage/v1/object/public/order-photos/${ref.name}`)
+        }
+      })
+  }, [orderId])
+
+  if (!url) return null
+
+  return (
+    <div style={{ marginTop: '10px', padding: '10px 12px', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '8px' }}>
+      <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#f59e0b', letterSpacing: '1px' }}>CUSTOM — INSPIRACJA KLIENTA</p>
+      <a href={url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: '#f59e0b', textDecoration: 'none' }}>
+        Otwórz plik referencyjny →
+      </a>
+    </div>
+  )
+}
+
 function RefFiles({ orderId, backOption }: { orderId: string; backOption: string }) {
   const [files, setFiles] = React.useState<string[]>([])
 
@@ -342,20 +368,45 @@ export default function AdminPage() {
             {selected.design_url && (
               <div style={{ marginBottom: '16px' }}>
                 <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'rgba(240,238,255,0.4)', letterSpacing: '1px' }}>WYSŁANY PROJEKT</p>
-                <div style={{ display: 'grid', gridTemplateColumns: selected.design_back_url ? '1fr 1fr' : '1fr', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+
+                  {/* PRZÓD */}
                   <div>
                     <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#b44dff', letterSpacing: '1px' }}>PRZÓD</p>
                     <img src={selected.design_url} alt="Przód karty" style={{ width: '100%', borderRadius: '8px', border: '1px solid rgba(180,77,255,0.3)' }} />
                     <a href={selected.design_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '11px', color: '#b44dff', textDecoration: 'none', marginTop: '4px', textAlign: 'center' }}>pełne zdjęcie →</a>
                   </div>
-                  {selected.design_back_url && (
+
+                  {/* TYŁ — custom projekt lub info o standardzie */}
+                  {selected.design_back_url ? (
                     <div>
                       <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#00f0ff', letterSpacing: '1px' }}>TYŁ</p>
                       <img src={selected.design_back_url} alt="Tył karty" style={{ width: '100%', borderRadius: '8px', border: '1px solid rgba(0,240,255,0.3)' }} />
                       <a href={selected.design_back_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '11px', color: '#00f0ff', textDecoration: 'none', marginTop: '4px', textAlign: 'center' }}>pełne zdjęcie →</a>
                     </div>
+                  ) : (
+                    <div>
+                      <p style={{ margin: '0 0 4px', fontSize: '10px', color: 'rgba(240,238,255,0.3)', letterSpacing: '1px' }}>TYŁ</p>
+                      <div style={{ width: '100%', aspectRatio: '0.7', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)', background: '#0d0d1a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', boxSizing: 'border-box' }}>
+                        <span style={{ fontSize: '24px' }}>🎴</span>
+                        <p style={{ margin: 0, fontSize: '11px', color: 'rgba(240,238,255,0.4)', textAlign: 'center', lineHeight: '1.5' }}>
+                          {(selected as any).back_option === 'logo' ? 'Standard
+RaveAdventure Logo' :
+                           (selected as any).back_option === 'dedication' ? `Dedykacja:
+"${(selected as any).card_text || '—'}"` :
+                           (selected as any).back_option === 'qr' ? `QR Code:
+${(selected as any).qr_link || '—'}` :
+                           'Custom Artwork'}
+                        </p>
+                      </div>
+                    </div>
                   )}
                 </div>
+
+                {/* INSPIRACJA klienta (custom front) */}
+                {(selected as any).front_theme === 'custom' || (selected as any).theme === 'custom' ? (
+                  <RefInspiration orderId={selected.id} />
+                ) : null}
               </div>
             )}
 
