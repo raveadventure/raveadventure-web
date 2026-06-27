@@ -27,6 +27,7 @@ type Order = {
   notes: string
   photo_url: string | null
   design_url: string | null
+  design_back_url: string | null
   review_notes: string | null
   approved_at: string | null
   shipped_at: string | null
@@ -235,7 +236,7 @@ export default function AdminPage() {
         </div>
       </nav>
 
-      <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 400px' : '1fr', minHeight: 'calc(100vh - 57px)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: selected ? '2fr 1fr' : '1fr', minHeight: 'calc(100vh - 57px)' }}>
 
         {/* LEWA KOLUMNA */}
         <div style={{ padding: '24px' }}>
@@ -340,8 +341,21 @@ export default function AdminPage() {
             {/* Aktualny projekt (jeśli wysłany) */}
             {selected.design_url && (
               <div style={{ marginBottom: '16px' }}>
-                <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'rgba(240,238,255,0.4)' }}>Ostatni wysłany projekt</p>
-                <img src={selected.design_url} alt="Projekt" style={{ width: '100%', borderRadius: '10px', border: '1px solid rgba(180,77,255,0.3)' }} />
+                <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'rgba(240,238,255,0.4)', letterSpacing: '1px' }}>WYSŁANY PROJEKT</p>
+                <div style={{ display: 'grid', gridTemplateColumns: selected.design_back_url ? '1fr 1fr' : '1fr', gap: '8px' }}>
+                  <div>
+                    <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#b44dff', letterSpacing: '1px' }}>PRZÓD</p>
+                    <img src={selected.design_url} alt="Przód karty" style={{ width: '100%', borderRadius: '8px', border: '1px solid rgba(180,77,255,0.3)' }} />
+                    <a href={selected.design_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '11px', color: '#b44dff', textDecoration: 'none', marginTop: '4px', textAlign: 'center' }}>pełne zdjęcie →</a>
+                  </div>
+                  {selected.design_back_url && (
+                    <div>
+                      <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#00f0ff', letterSpacing: '1px' }}>TYŁ</p>
+                      <img src={selected.design_back_url} alt="Tył karty" style={{ width: '100%', borderRadius: '8px', border: '1px solid rgba(0,240,255,0.3)' }} />
+                      <a href={selected.design_back_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '11px', color: '#00f0ff', textDecoration: 'none', marginTop: '4px', textAlign: 'center' }}>pełne zdjęcie →</a>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
