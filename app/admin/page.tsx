@@ -95,7 +95,10 @@ export default function AdminPage() {
 
   const updateStatus = async (id: string, status: string) => {
     setUpdating(id)
-    const { error } = await supabase.from('orders').update({ status }).eq('id', id)
+    const updates: Record<string, unknown> = { status }
+    if (status === 'production') updates.approved_at = new Date().toISOString()
+    if (status === 'shipped') updates.shipped_at = new Date().toISOString()
+    const { error } = await supabase.from('orders').update(updates).eq('id', id)
     if (!error) {
       setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o))
       if (selected?.id === id) setSelected(prev => prev ? { ...prev, status } : null)
