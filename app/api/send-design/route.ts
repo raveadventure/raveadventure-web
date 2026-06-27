@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
     const orderId = formData.get('orderId') as string
     const file = formData.get('design') as File
     const adminNote = (formData.get('note') as string) || ''
+    const fileBack = formData.get('designBack') as File | null
 
     if (!orderId || !file) {
       return NextResponse.json({ error: 'Brak danych' }, { status: 400 })
@@ -36,6 +37,21 @@ export async function POST(req: NextRequest) {
     const { data: urlData } = supabase.storage.from('order-photos').getPublicUrl(fileName)
     // Dodaj cache-buster do URL żeby maile zawsze pokazywały świeżą grafikę
     const designUrl = urlData.publicUrl + `?v=${timestamp}`
+
+    // 1b. Upload tyłu karty (opcjonalnie)
+    let designUrlBack = null
+    if (fileBack && fileBack.size > 0) {
+      const extBack = (fileBack.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
+      const safeExtBack = ['jpg','jpeg','png','gif','webp'].includes(extBack) ? extBack : 'jpg'
+      const fileNameBack = `designs/${orderId}-${timestamp}-back.${safeExtBack}`
+      const { error: uploadBackError } = await supabase.storage
+        .from('order-photos')
+        .upload(fileNameBack, fileBack, { upsert: false })
+      if (!uploadBackError) {
+        const { data: urlDataBack } = supabase.storage.from('order-photos').getPublicUrl(fileNameBack)
+        designUrlBack = urlDataBack.publicUrl
+      }
+    }
 
     // 2. Generuj unikalny token do zatwierdzenia
     const token = crypto.randomBytes(32).toString('hex')
@@ -94,6 +110,16 @@ export async function POST(req: NextRequest) {
         <img src="${designUrl}" alt="Projekt karty" style="max-width:100%;border-radius:8px;border:1px solid rgba(180,77,255,0.3);" />
       </td></tr>
     </table>
+
+    ${designUrlBack ? `
+    <!-- PODGLĄD TYŁU KARTY -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
+      <tr><td style="background:#16162a;border-radius:12px;padding:16px;text-align:center;">
+        <p style="margin:0 0 12px;font-size:11px;color:#00f0ff;letter-spacing:2px;font-family:monospace;">// tył karty</p>
+        <img src="${designUrlBack}" alt="Tył karty" style="max-width:100%;border-radius:8px;border:1px solid rgba(0,240,255,0.3);" />
+      </td></tr>
+    </table>
+    ` : ''}
 
     <!-- PRZYCISKI -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
