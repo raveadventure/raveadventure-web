@@ -112,13 +112,23 @@ export async function POST(req: NextRequest) {
     </table>
 
     <!-- INFO -->
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(0,240,255,0.05);border:1px solid rgba(0,240,255,0.2);border-radius:10px;padding:16px 20px;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(0,240,255,0.05);border:1px solid rgba(0,240,255,0.2);border-radius:10px;padding:16px 20px;margin-bottom:16px;">
       <tr><td>
         <p style="margin:0 0 6px;font-size:13px;color:#f0eeff;font-weight:600;">Co się stanie po kliknięciu?</p>
         <p style="margin:0;font-size:13px;color:rgba(240,238,255,0.6);line-height:1.6;">
           <strong style="color:#00e5a0;">Zatwierdzam</strong> — projekt trafia do druku, wyślemy Ci kartę w ciągu 3–5 dni roboczych.<br>
           <strong style="color:#ff4d6d;">Mam uwagi</strong> — możesz opisać co chcesz zmienić, a my przygotujemy poprawiony projekt.
         </p>
+      </td></tr>
+    </table>
+
+    <!-- STATUS LINK -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(180,77,255,0.06);border:1px solid rgba(180,77,255,0.2);border-radius:10px;padding:14px 20px;text-align:center;">
+      <tr><td>
+        <p style="margin:0 0 10px;font-size:12px;color:rgba(240,238,255,0.5);">Chcesz sprawdzić status zamówienia?</p>
+        <a href="${baseUrl}/status?token=${order.id}" style="display:inline-block;color:#b44dff;font-size:13px;font-weight:600;text-decoration:none;border:1px solid rgba(180,77,255,0.4);padding:8px 20px;border-radius:6px;">
+          Sprawdź status zamówienia →
+        </a>
       </td></tr>
     </table>
   </td></tr>
