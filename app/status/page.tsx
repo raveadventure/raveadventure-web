@@ -48,7 +48,7 @@ function StatusContent() {
     supabase
       .from('orders')
       .select('id,created_at,approved_at,shipped_at,status,name,theme,card_type,quantity,total_price')
-      .eq('review_token', token)
+      .eq('id', token)
       .single()
       .then(({ data, error }) => {
         if (error || !data) setNotFound(true)
