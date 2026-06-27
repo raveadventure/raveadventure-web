@@ -153,44 +153,33 @@ export default function PortfolioPage() {
 }
 
 function CardPair({ item, onOpen }: { item: PortfolioItem; onOpen: (v: { item: PortfolioItem; view: 'original' | 'card' }) => void }) {
-  const [flipped, setFlipped] = useState(false)
-  const [hovered, setHovered] = useState(false)
+  const [showOriginal, setShowOriginal] = useState(false)
 
   return (
     <div className={styles.cardPairWrap}>
-      <div
-        className={styles.cardPair}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-      >
-        {/* ORYGINAŁ */}
-        {item.original_url && (
-          <div
-            className={`${styles.cardThumb} ${!flipped ? styles.cardThumbFront : styles.cardThumbBack}`}
-            onClick={() => onOpen({ item, view: 'original' })}
-          >
-            <img src={item.original_url} alt={`${item.name} - oryginał`} className={styles.thumbImg} />
-            <div className={styles.thumbLabel}>Oryginał</div>
-          </div>
-        )}
-
-        {/* KARTA */}
+      <div className={styles.cardPair}>
+        {/* DOMYŚLNIE: karta. Po kliknięciu: oryginał */}
         <div
-          className={`${styles.cardThumb} ${styles.cardThumbMain} ${item.original_url && flipped ? styles.cardThumbFront : ''}`}
-          onClick={() => onOpen({ item, view: 'card' })}
+          className={styles.cardThumb}
+          onClick={() => onOpen({ item, view: showOriginal ? 'original' : 'card' })}
+          style={{ cursor: 'zoom-in' }}
         >
-          <img src={item.card_url} alt={item.name} className={styles.thumbImg} />
-          <div className={styles.thumbLabel}>Karta</div>
+          <img
+            src={showOriginal && item.original_url ? item.original_url : item.card_url}
+            alt={showOriginal ? `${item.name} - oryginał` : item.name}
+            className={styles.thumbImg}
+          />
+          <div className={styles.thumbLabel}>{showOriginal ? 'Oryginał' : 'Karta'}</div>
         </div>
 
-        {/* TOGGLE */}
+        {/* TOGGLE — tylko jeśli jest oryginał */}
         {item.original_url && (
           <button
             className={styles.toggleBtn}
-            onClick={() => setFlipped(f => !f)}
+            onClick={() => setShowOriginal(s => !s)}
             aria-label="Przełącz widok"
           >
-            {flipped ? '← Karta' : 'Oryginał →'}
+            {showOriginal ? '← Karta' : 'Pokaż oryginał →'}
           </button>
         )}
       </div>
