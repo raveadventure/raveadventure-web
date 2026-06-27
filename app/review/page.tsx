@@ -82,15 +82,16 @@ function ReviewContent() {
   </>)
 
   if (step === 'reject') return box(<>
-    <h2 style={{ color: '#f0eeff', fontSize: '20px', margin: '0 0 8px' }}>Co chcesz zmienić?</h2>
+    <h2 style={{ color: '#f0eeff', fontSize: '20px', margin: '0 0 8px' }}>Twoje uwagi do projektu</h2>
     <p style={{ color: 'rgba(240,238,255,0.5)', fontSize: '14px', margin: '0 0 20px', lineHeight: '1.6' }}>
-      Opisz dokładnie jakie poprawki chcesz wprowadzić — kolor, tekst, układ, zdjęcie itp.
+      Opisz dokładnie jakie poprawki chcesz wprowadzić — kolor, tekst, układ, zdjęcie. Jeśli mieliśmy do Ciebie pytania, odpowiedz na nie tutaj.
     </p>
+    <p style={{ color: 'rgba(240,238,255,0.4)', fontSize: '12px', margin: '0 0 8px', fontFamily: 'monospace', letterSpacing: '1px' }}>// twoje uwagi i odpowiedzi na pytania</p>
     <textarea
       value={notes}
       onChange={e => setNotes(e.target.value)}
-      placeholder="np. Chciałbym zmienić kolor tła na ciemniejszy, powiększyć moje imię i przesunąć zdjęcie bardziej w lewo..."
-      style={{ width: '100%', minHeight: '140px', background: '#16162a', border: '1px solid rgba(180,77,255,0.3)', borderRadius: '10px', color: '#f0eeff', padding: '14px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box', marginBottom: '16px' }}
+      placeholder="np. Chciałbym zmienić kolor tła na ciemniejszy, powiększyć moje imię i przesunąć zdjęcie bardziej w lewo...&#10;&#10;Odpowiedź na pytania: ..."
+      style={{ width: '100%', minHeight: '180px', background: '#16162a', border: '1px solid rgba(180,77,255,0.3)', borderRadius: '10px', color: '#f0eeff', padding: '14px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box', marginBottom: '16px' }}
     />
     <button
       onClick={handleReject}
