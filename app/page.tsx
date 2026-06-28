@@ -191,7 +191,7 @@ export default function Home() {
           cardYear: form.cardYear, cardRarity: form.cardRarity, cardName: form.cardName,
           attr1Label: form.attr1Label, attr1Value: form.attr1Value,
           cardSkill: form.cardSkill, attr2Label: form.attr2Label, attr2Value: form.attr2Value,
-          cardDesc: form.cardDesc, notesBack: form.notesBack, notes: form.notes,
+          cardDesc: form.cardDesc, notesBack: form.notesBack,
         }),
       })
 
