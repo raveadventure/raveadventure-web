@@ -391,31 +391,46 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              {frontTheme === 'custom' && (
-                <div className={styles.field} style={{ marginTop: '4px' }}>
-                  <label className={styles.label}>Opisz swój pomysł na motyw *</label>
-                  <textarea value={form.customDesc} onChange={e => setForm({...form, customDesc: e.target.value})} placeholder="Opisz klimat, kolory, styl, inspiracje..." />
-                  <p style={{ fontSize: '12px', color: 'var(--text-faint)', marginTop: '6px' }}>Opcjonalnie dodaj plik referencyjny (zdjęcie, inspiracja):</p>
-                  <button className={styles.btnSecondary} style={{ width: 'auto', padding: '7px 16px', fontSize: '13px', marginTop: '6px' }} onClick={() => refFileFrontRef.current?.click()}>
-                    {refFileFront ? `✓ ${refFileFront.name}` : '+ Dodaj plik referencyjny (front)'}
-                  </button>
-                  <input ref={refFileFrontRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) setRefFileFront(e.target.files[0]) }} />
+              {/* ZDJĘCIE FRONT + NOTES */}
+              <div style={{ marginTop: '12px' }}>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>// zdjęcie do przeróbki (front)</p>
+                {!photo ? (
+                  <div className={styles.dropZone} onClick={() => fileRef.current?.click()} onDragOver={e => e.preventDefault()} onDrop={handleDrop} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && fileRef.current?.click()}>
+                    <span className={styles.dropIcon}>↑</span>
+                    <p className={styles.dropTitle}>Dodaj zdjęcie (FRONT)</p>
+                    <p className={styles.dropSub}>To zdjęcie stanie się bazą Twojej karty · JPG, PNG, HEIC · maks. 20 MB</p>
+                  </div>
+                ) : (
+                  <div className={styles.fileAdded}>
+                    <span className={styles.fileIcon}>🖼</span>
+                    <div className={styles.fileInfo}>
+                      <p className={styles.fileAddedTitle}>Zdjęcie FRONT dodane ✓</p>
+                      <p className={styles.fileName}>{photo.name}</p>
+                    </div>
+                    <button className={styles.fileRemove} onClick={() => { setPhoto(null); setPhotoPreview(null) }}>✕</button>
+                  </div>
+                )}
+                <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handlePhoto(e.target.files[0]) }} />
+                <div className={styles.field} style={{ marginTop: '10px' }}>
+                  <label className={styles.label}>Komentarz do zdjęcia <span className={styles.optional}>(opcjonalnie)</span></label>
+                  <textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} placeholder="np. skup się na twarzy, pomiń tło, dodaj efekt neonowy..." />
                 </div>
-              )}
-              {/* PERSONALIZACJA KARTY */}
-              <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '20px', marginTop: '8px' }}>
-                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 16px' }}>// personalizacja karty</p>
+              </div>
+
+              {/* ATRYBUTY KARTY */}
+              <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '20px', marginTop: '12px' }}>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 16px' }}>// atrybuty karty</p>
                 <div className={styles.fieldGrid}>
                   <div className={styles.field}>
-                    <label className={styles.label}>① Rok / wartość <span className={styles.optional}>(lewy górny róg)</span></label>
+                    <label className={styles.label}>① Rok / wartość</label>
                     <input value={form.cardYear} onChange={e => setForm({...form, cardYear: e.target.value})} placeholder="np. 2025 · SEASON 1" />
                   </div>
                   <div className={styles.field}>
-                    <label className={styles.label}>② Rzadkość <span className={styles.optional}>(prawy górny róg)</span></label>
+                    <label className={styles.label}>② Rzadkość</label>
                     <input value={form.cardRarity} onChange={e => setForm({...form, cardRarity: e.target.value})} placeholder="COMMON · RARE · EPIC · LEGENDARY" />
                   </div>
                   <div className={`${styles.field} ${styles.fieldFull}`}>
-                    <label className={styles.label}>③ Nazwa karty <span className={styles.optional}>(środek — Twój pseudonim, imię lub nazwa grupy)</span></label>
+                    <label className={styles.label}>③ Nazwa karty</label>
                     <input value={form.cardName} onChange={e => setForm({...form, cardName: e.target.value})} placeholder="np. BARON VON KOCH · RAVE FAMILY · ADE 2025" />
                   </div>
                   <div className={styles.field}>
@@ -427,7 +442,7 @@ export default function Home() {
                     <input value={form.attr1Value} onChange={e => setForm({...form, attr1Value: e.target.value})} placeholder="np. x3 · x5 · 140" />
                   </div>
                   <div className={`${styles.field} ${styles.fieldFull}`}>
-                    <label className={styles.label}>⑤ Umiejętność <span className={styles.optional}>(środkowy pasek — specjalna cecha)</span></label>
+                    <label className={styles.label}>⑤ Umiejętność</label>
                     <input value={form.cardSkill} onChange={e => setForm({...form, cardSkill: e.target.value})} placeholder="np. HARD TECHNO MASTER · FRIENDS VIBE · PURE FUN" />
                   </div>
                   <div className={styles.field}>
@@ -438,12 +453,23 @@ export default function Home() {
                     <label className={styles.label}>⑥ Atrybut 2 — wartość</label>
                     <input value={form.attr2Value} onChange={e => setForm({...form, attr2Value: e.target.value})} placeholder="np. x2 · x4" />
                   </div>
-                  <div className={`${styles.field} ${styles.fieldFull}`}>
-                    <label className={styles.label}>Ogólny opis / uwagi do projektu <span className={styles.optional}>(opcjonalnie)</span></label>
-                    <textarea value={form.cardDesc} onChange={e => setForm({...form, cardDesc: e.target.value})} placeholder="np. Zamiast atrybutów wpisz krótką dedykację. Albo: zmień układ dolnej sekcji na cytat. Twoja interpretacja jest mile widziana!" />
-                  </div>
                 </div>
               </div>
+
+              {/* GRAFIKA REFERENCYJNA — tylko Custom */}
+              {frontTheme === 'custom' && (
+                <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '10px', padding: '16px', marginTop: '12px' }}>
+                  <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: '#f59e0b', letterSpacing: '2px', margin: '0 0 12px' }}>// grafika referencyjna (styl karty)</p>
+                  <button className={styles.btnSecondary} style={{ width: '100%', padding: '12px', fontSize: '13px' }} onClick={() => refFileFrontRef.current?.click()}>
+                    {refFileFront ? `✓ ${refFileFront.name}` : '+ Dodaj zdjęcie referencyjne (np. karta Pokemon, inspiracja stylu)'}
+                  </button>
+                  <input ref={refFileFrontRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) setRefFileFront(e.target.files[0]) }} />
+                  <div className={styles.field} style={{ marginTop: '10px' }}>
+                    <label className={styles.label}>Opis do karty niestandardowej</label>
+                    <textarea value={form.customDesc} onChange={e => setForm({...form, customDesc: e.target.value})} placeholder="np. styl kart Pokemon ale zielone kolory, klimat techno, mroczna atmosfera..." />
+                  </div>
+                </div>
+              )}
 
               <div className={styles.formButtons}>
                 <button className={styles.btnSecondary} onClick={() => setStep(1)}>← Wstecz</button>
@@ -475,7 +501,37 @@ export default function Home() {
                 ))}
               </div>
 
+              {/* Personal Dedication — komentarz tył */}
+              {backOption === 'dedication' && (
+                <div className={styles.field} style={{ marginTop: '12px' }}>
+                  <label className={styles.label}>Komentarz tył — treść dedykacji *</label>
+                  <textarea value={form.notesBack} onChange={e => setForm({...form, notesBack: e.target.value})} placeholder="np. 'Za każdy rave z Tobą' · imię + data · cytat który chcesz umieścić..." />
+                </div>
+              )}
 
+              {/* QR Code — komentarz tył */}
+              {backOption === 'qr' && (
+                <div className={styles.field} style={{ marginTop: '12px' }}>
+                  <label className={styles.label}>Komentarz tył — link do QR kodu *</label>
+                  <textarea value={form.notesBack} onChange={e => setForm({...form, notesBack: e.target.value})} placeholder="https://instagram.com/twojprofil&#10;Opcjonalnie: dodatkowe uwagi do projektu tyłu..." />
+                  <p style={{ fontSize: '12px', color: 'var(--text-faint)', marginTop: '4px' }}>Wygenerujemy QR kod z podanego linku</p>
+                </div>
+              )}
+
+              {/* Custom Artwork — zdjęcie tył + komentarz */}
+              {backOption === 'custom_back' && (
+                <div style={{ marginTop: '12px' }}>
+                  <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>// zdjęcie do tyłu karty (back)</p>
+                  <button className={styles.btnSecondary} style={{ width: '100%', padding: '12px', fontSize: '13px' }} onClick={() => refFileBackRef.current?.click()}>
+                    {refFileBack ? `✓ ${refFileBack.name}` : '+ Dodaj zdjęcie (BACK) — np. zdjęcie budy, grafika na tył karty'}
+                  </button>
+                  <input ref={refFileBackRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) setRefFileBack(e.target.files[0]) }} />
+                  <div className={styles.field} style={{ marginTop: '10px' }}>
+                    <label className={styles.label}>Komentarz tył *</label>
+                    <textarea value={form.notesBack} onChange={e => setForm({...form, notesBack: e.target.value})} placeholder="Opisz co chcesz na rewersie — styl, kolory, nastrój, elementy..." />
+                  </div>
+                </div>
+              )}
 
               <div className={styles.formButtons}>
                 <button className={styles.btnSecondary} onClick={() => setStep(2)}>← Wstecz</button>
@@ -524,15 +580,15 @@ export default function Home() {
 
               <div className={styles.formButtons}>
                 <button className={styles.btnSecondary} onClick={() => setStep(3)}>← Wstecz</button>
-                <button className={styles.btnPrimary} onClick={() => setStep(5)}>Dalej — dane i zdjęcie →</button>
+                <button className={styles.btnPrimary} onClick={() => setStep(5)}>Dalej — dane kontaktowe →</button>
               </div>
             </div>
           )}
 
-          {/* KROK 5 — DANE I ZDJĘCIE */}
+          {/* KROK 5 — DANE KONTAKTOWE */}
           {step === 5 && (
             <div className={styles.formStep}>
-              <p className={styles.formStepTitle}>Dane kontaktowe i zdjęcie</p>
+              <p className={styles.formStepTitle}>Dane kontaktowe</p>
               <div className={styles.fieldGrid}>
                 <div className={styles.field}>
                   <label className={styles.label}>Imię i nazwisko *</label>
@@ -550,41 +606,6 @@ export default function Home() {
                   <label className={styles.label}>Adres wysyłki *</label>
                   <input value={form.address} onChange={e => setForm({...form, address: e.target.value})} placeholder="ul. Przykładowa 1, 00-000 Warszawa" />
                 </div>
-                <div className={`${styles.field} ${styles.fieldFull}`}>
-                  <label className={styles.label}>Dodatkowe uwagi <span className={styles.optional}>(opcjonalnie)</span></label>
-                  <textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} placeholder="Opisz swój pomysł, okazję, kolorystykę..." />
-                </div>
-              </div>
-
-              {/* Upload zdjęcia */}
-              <div className={styles.field} style={{ marginTop: '8px' }}>
-                <label className={styles.label}>Twoje zdjęcie <span className={styles.optional}>(opcjonalnie — dodasz też później)</span></label>
-                {!photo ? (
-                  <div className={styles.dropZone} onClick={() => fileRef.current?.click()} onDragOver={e => e.preventDefault()} onDrop={handleDrop} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && fileRef.current?.click()} aria-label="Kliknij lub przeciągnij zdjęcie">
-                    <span className={styles.dropIcon}>↑</span>
-                    <p className={styles.dropTitle}>Kliknij lub przeciągnij zdjęcie</p>
-                    <p className={styles.dropSub}>JPG, PNG, HEIC · maks. 20 MB</p>
-                  </div>
-                ) : (
-                  <div className={styles.fileAdded}>
-                    <span className={styles.fileIcon}>🖼</span>
-                    <div className={styles.fileInfo}>
-                      <p className={styles.fileAddedTitle}>Plik dodany ✓</p>
-                      <p className={styles.fileName}>{photo.name}</p>
-                    </div>
-                    <button className={styles.fileRemove} onClick={() => { setPhoto(null); setPhotoPreview(null) }}>✕ Usuń</button>
-                  </div>
-                )}
-                <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handlePhoto(e.target.files[0]) }} />
-              </div>
-
-              <div className={styles.photoTips}>
-                <p className={styles.tipsTitle}>Wskazówki do zdjęcia</p>
-                <ul>
-                  <li>✓ Poziome, dobrze oświetlone, wyraźna twarz lub motyw</li>
-                  <li>✓ Zdjęcie z imprezy, w plenerze lub studio</li>
-                  <li>✗ Unikaj bardzo ciemnych lub rozmazanych zdjęć</li>
-                </ul>
               </div>
 
               {/* KOD RABATOWY */}
