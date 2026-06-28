@@ -225,6 +225,7 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Order | null>(null)
   const [updating, setUpdating] = useState<string | null>(null)
   const [designFile, setDesignFile] = useState<File | null>(null)
@@ -357,7 +358,9 @@ export default function AdminPage() {
     setSending(false)
   }
 
-  const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter)
+  const filtered = orders
+    .filter(o => filter === 'all' || o.status === filter)
+    .filter(o => !search.trim() || o.id.toLowerCase().startsWith(search.trim().toLowerCase()))
   const statusObj = (id: string) => STATUSES.find(s => s.id === id) || STATUSES[0]
   const formatDate = (d: string) => new Date(d).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 
@@ -385,6 +388,17 @@ export default function AdminPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={{ fontSize: '13px', color: 'rgba(240,238,255,0.4)' }}>{orders.length} zamówień</span>
+          <div style={{ position: 'relative' }}>
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Szukaj po ID..."
+              style={{ background: '#16162a', border: `1px solid ${search ? '#b44dff' : 'rgba(255,255,255,0.1)'}`, borderRadius: '6px', color: '#f0eeff', padding: '5px 30px 5px 10px', fontSize: '13px', fontFamily: 'monospace', width: '180px', outline: 'none' }}
+            />
+            {search && (
+              <button onClick={() => setSearch('')} style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(240,238,255,0.4)', cursor: 'pointer', fontSize: '14px', padding: 0, lineHeight: 1 }}>✕</button>
+            )}
+          </div>
           <a href="/admin/portfolio" style={{ background: 'rgba(180,77,255,0.15)', border: '1px solid rgba(180,77,255,0.3)', color: '#b44dff', padding: '6px 14px', borderRadius: '6px', fontSize: '13px', textDecoration: 'none' }}>Portfolio</a>
           <button onClick={fetchOrders} style={{ background: 'rgba(180,77,255,0.15)', border: '1px solid rgba(180,77,255,0.3)', color: '#b44dff', padding: '6px 14px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>↻ Odśwież</button>
         </div>
