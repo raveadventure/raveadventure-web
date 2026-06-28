@@ -502,15 +502,10 @@ export default function AdminPage() {
                     </div>
                   ) : (
                     <div>
-                      <p style={{ margin: '0 0 4px', fontSize: '10px', color: 'rgba(240,238,255,0.3)', letterSpacing: '1px' }}>TYŁ</p>
-                      <div style={{ width: '100%', aspectRatio: '0.7', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)', background: '#0d0d1a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', boxSizing: 'border-box' }}>
-                        <span style={{ fontSize: '24px' }}>🎴</span>
-                        <p style={{ margin: 0, fontSize: '11px', color: 'rgba(240,238,255,0.4)', textAlign: 'center', lineHeight: '1.5' }}>
-                          {(selected as any).back_option === 'logo' ? 'Standard — RaveAdventure Logo' :
-                           (selected as any).back_option === 'dedication' ? ('Dedykacja: ' + ((selected as any).card_text || '—')) :
-                           (selected as any).back_option === 'qr' ? ('QR: ' + ((selected as any).qr_link || '—')) :
-                           'Custom Artwork'}
-                        </p>
+                      <p style={{ margin: '0 0 4px', fontSize: '10px', color: 'rgba(240,238,255,0.3)', letterSpacing: '1px' }}>TYŁ — nie wysłano</p>
+                      <div style={{ width: '100%', aspectRatio: '0.7', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.06)', background: '#0d0d1a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', boxSizing: 'border-box' }}>
+                        <span style={{ fontSize: '24px', opacity: 0.3 }}>🎴</span>
+                        <p style={{ margin: 0, fontSize: '10px', color: 'rgba(240,238,255,0.2)', textAlign: 'center' }}>brak projektu tyłu</p>
                       </div>
                     </div>
                   )}
@@ -537,12 +532,11 @@ export default function AdminPage() {
               </div>
               <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handleDesignFile(e.target.files[0]) }} />
 
-              {/* TYŁ KARTY — tylko gdy nie jest standardowe logo */}
-              {(selected as any).back_option && (selected as any).back_option !== 'logo' && (
-                <div style={{ marginBottom: '12px' }}>
-                  <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'rgba(240,238,255,0.5)' }}>
-                    Tył karty ({(selected as any).back_option === 'dedication' ? 'Dedykacja' : (selected as any).back_option === 'custom_back' ? 'Custom Artwork' : (selected as any).back_option === 'qr' ? 'QR Code' : (selected as any).back_option})
-                  </p>
+              {/* TYŁ KARTY — zawsze dostępny */}
+              <div style={{ marginBottom: '12px' }}>
+                <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'rgba(240,238,255,0.5)' }}>
+                  Tył karty — {(selected as any).back_option === 'logo' ? 'Standard Logo' : (selected as any).back_option === 'dedication' ? 'Dedykacja' : (selected as any).back_option === 'custom_back' ? 'Custom Artwork' : (selected as any).back_option === 'qr' ? 'QR Code' : 'tył'}
+                </p>
                   <div
                     onClick={() => fileBackRef.current?.click()}
                     style={{ border: `1.5px dashed ${designPreviewBack ? '#00f0ff' : 'rgba(0,240,255,0.2)'}`, borderRadius: '8px', padding: designPreviewBack ? '8px' : '16px', textAlign: 'center', cursor: 'pointer', background: designPreviewBack ? 'rgba(0,240,255,0.05)' : 'transparent' }}
@@ -563,7 +557,6 @@ export default function AdminPage() {
                     </button>
                   )}
                 </div>
-              )}
 
               <textarea
                 value={designNote}
