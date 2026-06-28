@@ -34,6 +34,121 @@ type Order = {
   status: string
 }
 
+function ClientMaterials({ order }: { order: Order }) {
+  const [refFrontUrl, setRefFrontUrl] = React.useState<string | null>(null)
+  const [refBackUrl, setRefBackUrl] = React.useState<string | null>(null)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+  React.useEffect(() => {
+    supabase.storage.from('order-photos').list('', { search: order.id })
+      .then(({ data }) => {
+        if (!data) return
+        const front = data.find(f => f.name.includes(order.id + '-ref-front'))
+        const back = data.find(f => f.name.includes(order.id + '-ref-back'))
+        if (front) setRefFrontUrl(`${supabaseUrl}/storage/v1/object/public/order-photos/${front.name}`)
+        if (back) setRefBackUrl(`${supabaseUrl}/storage/v1/object/public/order-photos/${back.name}`)
+      })
+  }, [order.id])
+
+  const backOption = (order as any).back_option || 'logo'
+  const theme = (order as any).theme || ''
+  const isCustomBack = ['custom_back', 'dedication', 'qr'].includes(backOption)
+  const isCustomFront = theme === 'custom'
+
+  const ImgBox = ({ url, label, color }: { url: string | null; label: string; color: string }) => (
+    <div>
+      <p style={{ margin: '0 0 4px', fontSize: '10px', color, letterSpacing: '1px' }}>{label}</p>
+      {url ? (
+        <>
+          <img src={url} alt={label} style={{ width: '100%', borderRadius: '8px', border: `1px solid ${color}44` }} />
+          <a href={url} target="_blank" rel="noopener noreferrer"
+            style={{ display: 'block', fontSize: '11px', color, textDecoration: 'none', marginTop: '4px', textAlign: 'center' }}>
+            pełne zdjęcie →
+          </a>
+        </>
+      ) : (
+        <div style={{ width: '100%', aspectRatio: '0.7', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)', background: '#0d0d1a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px', boxSizing: 'border-box' }}>
+          <span style={{ fontSize: '20px' }}>⏳</span>
+          <p style={{ margin: 0, fontSize: '10px', color: 'rgba(240,238,255,0.3)', textAlign: 'center' }}>brak pliku</p>
+        </div>
+      )}
+    </div>
+  )
+
+  const StandardBack = ({ backOption, order }: { backOption: string; order: Order }) => (
+    <div>
+      <p style={{ margin: '0 0 4px', fontSize: '10px', color: 'rgba(240,238,255,0.3)', letterSpacing: '1px' }}>TYŁ — STANDARD</p>
+      <div style={{ width: '100%', aspectRatio: '0.7', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: '#0d0d1a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', boxSizing: 'border-box' }}>
+        <span style={{ fontSize: '24px' }}>🎴</span>
+        <p style={{ margin: 0, fontSize: '11px', color: 'rgba(240,238,255,0.4)', textAlign: 'center', lineHeight: '1.6' }}>
+          {backOption === 'logo' ? 'Logo RaveAdventure' :
+           backOption === 'dedication' ? ('Dedykacja: ' + ((order as any).card_text || '—')) :
+           backOption === 'qr' ? ('QR: ' + ((order as any).qr_link || '—')) :
+           'Standard'}
+        </p>
+      </div>
+    </div>
+  )
+
+  return (
+    <div style={{ marginBottom: '16px' }}>
+      <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'rgba(240,238,255,0.4)', letterSpacing: '1px' }}>MATERIAŁY OD KLIENTA</p>
+
+      {/* Zdjęcie klienta (zawsze) */}
+      {order.photo_url && (
+        <div style={{ marginBottom: '10px' }}>
+          <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#534AB7', letterSpacing: '1px' }}>ZDJĘCIE KLIENTA</p>
+          <img src={order.photo_url} alt="Zdjęcie klienta" style={{ width: '100%', borderRadius: '8px', border: '1px solid rgba(83,74,183,0.4)' }} />
+          <a href={order.photo_url} target="_blank" rel="noopener noreferrer"
+            style={{ display: 'block', fontSize: '11px', color: '#534AB7', textDecoration: 'none', marginTop: '4px', textAlign: 'center' }}>
+            pełne zdjęcie →
+          </a>
+        </div>
+      )}
+
+      {/* Siatka: przód i tył */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+
+        {/* SCENARIUSZ 1 & 2: motyw standard (nie custom) */}
+        {!isCustomFront && (
+          <>
+            <ImgBox url={order.photo_url} label="PRZÓD — ZDJĘCIE" color="#b44dff" />
+            {isCustomBack
+              ? <ImgBox url={refBackUrl} label="TYŁ — GRAFIKA KLIENTA" color="#00f0ff" />
+              : <StandardBack backOption={backOption} order={order} />
+            }
+          </>
+        )}
+
+        {/* SCENARIUSZ 3: motyw custom */}
+        {isCustomFront && (
+          <>
+            <ImgBox url={refFrontUrl} label="PRZÓD — GRAFIKA KLIENTA" color="#b44dff" />
+            {isCustomBack
+              ? <ImgBox url={refBackUrl} label="TYŁ — GRAFIKA KLIENTA" color="#00f0ff" />
+              : <StandardBack backOption={backOption} order={order} />
+            }
+          </>
+        )}
+      </div>
+
+      {/* Inspiracja (tylko custom front) */}
+      {isCustomFront && (order as any).custom_desc && (
+        <div style={{ marginTop: '10px', padding: '10px 12px', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '8px' }}>
+          <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#f59e0b', letterSpacing: '1px' }}>CUSTOM — OPIS KLIENTA</p>
+          <p style={{ margin: '0 0 6px', fontSize: '12px', color: '#f0eeff', lineHeight: '1.6' }}>{(order as any).custom_desc}</p>
+          {refFrontUrl && (
+            <a href={refFrontUrl} target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: '12px', color: '#f59e0b', textDecoration: 'none' }}>
+              Otwórz plik inspiracji →
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function RefInspiration({ orderId }: { orderId: string }) {
   const [url, setUrl] = React.useState<string | null>(null)
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -364,24 +479,23 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* Aktualny projekt (jeśli wysłany) */}
+            {/* MATERIAŁY KLIENTA */}
+            <ClientMaterials order={selected} />
+
+            {/* WYSŁANY PROJEKT */}
             {selected.design_url && (
               <div style={{ marginBottom: '16px' }}>
                 <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'rgba(240,238,255,0.4)', letterSpacing: '1px' }}>WYSŁANY PROJEKT</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-
-                  {/* PRZÓD */}
                   <div>
                     <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#b44dff', letterSpacing: '1px' }}>PRZÓD</p>
-                    <img src={selected.design_url} alt="Przód karty" style={{ width: '100%', borderRadius: '8px', border: '1px solid rgba(180,77,255,0.3)' }} />
+                    <img src={selected.design_url} alt="Przód" style={{ width: '100%', borderRadius: '8px', border: '1px solid rgba(180,77,255,0.3)' }} />
                     <a href={selected.design_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '11px', color: '#b44dff', textDecoration: 'none', marginTop: '4px', textAlign: 'center' }}>pełne zdjęcie →</a>
                   </div>
-
-                  {/* TYŁ — custom projekt lub info o standardzie */}
                   {selected.design_back_url ? (
                     <div>
                       <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#00f0ff', letterSpacing: '1px' }}>TYŁ</p>
-                      <img src={selected.design_back_url} alt="Tył karty" style={{ width: '100%', borderRadius: '8px', border: '1px solid rgba(0,240,255,0.3)' }} />
+                      <img src={selected.design_back_url} alt="Tył" style={{ width: '100%', borderRadius: '8px', border: '1px solid rgba(0,240,255,0.3)' }} />
                       <a href={selected.design_back_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '11px', color: '#00f0ff', textDecoration: 'none', marginTop: '4px', textAlign: 'center' }}>pełne zdjęcie →</a>
                     </div>
                   ) : (
@@ -399,11 +513,6 @@ export default function AdminPage() {
                     </div>
                   )}
                 </div>
-
-                {/* INSPIRACJA klienta (custom front) */}
-                {(selected as any).front_theme === 'custom' || (selected as any).theme === 'custom' ? (
-                  <RefInspiration orderId={selected.id} />
-                ) : null}
               </div>
             )}
 
