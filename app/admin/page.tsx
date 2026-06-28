@@ -618,24 +618,22 @@ export default function AdminPage() {
             </div>
 
             {/* Atrybuty karty */}
-            {((selected as any).card_name_custom || (selected as any).attr1_label || (selected as any).card_skill) && (
-              <div style={{ background: '#16162a', borderRadius: '10px', overflow: 'hidden', marginTop: '8px' }}>
-                <p style={{ margin: 0, padding: '10px 16px 6px', fontSize: '10px', color: '#b44dff', letterSpacing: '2px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>ATRYBUTY KARTY</p>
-                {[
-                  { label: '① Rok', value: (selected as any).card_year },
-                  { label: '② Rzadkość', value: (selected as any).card_rarity },
-                  { label: '③ Nazwa', value: (selected as any).card_name_custom },
-                  { label: '④ Atrybut 1', value: (selected as any).attr1_label && (selected as any).attr1_value ? `${(selected as any).attr1_label} — ${(selected as any).attr1_value}` : (selected as any).attr1_label },
-                  { label: '⑤ Umiejętność', value: (selected as any).card_skill },
-                  { label: '⑥ Atrybut 2', value: (selected as any).attr2_label && (selected as any).attr2_value ? `${(selected as any).attr2_label} — ${(selected as any).attr2_value}` : (selected as any).attr2_label },
-                ].filter(r => r.value).map((row, i) => (
-                  <div key={i} style={{ display: 'flex', gap: '12px', padding: '8px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <span style={{ fontSize: '12px', color: 'rgba(240,238,255,0.4)', minWidth: '90px', flexShrink: 0 }}>{row.label}</span>
-                    <span style={{ fontSize: '13px', color: '#f0eeff', wordBreak: 'break-word' }}>{row.value}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div style={{ background: '#16162a', borderRadius: '10px', overflow: 'hidden', marginTop: '8px' }}>
+              <p style={{ margin: 0, padding: '10px 16px 6px', fontSize: '10px', color: '#b44dff', letterSpacing: '2px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>ATRYBUTY KARTY</p>
+              {[
+                { label: '① Rok', value: (selected as any).card_year || '—' },
+                { label: '② Rzadkość', value: (selected as any).card_rarity || '—' },
+                { label: '③ Nazwa', value: (selected as any).card_name_custom || '—' },
+                { label: '④ Atrybut 1', value: [(selected as any).attr1_label, (selected as any).attr1_value].filter(Boolean).join(' — ') || '—' },
+                { label: '⑤ Umiejętność', value: (selected as any).card_skill || '—' },
+                { label: '⑥ Atrybut 2', value: [(selected as any).attr2_label, (selected as any).attr2_value].filter(Boolean).join(' — ') || '—' },
+              ].map((row, i) => (
+                <div key={i} style={{ display: 'flex', gap: '12px', padding: '8px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span style={{ fontSize: '12px', color: 'rgba(240,238,255,0.4)', minWidth: '90px', flexShrink: 0 }}>{row.label}</span>
+                  <span style={{ fontSize: '13px', color: row.value === '—' ? 'rgba(240,238,255,0.2)' : '#f0eeff', wordBreak: 'break-word' }}>{row.value}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
