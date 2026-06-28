@@ -45,7 +45,7 @@ function ClientMaterials({ order }: { order: Order }) {
     supabase.storage.from('order-photos').list('', { search: order.id })
       .then(({ data }) => {
         if (!data) return
-        const front = data.find(f => f.name.includes(order.id + '-ref-front'))
+        const front = data.find(f => f.name.includes(order.id + '-custom'))
         const back = data.find(f => f.name.includes(order.id + '-ref-back'))
         if (front) setRefFrontUrl(`${supabaseUrl}/storage/v1/object/public/order-photos/${front.name}`)
         if (back) setRefBackUrl(`${supabaseUrl}/storage/v1/object/public/order-photos/${back.name}`)
@@ -239,30 +239,19 @@ export default function AdminPage() {
   const fileBackRef = useRef<HTMLInputElement>(null)
 
   const deleteOrder = async (id: string) => {
-    const order = orders.find(o => o.id === id)
-
     const filesToDelete: string[] = []
-
-    // 1. Pliki główne — zdjęcie klienta i referencyjne
     const exts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'pdf']
-    exts.forEach(ext => {
-      filesToDelete.push(`${id}.${ext}`)
-      filesToDelete.push(`${id}-ref-front.${ext}`)
-      filesToDelete.push(`${id}-ref-back.${ext}`)
-    })
 
-    // 2. Projekty graficzne z URL w bazie
-    const extractPath = (url: string | null) => {
-      if (!url) return null
-      const match = url.match(/order-photos\/(.+?)(\?|$)/)
-      return match ? match[1] : null
-    }
-    const designPath = extractPath(order?.design_url || null)
-    const designBackPath = extractPath((order as any)?.design_back_url || null)
-    if (designPath) filesToDelete.push(designPath)
-    if (designBackPath && designBackPath !== designPath) filesToDelete.push(designBackPath)
+    // 1. Zdjęcie FRONT klienta: {id}-front.{ext}
+    exts.forEach(ext => filesToDelete.push(`${id}-front.${ext}`))
 
-    // 3. Wszystkie pliki w podfolderze designs/ dla tego zlecenia
+    // 2. Grafika referencyjna custom: {id}-custom.{ext}
+    exts.forEach(ext => filesToDelete.push(`${id}-custom.${ext}`))
+
+    // 3. Zdjęcie tyłu klienta: {id}-ref-back.{ext}
+    exts.forEach(ext => filesToDelete.push(`${id}-ref-back.${ext}`))
+
+    // 4. Projekty wysłane do klienta z folderu designs/
     const { data: designFiles } = await supabase.storage
       .from('order-photos')
       .list('designs')
@@ -272,13 +261,13 @@ export default function AdminPage() {
         .forEach(f => filesToDelete.push(`designs/${f.name}`))
     }
 
-    // 4. Usuń wszystkie pliki (błędy ignorujemy — plik może nie istnieć)
+    // 5. Usuń wszystkie pliki
     const unique = filesToDelete.filter((v, i, a) => a.indexOf(v) === i)
     if (unique.length > 0) {
       await supabase.storage.from('order-photos').remove(unique)
     }
 
-    // 5. Usuń rekord z bazy danych
+    // 6. Usuń rekord z bazy danych
     const { error } = await supabase.from('orders').delete().eq('id', id)
     if (!error) {
       setOrders(prev => prev.filter(o => o.id !== id))
