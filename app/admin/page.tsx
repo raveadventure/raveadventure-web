@@ -599,25 +599,43 @@ export default function AdminPage() {
             {/* Dane klienta */}
             <div style={{ background: '#16162a', borderRadius: '10px', overflow: 'hidden' }}>
               {[
-                { label: 'ID', value: selected.id.slice(0, 8) + '...' },
+                { label: 'ID', value: selected.id },
                 { label: 'Data', value: formatDate(selected.created_at) },
                 { label: 'Motyw', value: THEMES[selected.theme] || selected.theme },
                 { label: 'Klient', value: selected.name },
                 { label: 'Email', value: selected.email, link: `mailto:${selected.email}` },
                 { label: 'Telefon', value: selected.phone || '—' },
                 { label: 'Adres', value: selected.address },
-                { label: 'Tekst', value: selected.card_text || '—' },
-                { label: 'Uwagi', value: selected.notes || '—' },
               ].map((row, i) => (
                 <div key={i} style={{ display: 'flex', gap: '12px', padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <span style={{ fontSize: '12px', color: 'rgba(240,238,255,0.4)', minWidth: '55px', flexShrink: 0 }}>{row.label}</span>
                   {row.link
                     ? <a href={row.link} style={{ fontSize: '13px', color: '#00f0ff', textDecoration: 'none', wordBreak: 'break-all' }}>{row.value}</a>
-                    : <span style={{ fontSize: '13px', color: '#f0eeff', wordBreak: 'break-word' }}>{row.value}</span>
+                    : <span style={{ fontSize: '12px', color: '#f0eeff', wordBreak: 'break-all', fontFamily: row.label === 'ID' ? 'monospace' : 'inherit' }}>{row.value}</span>
                   }
                 </div>
               ))}
             </div>
+
+            {/* Atrybuty karty */}
+            {((selected as any).card_name_custom || (selected as any).attr1_label || (selected as any).card_skill) && (
+              <div style={{ background: '#16162a', borderRadius: '10px', overflow: 'hidden', marginTop: '8px' }}>
+                <p style={{ margin: 0, padding: '10px 16px 6px', fontSize: '10px', color: '#b44dff', letterSpacing: '2px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>ATRYBUTY KARTY</p>
+                {[
+                  { label: '① Rok', value: (selected as any).card_year },
+                  { label: '② Rzadkość', value: (selected as any).card_rarity },
+                  { label: '③ Nazwa', value: (selected as any).card_name_custom },
+                  { label: '④ Atrybut 1', value: (selected as any).attr1_label && (selected as any).attr1_value ? `${(selected as any).attr1_label} — ${(selected as any).attr1_value}` : (selected as any).attr1_label },
+                  { label: '⑤ Umiejętność', value: (selected as any).card_skill },
+                  { label: '⑥ Atrybut 2', value: (selected as any).attr2_label && (selected as any).attr2_value ? `${(selected as any).attr2_label} — ${(selected as any).attr2_value}` : (selected as any).attr2_label },
+                ].filter(r => r.value).map((row, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '12px', padding: '8px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <span style={{ fontSize: '12px', color: 'rgba(240,238,255,0.4)', minWidth: '90px', flexShrink: 0 }}>{row.label}</span>
+                    <span style={{ fontSize: '13px', color: '#f0eeff', wordBreak: 'break-word' }}>{row.value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
