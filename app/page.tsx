@@ -274,9 +274,22 @@ export default function Home() {
           <p className={styles.heroSub}>
             Personalizowane karty z klimatem techno i rave. Mieszczą się w portfelu — zabierasz ze sobą na każdy event.
           </p>
-          <div className={styles.heroBadges}>
-            <span className={styles.badge}>Karta PVC od 89 zł</span>
-            <span className={styles.badge}>Karta Laminowana od 40 zł</span>
+
+          {/* TYPY KART — inline w hero */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', margin: '20px 0', width: '100%', maxWidth: '520px' }}>
+            {CARD_TYPES.map(c => (
+              <div key={c.id} style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${c.accent}33`, borderRadius: '10px', padding: '12px 14px', textAlign: 'left' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#f0eeff' }}>{c.label}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: c.accent }}>{c.price} zł</span>
+                </div>
+                <p style={{ margin: '0 0 4px', fontSize: '10px', color: 'rgba(240,238,255,0.3)', fontFamily: 'var(--font-display)' }}>{c.dims}</p>
+                <p style={{ margin: 0, fontSize: '11px', color: 'rgba(240,238,255,0.5)', lineHeight: '1.5' }}>{c.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '20px' }}>
             <span className={styles.badge}>-50% przy 3+ sztukach</span>
             <span className={styles.badge}>Projekt w 24h</span>
           </div>
@@ -285,41 +298,74 @@ export default function Home() {
 
       </section>
 
-      {/* TYPY KART */}
-      <section className={styles.section} id="cards">
-        <p className={styles.sectionEye}>// rodzaje kart</p>
-        <h2 className={styles.sectionTitle}>Wybierz format</h2>
-        <div className={styles.cardTypesGrid}>
-          {CARD_TYPES.map(c => (
-            <div key={c.id} className={styles.cardTypeCard} style={{ '--accent': c.accent } as React.CSSProperties}>
-              <div className={styles.themeAccentBar} />
-              <div className={styles.cardTypeHeader}>
-                <p className={styles.themeLabel}>{c.label}</p>
-                <span className={styles.cardTypePrice}>{c.price} zł</span>
-              </div>
-              <p className={styles.cardTypeDims}>{c.dims}</p>
-              <p className={styles.themeDesc}>{c.desc}</p>
+      {/* HOW IT WORKS — kompaktowy */}
+      <section className={styles.section}>
+        <p className={styles.sectionEye}>// jak to działa</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '24px' }}>
+          {[
+            { n: '01', t: 'Zamów online', d: 'Typ karty, motyw, rewers, zdjęcie.' },
+            { n: '02', t: 'Zatwierdź projekt', d: 'Projekt w 24h. Poprawki gratis.' },
+            { n: '03', t: 'Karta do Ciebie', d: 'Produkcja i wysyłka 3–5 dni.' },
+          ].map(s => (
+            <div key={s.n} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px 12px' }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: '10px', color: 'var(--text-faint)', letterSpacing: '1px' }}>{s.n}</span>
+              <p style={{ margin: '3px 0 2px', fontSize: '12px', fontWeight: 600, color: 'var(--text)' }}>{s.t}</p>
+              <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.5' }}>{s.d}</p>
             </div>
           ))}
         </div>
-      </section>
 
-      {/* HOW IT WORKS */}
-      <section className={styles.section}>
-        <p className={styles.sectionEye}>// jak to działa</p>
-        <h2 className={styles.sectionTitle}>Trzy kroki do karty</h2>
-        <div className={styles.stepsGrid}>
+        {/* OPCJE */}
+        <p className={styles.sectionEye}>// co możesz zamówić</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
           {[
-            { n: '01', t: 'Zamów online', d: 'Wybierz typ, motyw, rewers i dodaj zdjęcie.' },
-            { n: '02', t: 'Zatwierdzasz projekt', d: 'W ciągu 24h wysyłamy projekt. Możesz prosić o poprawki.' },
-            { n: '03', t: 'Karta do Ciebie', d: 'Produkujemy i wysyłamy. Czas realizacji: 3–5 dni roboczych.' },
-          ].map(s => (
-            <div key={s.n} className={styles.stepCard}>
-              <span className={styles.stepNum}>{s.n}</span>
-              <p className={styles.stepTitle}>{s.t}</p>
-              <p className={styles.stepDesc}>{s.d}</p>
+            {
+              icon: '🎨',
+              title: 'Karta z Twoim zdjęciem',
+              desc: 'Wgrywasz zdjęcie — my przerabiamy w klimacie Techno, Festiwal lub Adventure. Dodajesz własną nazwę, atrybuty i umiejętność.',
+              tags: ['Techno / Rave', 'Festiwal', 'Adventure'],
+              color: 'var(--neon)',
+            },
+            {
+              icon: '✦',
+              title: 'Karta w pełni niestandardowa',
+              desc: 'Masz inspirację? Wgrywasz grafikę referencyjną i opisujesz styl. Tworzymy projekt od podstaw — unikalny, dopasowany do Twojej wizji.',
+              tags: ['Custom', 'Pełna swoboda'],
+              color: '#f59e0b',
+            },
+            {
+              icon: '✍',
+              title: 'Dedykacja na rewersie',
+              desc: 'Zamiast standardowego logo — Twój cytat, tekst lub osobista dedykacja. Idealne na prezent lub pamiątkę z eventu.',
+              tags: ['Dedykacja', '+15 zł'],
+              color: '#00e5a0',
+            },
+            {
+              icon: '⬛',
+              title: 'QR Code na rewersie',
+              desc: 'Link do mediów społecznościowych, portfolio lub muzyki zakodowany w QR. Ktoś skanuje kartę — trafia prosto do Ciebie.',
+              tags: ['QR Code', '+40 zł'],
+              color: '#00f0ff',
+            },
+          ].map((o, i) => (
+            <div key={i} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                <span style={{ fontSize: '16px' }}>{o.icon}</span>
+                <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{o.title}</p>
+              </div>
+              <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{o.desc}</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                {o.tags.map(tag => (
+                  <span key={tag} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>{tag}</span>
+                ))}
+              </div>
             </div>
           ))}
+        </div>
+
+        <div style={{ marginTop: '10px', padding: '10px 14px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '10px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+          <span style={{ fontSize: '14px', flexShrink: 0 }}>⚙</span>
+          <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.6' }}>Do każdej karty możesz dodać własne atrybuty — nazwę karty, rok, rzadkość (Common · Rare · Epic · Legendary), dwa atrybuty z wartościami i umiejętność. Twoja karta, Twoje zasady.</p>
         </div>
       </section>
 
