@@ -185,7 +185,7 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: form.name, email: form.email, phone: form.phone,
-          address: form.address, cardText: form.cardText, notes: form.notes,
+          address: form.address, cardText: form.notesBack, notes: form.notes,
           theme: frontTheme, orderId: orderData?.id,
           cardType, backOption, quantity, unitPrice, totalPrice, hasDiscount, savedAmount,
           cardYear: form.cardYear, cardRarity: form.cardRarity, cardName: form.cardName,
@@ -475,29 +475,7 @@ export default function Home() {
                 ))}
               </div>
 
-              {backOption === 'dedication' && (
-                <div className={styles.field}>
-                  <label className={styles.label}>Tekst dedykacji *</label>
-                  <textarea value={form.cardText} onChange={e => setForm({...form, cardText: e.target.value})} placeholder="np. 'Za każdy rave z Tobą' lub imię + data..." />
-                </div>
-              )}
-              {backOption === 'qr' && (
-                <div className={styles.field}>
-                  <label className={styles.label}>Link do QR kodu *</label>
-                  <input type="url" value={form.qrLink} onChange={e => setForm({...form, qrLink: e.target.value})} placeholder="https://instagram.com/twojprofil" />
-                  <p style={{ fontSize: '12px', color: 'var(--text-faint)', marginTop: '6px' }}>Wygenerujemy QR kod na podstawie podanego linku.</p>
-                </div>
-              )}
-              {backOption === 'custom_back' && (
-                <div className={styles.field}>
-                  <label className={styles.label}>Opisz grafikę na rewersie *</label>
-                  <textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} placeholder="Opisz co chcesz na rewersie — styl, kolory, elementy..." />
-                  <button className={styles.btnSecondary} style={{ width: 'auto', padding: '7px 16px', fontSize: '13px', marginTop: '8px' }} onClick={() => refFileBackRef.current?.click()}>
-                    {refFileBack ? `✓ ${refFileBack.name}` : '+ Dodaj plik referencyjny (tył)'}
-                  </button>
-                  <input ref={refFileBackRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) setRefFileBack(e.target.files[0]) }} />
-                </div>
-              )}
+
 
               <div className={styles.formButtons}>
                 <button className={styles.btnSecondary} onClick={() => setStep(2)}>← Wstecz</button>
