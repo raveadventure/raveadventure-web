@@ -276,7 +276,7 @@ export default function Home() {
           </p>
 
           {/* TYPY KART — inline w hero */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', margin: '20px 0', width: '100%', maxWidth: '520px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', margin: '20px auto', width: '100%', maxWidth: '520px' }}>
             {CARD_TYPES.map(c => (
               <div key={c.id} style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${c.accent}33`, borderRadius: '10px', padding: '12px 14px', textAlign: 'left' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
