@@ -47,7 +47,7 @@ export default function Home() {
   const [quantity, setQuantity] = useState(1)
   const [form, setForm] = useState({
     name: '', email: '', phone: '', address: '',
-    cardText: '', notes: '', customDesc: '', qrLink: '',
+    notesBack: '', customDesc: '', notes: '',
     cardYear: '2025', cardRarity: 'RARE', cardName: '', attr1Label: '', attr1Value: '', cardSkill: '', attr2Label: '', attr2Value: '', cardDesc: '',
   })
   const [photo, setPhoto] = useState<File | null>(null)
@@ -132,10 +132,10 @@ export default function Home() {
         email: form.email,
         phone: form.phone,
         address: form.address,
-        card_text: form.cardText,
         notes: form.notes,
+        card_text: form.notesBack,
         custom_desc: form.customDesc,
-        qr_link: form.qrLink,
+        qr_link: form.notesBack,
         card_year: form.cardYear,
         card_rarity: form.cardRarity,
         card_name_custom: form.cardName,
@@ -191,7 +191,7 @@ export default function Home() {
           cardYear: form.cardYear, cardRarity: form.cardRarity, cardName: form.cardName,
           attr1Label: form.attr1Label, attr1Value: form.attr1Value,
           cardSkill: form.cardSkill, attr2Label: form.attr2Label, attr2Value: form.attr2Value,
-          cardDesc: form.cardDesc,
+          cardDesc: form.cardDesc, notesBack: form.notesBack, notes: form.notes,
         }),
       })
 
