@@ -473,25 +473,6 @@ export default function AdminPage() {
               <button onClick={() => { setSelected(null); setDesignFile(null); setDesignPreview(null); setSendMsg(null) }} style={{ background: 'none', border: 'none', color: 'rgba(240,238,255,0.4)', fontSize: '18px', cursor: 'pointer' }}>✕</button>
             </div>
 
-            {/* Zdjęcie klienta */}
-            {selected.photo_url && (
-              <div style={{ marginBottom: '16px' }}>
-                <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'rgba(240,238,255,0.4)' }}>Zdjęcie klienta</p>
-                <img src={selected.photo_url} alt="" style={{ width: '100%', borderRadius: '10px', objectFit: 'cover', maxHeight: '160px' }} />
-                <a href={selected.photo_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', marginTop: '6px', fontSize: '12px', color: '#b44dff', textDecoration: 'none' }}>Otwórz pełne zdjęcie →</a>
-              </div>
-            )}
-
-            {/* Pliki referencyjne */}
-            {(selected as any).custom_desc && (
-              <div style={{ background: 'rgba(83,74,183,0.08)', border: '1px solid rgba(83,74,183,0.3)', borderRadius: '10px', padding: '12px 14px', marginBottom: '12px' }}>
-                <p style={{ margin: '0 0 5px', fontSize: '12px', color: '#b44dff', fontWeight: 600 }}>📝 Opis custom motywu</p>
-                <p style={{ margin: 0, fontSize: '13px', color: '#f0eeff', lineHeight: '1.6' }}>{(selected as any).custom_desc}</p>
-              </div>
-            )}
-            {/* Pliki referencyjne — linki do Storage */}
-            <RefFiles orderId={selected.id} backOption={(selected as any).back_option} />
-
             {/* Uwagi klienta (jeśli są) */}
             {selected.review_notes && (
               <div style={{ background: 'rgba(255,77,109,0.08)', border: '1px solid rgba(255,77,109,0.3)', borderRadius: '10px', padding: '14px 16px', marginBottom: '16px' }}>
