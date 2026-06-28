@@ -249,7 +249,7 @@ export default function Home() {
       }}>
         <img
           src="/logo.png"
-          alt="RaveAdventure — Sierra, learn to see beauty at every height"
+          alt="RaveAdventure — The best memories from your adventure deserve a card."
           style={{
             maxWidth: '100%',
             width: '900px',
