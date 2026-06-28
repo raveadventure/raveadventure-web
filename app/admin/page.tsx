@@ -239,49 +239,44 @@ export default function AdminPage() {
   const deleteOrder = async (id: string) => {
     const order = orders.find(o => o.id === id)
 
-    // 1. Pobierz wszystkie pliki ze Storage powiązane z tym zleceniem
-    const { data: storageFiles } = await supabase.storage
-      .from('order-photos')
-      .list('', { search: id })
-
-    // 2. Zbierz nazwy plików do usunięcia
     const filesToDelete: string[] = []
 
-    // Pliki znalezione przez Storage (zdjęcie klienta, ref-front, ref-back)
-    if (storageFiles) {
-      storageFiles
-        .filter(f => f.name.includes(id))
-        .forEach(f => filesToDelete.push(f.name))
-    }
+    // 1. Pliki główne — zdjęcie klienta i referencyjne
+    const exts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'pdf']
+    exts.forEach(ext => {
+      filesToDelete.push(`${id}.${ext}`)
+      filesToDelete.push(`${id}-ref-front.${ext}`)
+      filesToDelete.push(`${id}-ref-back.${ext}`)
+    })
 
-    // Projekt graficzny przód (z URL w bazie)
-    if (order?.design_url) {
-      const match = order.design_url.match(/order-photos\/(.+?)(\?|$)/)
-      if (match && !filesToDelete.includes(match[1])) filesToDelete.push(match[1])
+    // 2. Projekty graficzne z URL w bazie
+    const extractPath = (url: string | null) => {
+      if (!url) return null
+      const match = url.match(/order-photos\/(.+?)(\?|$)/)
+      return match ? match[1] : null
     }
+    const designPath = extractPath(order?.design_url || null)
+    const designBackPath = extractPath((order as any)?.design_back_url || null)
+    if (designPath) filesToDelete.push(designPath)
+    if (designBackPath && designBackPath !== designPath) filesToDelete.push(designBackPath)
 
-    // Projekt graficzny tył (z URL w bazie)
-    if ((order as any)?.design_back_url) {
-      const match = (order as any).design_back_url.match(/order-photos\/(.+?)(\?|$)/)
-      if (match && !filesToDelete.includes(match[1])) filesToDelete.push(match[1])
-    }
-
-    // Pliki w podfolderze designs/
+    // 3. Wszystkie pliki w podfolderze designs/ dla tego zlecenia
     const { data: designFiles } = await supabase.storage
       .from('order-photos')
-      .list('designs', { search: id })
+      .list('designs')
     if (designFiles) {
       designFiles
-        .filter(f => f.name.includes(id))
+        .filter(f => f.name.startsWith(id))
         .forEach(f => filesToDelete.push(`designs/${f.name}`))
     }
 
-    // 3. Usuń wszystkie pliki ze Storage
-    if (filesToDelete.length > 0) {
-      await supabase.storage.from('order-photos').remove(filesToDelete)
+    // 4. Usuń wszystkie pliki (błędy ignorujemy — plik może nie istnieć)
+    const unique = [...new Set(filesToDelete)]
+    if (unique.length > 0) {
+      await supabase.storage.from('order-photos').remove(unique)
     }
 
-    // 4. Usuń rekord z bazy danych
+    // 5. Usuń rekord z bazy danych
     const { error } = await supabase.from('orders').delete().eq('id', id)
     if (!error) {
       setOrders(prev => prev.filter(o => o.id !== id))
