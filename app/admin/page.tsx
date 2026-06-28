@@ -53,82 +53,97 @@ function ClientMaterials({ order }: { order: Order }) {
   const backOption = (order as any).back_option || 'logo'
   const theme = (order as any).theme || ''
   const isCustomFront = theme === 'custom'
-  const isCustomBack = backOption === 'custom_back'
-  const isDedication = backOption === 'dedication'
-  const isQR = backOption === 'qr'
-  const isLogo = backOption === 'logo'
-  const notesBack = (order as any).card_text || ''
+  const notesBack = (order as any).card_text || (order as any).notes_back || ''
+  const notesFront = (order as any).notes || ''
 
-  const ImgBox = ({ url, label, color }: { url: string | null; label: string; color: string }) => (
-    <div>
-      <p style={{ margin: '0 0 4px', fontSize: '10px', color, letterSpacing: '1px' }}>{label}</p>
-      {url ? (
-        <>
-          <img src={url} alt={label} style={{ width: '100%', borderRadius: '8px', border: `1px solid ${color}55` }} />
-          <a href={url} target="_blank" rel="noopener noreferrer"
-            style={{ display: 'block', fontSize: '11px', color, textDecoration: 'none', marginTop: '4px', textAlign: 'center' }}>
-            pełne zdjęcie →
-          </a>
-        </>
-      ) : (
-        <div style={{ width: '100%', aspectRatio: '0.75', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.1)', background: '#0d0d1a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <p style={{ margin: 0, fontSize: '10px', color: 'rgba(240,238,255,0.2)', textAlign: 'center' }}>brak pliku</p>
-        </div>
-      )}
-    </div>
-  )
+  const THEME_LABELS: Record<string, string> = {
+    techno_rave: 'Techno / Rave',
+    festival: 'Festiwal',
+    adventure: 'Adventure',
+    custom: 'Custom',
+  }
 
-  const TextBack = ({ icon, label, value, color }: { icon: string; label: string; value?: string; color: string }) => (
-    <div>
-      <p style={{ margin: '0 0 4px', fontSize: '10px', color, letterSpacing: '1px' }}>{label}</p>
-      <div style={{ width: '100%', aspectRatio: '0.75', borderRadius: '8px', border: `1px solid ${color}33`, background: '#0d0d1a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', boxSizing: 'border-box' }}>
-        <span style={{ fontSize: '26px' }}>{icon}</span>
-      </div>
-      {value && <p style={{ margin: '5px 0 0', fontSize: '11px', color: 'rgba(240,238,255,0.6)', lineHeight: '1.5', wordBreak: 'break-word' }}>{value}</p>}
+  // Placeholder dla tyłu standardowego
+  const BackPlaceholder = ({ icon, title, value }: { icon: string; title: string; value?: string }) => (
+    <div style={{ width: '100%', aspectRatio: '0.75', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: '#0d0d1a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', boxSizing: 'border-box' }}>
+      <span style={{ fontSize: '28px' }}>{icon}</span>
+      <p style={{ margin: 0, fontSize: '11px', fontWeight: 600, color: 'rgba(240,238,255,0.5)', textAlign: 'center', letterSpacing: '1px' }}>{title}</p>
+      {value && <p style={{ margin: 0, fontSize: '11px', color: 'rgba(240,238,255,0.4)', textAlign: 'center', lineHeight: '1.5', wordBreak: 'break-word' }}>{value}</p>}
     </div>
   )
 
   return (
     <div style={{ marginBottom: '16px' }}>
 
-      {/* KARTA CUSTOM — baner z inspiracją */}
-      {isCustomFront && (
-        <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px' }}>
-          <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#f59e0b', letterSpacing: '1px', fontWeight: 700 }}>🎨 KARTA CUSTOM</p>
-          {(order as any).custom_desc && (
-            <p style={{ margin: '0 0 8px', fontSize: '12px', color: '#f0eeff', lineHeight: '1.6' }}>{(order as any).custom_desc}</p>
-          )}
-          {refFrontUrl
-            ? <a href={refFrontUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: '#f59e0b', textDecoration: 'none', fontWeight: 600 }}>Otwórz grafikę referencyjną →</a>
-            : <p style={{ margin: 0, fontSize: '11px', color: 'rgba(240,238,255,0.3)' }}>Brak grafiki referencyjnej</p>
-          }
-        </div>
-      )}
+      {/* NAGŁÓWEK — styl karty */}
+      <div style={{ marginBottom: '12px', padding: '10px 14px', background: isCustomFront ? 'rgba(245,158,11,0.06)' : 'rgba(180,77,255,0.06)', border: `1px solid ${isCustomFront ? 'rgba(245,158,11,0.25)' : 'rgba(180,77,255,0.2)'}`, borderRadius: '8px' }}>
+        <p style={{ margin: '0 0 2px', fontSize: '10px', color: isCustomFront ? '#f59e0b' : '#b44dff', letterSpacing: '2px', fontWeight: 700 }}>
+          STYL KARTY: {THEME_LABELS[theme] || theme.toUpperCase()}
+        </p>
+
+        {/* Tylko dla Custom — opis + link do ref */}
+        {isCustomFront && (
+          <>
+            {(order as any).custom_desc && (
+              <p style={{ margin: '6px 0 6px', fontSize: '12px', color: '#f0eeff', lineHeight: '1.6' }}>{(order as any).custom_desc}</p>
+            )}
+            {refFrontUrl
+              ? <a href={refFrontUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: '#f59e0b', textDecoration: 'none', fontWeight: 600 }}>
+                  🖼 Podgląd grafiki referencyjnej →
+                </a>
+              : <p style={{ margin: 0, fontSize: '11px', color: 'rgba(240,238,255,0.3)' }}>Brak grafiki referencyjnej</p>
+            }
+          </>
+        )}
+      </div>
 
       {/* SIATKA: FRONT | BACK */}
-      <p style={{ margin: '0 0 6px', fontSize: '10px', color: 'rgba(240,238,255,0.3)', letterSpacing: '1px' }}>MATERIAŁY OD KLIENTA</p>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
 
-        {/* FRONT — zawsze photo_url (zdjęcie do przeróbki) */}
+        {/* FRONT */}
         <div>
-          <ImgBox url={order.photo_url} label="FRONT — ZDJĘCIE DO PRZERÓBKI" color="#b44dff" />
-          {(order as any).notes && (
-            <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'rgba(240,238,255,0.6)', lineHeight: '1.5' }}>
-              <span style={{ color: '#b44dff', fontSize: '10px' }}>KOMENTARZ: </span>{(order as any).notes}
-            </p>
+          <p style={{ margin: '0 0 5px', fontSize: '10px', color: '#b44dff', letterSpacing: '1px', fontWeight: 600 }}>FRONT</p>
+          {order.photo_url ? (
+            <>
+              <img src={order.photo_url} alt="Front" style={{ width: '100%', borderRadius: '8px', border: '1px solid rgba(180,77,255,0.3)', display: 'block' }} />
+              <a href={order.photo_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '10px', color: '#b44dff', textDecoration: 'none', marginTop: '3px', textAlign: 'center' }}>pełne zdjęcie →</a>
+            </>
+          ) : (
+            <div style={{ width: '100%', aspectRatio: '0.75', borderRadius: '8px', border: '1px dashed rgba(180,77,255,0.2)', background: '#0d0d1a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <p style={{ margin: 0, fontSize: '11px', color: 'rgba(240,238,255,0.2)' }}>brak zdjęcia</p>
+            </div>
+          )}
+          {notesFront && (
+            <div style={{ marginTop: '6px', padding: '7px 10px', background: 'rgba(180,77,255,0.06)', borderRadius: '6px', borderLeft: '2px solid rgba(180,77,255,0.4)' }}>
+              <p style={{ margin: 0, fontSize: '11px', color: 'rgba(240,238,255,0.7)', lineHeight: '1.5' }}>{notesFront}</p>
+            </div>
           )}
         </div>
 
-        {/* BACK — zależy od opcji */}
+        {/* BACK */}
         <div>
-          {isLogo && <TextBack icon="🎴" label="TYŁ — STANDARD LOGO" color="rgba(240,238,255,0.2)" />}
-          {isCustomBack && <ImgBox url={refBackUrl} label="TYŁ — GRAFIKA KLIENTA" color="#00f0ff" />}
-          {isDedication && <TextBack icon="📝" label="TYŁ — DEDYKACJA" color="#f59e0b" />}
-          {isQR && <TextBack icon="⬛" label="TYŁ — QR CODE" color="#10b981" />}
+          <p style={{ margin: '0 0 5px', fontSize: '10px', color: '#00f0ff', letterSpacing: '1px', fontWeight: 600 }}>
+            TYŁ — {backOption === 'logo' ? 'STANDARD' : backOption === 'dedication' ? 'DEDYKACJA' : backOption === 'qr' ? 'QR CODE' : 'CUSTOM ARTWORK'}
+          </p>
+
+          {backOption === 'logo' && <BackPlaceholder icon="🎴" title="Logo RaveAdventure" />}
+          {backOption === 'dedication' && <BackPlaceholder icon="📝" title="Dedykacja" />}
+          {backOption === 'qr' && <BackPlaceholder icon="⬛" title="QR Code" />}
+          {backOption === 'custom_back' && (
+            refBackUrl ? (
+              <>
+                <img src={refBackUrl} alt="Back" style={{ width: '100%', borderRadius: '8px', border: '1px solid rgba(0,240,255,0.3)', display: 'block' }} />
+                <a href={refBackUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '10px', color: '#00f0ff', textDecoration: 'none', marginTop: '3px', textAlign: 'center' }}>pełne zdjęcie →</a>
+              </>
+            ) : (
+              <BackPlaceholder icon="🖼" title="Custom Artwork" value="brak zdjęcia" />
+            )
+          )}
+
           {notesBack && (
-            <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'rgba(240,238,255,0.6)', lineHeight: '1.5', wordBreak: 'break-word' }}>
-              <span style={{ color: '#00f0ff', fontSize: '10px' }}>KOMENTARZ: </span>{notesBack}
-            </p>
+            <div style={{ marginTop: '6px', padding: '7px 10px', background: 'rgba(0,240,255,0.05)', borderRadius: '6px', borderLeft: '2px solid rgba(0,240,255,0.3)' }}>
+              <p style={{ margin: 0, fontSize: '11px', color: 'rgba(240,238,255,0.7)', lineHeight: '1.5' }}>{notesBack}</p>
+            </div>
           )}
         </div>
       </div>
