@@ -156,6 +156,14 @@ function CardPair({ item, onOpen }: { item: PortfolioItem; onOpen: (v: { item: P
   const [showOriginal, setShowOriginal] = useState(false)
   const [flipping, setFlipping] = useState(false)
 
+  // Preload oryginału żeby pierwszy flip był płynny
+  useEffect(() => {
+    if (item.original_url) {
+      const img = new Image()
+      img.src = item.original_url
+    }
+  }, [item.original_url])
+
   const handleFlip = () => {
     if (flipping) return
     setFlipping(true)
