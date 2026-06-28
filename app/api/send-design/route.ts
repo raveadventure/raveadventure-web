@@ -189,7 +189,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Błąd wysyłki maila' }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, designUrl })
+    return NextResponse.json({ success: true, designUrl, designBackUrl: designUrlBack })
 
   } catch (err) {
     console.error('API error:', err)
