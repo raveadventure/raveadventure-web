@@ -426,10 +426,16 @@ export default function AdminPage() {
                       : <div style={{ width: '42px', height: '42px', borderRadius: '7px', background: '#16162a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>🎴</div>
                     }
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ margin: '0 0 2px', fontWeight: 600, fontSize: '14px', color: '#f0eeff' }}>{order.name}</p>
+                      <p style={{ margin: '0 0 2px', fontWeight: 600, fontSize: '14px', color: '#f0eeff' }}>
+                        {order.name}
+                        <span style={{ marginLeft: '8px', fontSize: '11px', fontWeight: 400, color: 'rgba(240,238,255,0.3)', fontFamily: 'monospace' }}>#{order.id.slice(0, 8)}</span>
+                      </p>
                       <p style={{ margin: 0, fontSize: '12px', color: 'rgba(240,238,255,0.4)' }}>
-                        {THEMES[order.theme] || order.theme} · {formatDate(order.created_at)} <span style={{ color: '#f59e0b' }}>({timeSince(order.created_at)} od złożenia)</span>
-                        {order.approved_at && <span style={{ color: '#f97316', marginLeft: '6px' }}>· {timeSince(order.approved_at)} od produkcji</span>}
+                        {THEMES[order.theme] || order.theme} · {formatDate(order.created_at)}
+                        <span style={{ color: '#f59e0b', marginLeft: '6px' }}>⏱ {timeSince(order.created_at)} od złożenia</span>
+                        {order.approved_at && (
+                          <span style={{ color: '#f97316', marginLeft: '8px' }}>🔧 {timeSince(order.approved_at)} od produkcji</span>
+                        )}
                       </p>
                     </div>
                     {order.review_notes && (
