@@ -273,7 +273,7 @@ export default function AdminPage() {
     }
 
     // 4. Usuń wszystkie pliki (błędy ignorujemy — plik może nie istnieć)
-    const unique = [...new Set(filesToDelete)]
+    const unique = filesToDelete.filter((v, i, a) => a.indexOf(v) === i)
     if (unique.length > 0) {
       await supabase.storage.from('order-photos').remove(unique)
     }
