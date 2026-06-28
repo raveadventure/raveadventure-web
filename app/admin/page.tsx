@@ -349,8 +349,8 @@ export default function AdminPage() {
       const data = await res.json()
       if (res.ok) {
         setSendMsg({ type: 'ok', text: 'Projekt wysłany do klienta! Status zmieniony na "Do akceptacji".' })
-        setOrders(prev => prev.map(o => o.id === selected.id ? { ...o, status: 'approval', design_url: data.designUrl } : o))
-        setSelected(prev => prev ? { ...prev, status: 'approval', design_url: data.designUrl } : null)
+        setOrders(prev => prev.map(o => o.id === selected.id ? { ...o, status: 'approval', design_url: data.designUrl, design_back_url: data.designBackUrl || null } : o))
+        setSelected(prev => prev ? { ...prev, status: 'approval', design_url: data.designUrl, design_back_url: data.designBackUrl || null } : null)
         setDesignFile(null)
         setDesignPreview(null)
         setDesignFileBack(null)
