@@ -154,15 +154,30 @@ export default function PortfolioPage() {
 
 function CardPair({ item, onOpen }: { item: PortfolioItem; onOpen: (v: { item: PortfolioItem; view: 'original' | 'card' }) => void }) {
   const [showOriginal, setShowOriginal] = useState(false)
+  const [flipping, setFlipping] = useState(false)
+
+  const handleFlip = () => {
+    if (flipping) return
+    setFlipping(true)
+    setTimeout(() => {
+      setShowOriginal(s => !s)
+      setFlipping(false)
+    }, 200)
+  }
 
   return (
     <div className={styles.cardPairWrap}>
-      <div className={styles.cardPair}>
-        {/* DOMYŚLNIE: karta. Po kliknięciu: oryginał */}
+      <div className={styles.cardPair} style={{ perspective: '1000px' }}>
         <div
-          className={styles.cardThumb}
           onClick={() => onOpen({ item, view: showOriginal ? 'original' : 'card' })}
-          style={{ cursor: 'zoom-in' }}
+          style={{
+            cursor: 'zoom-in',
+            position: 'absolute',
+            inset: 0,
+            transformStyle: 'preserve-3d',
+            transform: flipping ? 'rotateY(90deg)' : 'rotateY(0deg)',
+            transition: 'transform 0.2s ease-in',
+          }}
         >
           <img
             src={showOriginal && item.original_url ? item.original_url : item.card_url}
@@ -172,11 +187,10 @@ function CardPair({ item, onOpen }: { item: PortfolioItem; onOpen: (v: { item: P
           <div className={styles.thumbLabel}>{showOriginal ? 'Oryginał' : 'Karta'}</div>
         </div>
 
-        {/* TOGGLE — tylko jeśli jest oryginał */}
         {item.original_url && (
           <button
             className={styles.toggleBtn}
-            onClick={() => setShowOriginal(s => !s)}
+            onClick={handleFlip}
             aria-label="Przełącz widok"
           >
             {showOriginal ? '← Karta' : 'Pokaż oryginał →'}
@@ -187,7 +201,7 @@ function CardPair({ item, onOpen }: { item: PortfolioItem; onOpen: (v: { item: P
       <div className={styles.cardInfo}>
         <p className={styles.cardName}>{item.name}</p>
         {item.description && <p className={styles.cardDesc}>{item.description}</p>}
-        <button className={styles.cardZoom} onClick={() => onOpen({ item, view: 'card' })}>
+        <button className={styles.cardZoom} onClick={() => onOpen({ item, view: showOriginal ? 'original' : 'card' })}>
           Powiększ →
         </button>
       </div>
