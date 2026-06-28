@@ -157,12 +157,16 @@ export default function Home() {
       if (photo && orderData?.id) {
         const ext = (photo.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
         const safeExt = ['jpg','jpeg','png','gif','webp','heic'].includes(ext) ? ext : 'jpg'
+        const fileName = `${orderData.id}.${safeExt}`
         const { error: uploadError } = await supabase.storage
           .from('order-photos')
-          .upload(`${orderData.id}.${safeExt}`, photo)
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from('order-photos').getPublicUrl(`${orderData.id}.${safeExt}`)
-          await supabase.from('orders').update({ photo_url: urlData.publicUrl }).eq('id', orderData.id)
+          .upload(fileName, photo, { upsert: true })
+        if (uploadError) {
+          console.error('Photo upload error:', uploadError.message)
+        } else {
+          const { data: urlData } = supabase.storage.from('order-photos').getPublicUrl(fileName)
+          const { error: updateError } = await supabase.from('orders').update({ photo_url: urlData.publicUrl }).eq('id', orderData.id)
+          if (updateError) console.error('Photo URL update error:', updateError.message)
         }
       }
 
