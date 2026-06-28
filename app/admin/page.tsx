@@ -323,7 +323,7 @@ export default function AdminPage() {
     setSelected(prev => prev?.id === id ? { ...prev, paid: !paid } : prev)
   }
 
-
+  const handleDesignFile = (file: File) => {
     setDesignFile(file)
     const reader = new FileReader()
     reader.onload = e => setDesignPreview(e.target?.result as string)
