@@ -52,99 +52,96 @@ function ClientMaterials({ order }: { order: Order }) {
 
   const backOption = (order as any).back_option || 'logo'
   const theme = (order as any).theme || ''
-  const isCustomBack = ['custom_back', 'dedication', 'qr'].includes(backOption)
   const isCustomFront = theme === 'custom'
+  const isCustomBack = backOption === 'custom_back'
+  const isDedication = backOption === 'dedication'
+  const isQR = backOption === 'qr'
+  const isStandardBack = backOption === 'logo'
 
-  const ImgBox = ({ url, label, color }: { url: string | null; label: string; color: string }) => (
+  // Komponent: zdjęcie lub placeholder
+  const ImgBox = ({ url, label, color, hint }: { url: string | null; label: string; color: string; hint?: string }) => (
     <div>
       <p style={{ margin: '0 0 4px', fontSize: '10px', color, letterSpacing: '1px' }}>{label}</p>
       {url ? (
         <>
-          <img src={url} alt={label} style={{ width: '100%', borderRadius: '8px', border: `1px solid ${color}44` }} />
+          <img src={url} alt={label} style={{ width: '100%', borderRadius: '8px', border: `1px solid ${color}55` }} />
           <a href={url} target="_blank" rel="noopener noreferrer"
             style={{ display: 'block', fontSize: '11px', color, textDecoration: 'none', marginTop: '4px', textAlign: 'center' }}>
             pełne zdjęcie →
           </a>
+          {hint && <p style={{ margin: '6px 0 0', fontSize: '11px', color: 'rgba(240,238,255,0.5)', lineHeight: '1.5' }}>{hint}</p>}
         </>
       ) : (
-        <div style={{ width: '100%', aspectRatio: '0.7', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)', background: '#0d0d1a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px', boxSizing: 'border-box' }}>
+        <div style={{ width: '100%', aspectRatio: '0.75', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.1)', background: '#0d0d1a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px', boxSizing: 'border-box' }}>
           <span style={{ fontSize: '20px' }}>⏳</span>
           <p style={{ margin: 0, fontSize: '10px', color: 'rgba(240,238,255,0.3)', textAlign: 'center' }}>brak pliku</p>
+          {hint && <p style={{ margin: '4px 0 0', fontSize: '10px', color: 'rgba(240,238,255,0.3)', textAlign: 'center' }}>{hint}</p>}
         </div>
       )}
     </div>
   )
 
-  const StandardBack = ({ backOption, order }: { backOption: string; order: Order }) => (
+  // Komponent: placeholder tekstowy (logo / dedykacja / QR)
+  const TextBack = ({ icon, label, value, color }: { icon: string; label: string; value?: string; color: string }) => (
     <div>
-      <p style={{ margin: '0 0 4px', fontSize: '10px', color: 'rgba(240,238,255,0.3)', letterSpacing: '1px' }}>TYŁ — STANDARD</p>
-      <div style={{ width: '100%', aspectRatio: '0.7', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: '#0d0d1a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', boxSizing: 'border-box' }}>
-        <span style={{ fontSize: '24px' }}>🎴</span>
-        <p style={{ margin: 0, fontSize: '11px', color: 'rgba(240,238,255,0.4)', textAlign: 'center', lineHeight: '1.6' }}>
-          {backOption === 'logo' ? 'Logo RaveAdventure' :
-           backOption === 'dedication' ? ('Dedykacja: ' + ((order as any).card_text || '—')) :
-           backOption === 'qr' ? ('QR: ' + ((order as any).qr_link || '—')) :
-           'Standard'}
-        </p>
+      <p style={{ margin: '0 0 4px', fontSize: '10px', color, letterSpacing: '1px' }}>{label}</p>
+      <div style={{ width: '100%', aspectRatio: '0.75', borderRadius: '8px', border: `1px solid ${color}33`, background: '#0d0d1a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', boxSizing: 'border-box' }}>
+        <span style={{ fontSize: '26px' }}>{icon}</span>
+        {value && <p style={{ margin: 0, fontSize: '11px', color: 'rgba(240,238,255,0.5)', textAlign: 'center', lineHeight: '1.6', wordBreak: 'break-word' }}>{value}</p>}
       </div>
     </div>
   )
 
   return (
     <div style={{ marginBottom: '16px' }}>
-      <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'rgba(240,238,255,0.4)', letterSpacing: '1px' }}>MATERIAŁY OD KLIENTA</p>
 
-      {/* Zdjęcie klienta (zawsze) */}
-      {order.photo_url && (
-        <div style={{ marginBottom: '10px' }}>
-          <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#534AB7', letterSpacing: '1px' }}>ZDJĘCIE KLIENTA</p>
-          <img src={order.photo_url} alt="Zdjęcie klienta" style={{ width: '100%', borderRadius: '8px', border: '1px solid rgba(83,74,183,0.4)' }} />
-          <a href={order.photo_url} target="_blank" rel="noopener noreferrer"
-            style={{ display: 'block', fontSize: '11px', color: '#534AB7', textDecoration: 'none', marginTop: '4px', textAlign: 'center' }}>
-            pełne zdjęcie →
-          </a>
+      {/* KARTA CUSTOM — baner z inspiracją */}
+      {isCustomFront && (
+        <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px' }}>
+          <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#f59e0b', letterSpacing: '1px', fontWeight: 700 }}>🎨 KARTA CUSTOM</p>
+          {(order as any).custom_desc && (
+            <p style={{ margin: '0 0 6px', fontSize: '12px', color: '#f0eeff', lineHeight: '1.6' }}>{(order as any).custom_desc}</p>
+          )}
+          {refFrontUrl
+            ? <a href={refFrontUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: '#f59e0b', textDecoration: 'none', fontWeight: 600 }}>Otwórz grafikę referencyjną →</a>
+            : <p style={{ margin: 0, fontSize: '12px', color: 'rgba(240,238,255,0.3)' }}>Brak grafiki referencyjnej</p>
+          }
         </div>
       )}
 
-      {/* Siatka: przód i tył */}
+      {/* SIATKA: FRONT | BACK */}
+      <p style={{ margin: '0 0 8px', fontSize: '10px', color: 'rgba(240,238,255,0.3)', letterSpacing: '1px' }}>MATERIAŁY OD KLIENTA</p>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
 
-        {/* SCENARIUSZ 1 & 2: motyw standard (nie custom) */}
-        {!isCustomFront && (
-          <>
-            <ImgBox url={order.photo_url} label="PRZÓD — ZDJĘCIE" color="#b44dff" />
-            {isCustomBack
-              ? <ImgBox url={refBackUrl} label="TYŁ — GRAFIKA KLIENTA" color="#00f0ff" />
-              : <StandardBack backOption={backOption} order={order} />
-            }
-          </>
-        )}
+        {/* FRONT — zawsze zdjęcie klienta (photo_url) */}
+        <ImgBox
+          url={order.photo_url}
+          label="FRONT — ZDJĘCIE DO PRZERÓBKI"
+          color="#b44dff"
+        />
 
-        {/* SCENARIUSZ 3: motyw custom */}
-        {isCustomFront && (
-          <>
-            <ImgBox url={refFrontUrl} label="PRZÓD — GRAFIKA KLIENTA" color="#b44dff" />
-            {isCustomBack
-              ? <ImgBox url={refBackUrl} label="TYŁ — GRAFIKA KLIENTA" color="#00f0ff" />
-              : <StandardBack backOption={backOption} order={order} />
-            }
-          </>
+        {/* BACK — zależy od wybranej opcji */}
+        {isStandardBack && (
+          <TextBack icon="🎴" label="TYŁ — STANDARD" color="rgba(240,238,255,0.2)"
+            value="Logo RaveAdventure" />
+        )}
+        {isCustomBack && (
+          <ImgBox
+            url={refBackUrl}
+            label="TYŁ — GRAFIKA KLIENTA"
+            color="#00f0ff"
+            hint={(order as any).notes || undefined}
+          />
+        )}
+        {isDedication && (
+          <TextBack icon="📝" label="TYŁ — DEDYKACJA" color="#f59e0b"
+            value={(order as any).card_text || '—'} />
+        )}
+        {isQR && (
+          <TextBack icon="⬛" label="TYŁ — QR CODE" color="#10b981"
+            value={(order as any).qr_link || '—'} />
         )}
       </div>
-
-      {/* Inspiracja (tylko custom front) */}
-      {isCustomFront && (order as any).custom_desc && (
-        <div style={{ marginTop: '10px', padding: '10px 12px', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '8px' }}>
-          <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#f59e0b', letterSpacing: '1px' }}>CUSTOM — OPIS KLIENTA</p>
-          <p style={{ margin: '0 0 6px', fontSize: '12px', color: '#f0eeff', lineHeight: '1.6' }}>{(order as any).custom_desc}</p>
-          {refFrontUrl && (
-            <a href={refFrontUrl} target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: '12px', color: '#f59e0b', textDecoration: 'none' }}>
-              Otwórz plik inspiracji →
-            </a>
-          )}
-        </div>
-      )}
     </div>
   )
 }
