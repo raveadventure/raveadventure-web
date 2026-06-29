@@ -14,8 +14,6 @@ export default function MaintenancePage() {
     }}>
       <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
 
-      <img src="/logo.png" alt="RaveAdventure" style={{ width: '100%', maxWidth: '600px', marginBottom: '48px' }} />
-
       <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#b44dff', letterSpacing: '3px', margin: '0 0 16px' }}>
         // przerwa techniczna
       </p>
