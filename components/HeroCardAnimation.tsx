@@ -98,8 +98,9 @@ export default function HeroCardAnimation() {
           100% { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes raShine {
-          0% { transform: translateX(-130%) skewX(-18deg); }
-          100% { transform: translateX(230%) skewX(-18deg); }
+          0% { transform: translate3d(-130%, 0, 0) skewX(-18deg); animation-timing-function: ease-in-out; }
+          45% { transform: translate3d(230%, 0, 0) skewX(-18deg); }
+          100% { transform: translate3d(230%, 0, 0) skewX(-18deg); }
         }
         @keyframes raGlowPulse {
           0%, 100% { opacity: 0.45; }
@@ -250,8 +251,10 @@ export default function HeroCardAnimation() {
               <div style={{
                 position: 'absolute', top: 0, bottom: 0, width: '45%',
                 background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent)',
-                animation: 'raShine 2.4s ease-in-out 0.6s 2',
+                transform: 'translate3d(-130%, 0, 0) skewX(-18deg)',
+                animation: 'raShine 3.4s linear 0.5s infinite',
                 willChange: 'transform',
+                backfaceVisibility: 'hidden',
               }} />
             </div>
           )}
