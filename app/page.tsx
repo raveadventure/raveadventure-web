@@ -3,6 +3,7 @@ import { useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import styles from './page.module.css'
 import PortfolioCarousel from '../components/PortfolioCarousel'
+import HeroCardAnimation from '../components/HeroCardAnimation'
 
 const CARD_TYPES = [
   {
@@ -294,6 +295,11 @@ export default function Home() {
             <span className={styles.badge}>Projekt w 24h</span>
           </div>
           <a href="#order" className={styles.btnHero}>Zamów swoją kartę →</a>
+
+          {/* ANIMACJA — zdjęcie zamienia się w kartę */}
+          <div style={{ marginTop: '36px' }}>
+            <HeroCardAnimation />
+          </div>
         </div>
 
       </section>
