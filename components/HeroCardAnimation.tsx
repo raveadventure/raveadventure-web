@@ -8,7 +8,8 @@ const PHASES = [
   { id: 'artwork', dur: 1600 },
   { id: 'frame', dur: 1100 },
   { id: 'attrs', dur: 2300 },
-  { id: 'final', dur: 3000 },
+  { id: 'final', dur: 7000 },
+  { id: 'fade', dur: 900 },
 ] as const
 
 type Phase = typeof PHASES[number]['id']
@@ -44,6 +45,8 @@ export default function HeroCardAnimation() {
   const isFlash = phase === 'flash'
   const isArtwork = phase === 'artwork'
   const isFinal = phase === 'final'
+  const isFade = phase === 'fade'
+  const showCard = isFinal || isFade
 
   // Warstwa karty — img z clip-path
   const CardLayer = ({ clip, show, anim, z = 2 }: { clip: string; show: boolean; anim?: string; z?: number }) => {
@@ -103,8 +106,16 @@ export default function HeroCardAnimation() {
           50% { opacity: 1; }
         }
         @keyframes raTilt {
-          0%, 100% { transform: rotateY(-4deg) rotateX(2deg); }
-          50% { transform: rotateY(4deg) rotateX(-2deg); }
+          0%, 100% { transform: rotateY(-3deg) rotateX(1.5deg) translateZ(0); }
+          50% { transform: rotateY(3deg) rotateX(-1.5deg) translateZ(0); }
+        }
+        @keyframes raFadeToBlack {
+          0% { opacity: 0; }
+          100% { opacity: 1; }
+        }
+        @keyframes raFadeFromBlack {
+          0% { opacity: 1; }
+          100% { opacity: 0; }
         }
         @keyframes raPop {
           0% { opacity: 0; transform: translateY(8px) scale(0.85); }
@@ -115,7 +126,7 @@ export default function HeroCardAnimation() {
 
       <div style={{ perspective: '900px', position: 'relative' }}>
         {/* GLOW — osobna warstwa, animuje tylko opacity (GPU) */}
-        {isFinal && (
+        {showCard && (
           <div style={{
             position: 'absolute',
             inset: '-14px',
@@ -135,10 +146,11 @@ export default function HeroCardAnimation() {
             overflow: 'hidden',
             background: '#07070f',
             border: '1px solid rgba(180,77,255,0.25)',
-            boxShadow: isFinal ? '0 0 28px rgba(180,77,255,0.4)' : undefined,
-            animation: isFinal ? 'raTilt 5s ease-in-out infinite' : undefined,
+            boxShadow: showCard ? '0 0 28px rgba(180,77,255,0.4)' : undefined,
+            animation: showCard ? 'raTilt 7s ease-in-out infinite' : undefined,
             transformStyle: 'preserve-3d',
-            willChange: isFinal ? 'transform' : undefined,
+            willChange: 'transform',
+            transform: 'translateZ(0)',
           }}
         >
           {/* ZDJĘCIE ORYGINALNE — znika po flashu */}
@@ -184,7 +196,7 @@ export default function HeroCardAnimation() {
           )}
 
           {/* FINAL — jedna pełna grafika zamiast warstw (wydajność przy obrocie 3D) */}
-          {isFinal && (
+          {showCard && (
             <img
               src="/anim-card.png"
               alt="Gotowa karta RaveAdventure"
@@ -193,7 +205,7 @@ export default function HeroCardAnimation() {
           )}
 
           {/* 1 — GRAFIKA (artwork na czarnym tle) */}
-          <CardLayer clip={ZONES.artwork} show={idx >= 2 && !isFinal} anim={isArtwork ? 'raArtIn 1.4s ease-out both' : undefined} z={2} />
+          <CardLayer clip={ZONES.artwork} show={idx >= 2 && !showCard} anim={isArtwork ? 'raArtIn 1.4s ease-out both' : undefined} z={2} />
 
           {/* SCANLINE podczas artwork */}
           {isArtwork && (
@@ -206,13 +218,31 @@ export default function HeroCardAnimation() {
           )}
 
           {/* 2 — RAMKA + górny pasek */}
-          <CardLayer clip={ZONES.frame} show={idx >= 3 && !isFinal} anim={phase === 'frame' ? 'raFrameIn 0.9s ease-out both' : undefined} z={3} />
+          <CardLayer clip={ZONES.frame} show={idx >= 3 && !showCard} anim={phase === 'frame' ? 'raFrameIn 0.9s ease-out both' : undefined} z={3} />
 
           {/* 3 — ATRYBUTY spadają kolejno: a, b, c, d */}
-          <CardLayer clip={ZONES.name}  show={idx >= 4 && !isFinal} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 0.0s both' : undefined} z={4} />
-          <CardLayer clip={ZONES.attr1} show={idx >= 4 && !isFinal} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 0.5s both' : undefined} z={4} />
-          <CardLayer clip={ZONES.skill} show={idx >= 4 && !isFinal} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 1.0s both' : undefined} z={4} />
-          <CardLayer clip={ZONES.attr2} show={idx >= 4 && !isFinal} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 1.5s both' : undefined} z={4} />
+          <CardLayer clip={ZONES.name}  show={idx >= 4 && !showCard} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 0.0s both' : undefined} z={4} />
+          <CardLayer clip={ZONES.attr1} show={idx >= 4 && !showCard} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 0.5s both' : undefined} z={4} />
+          <CardLayer clip={ZONES.skill} show={idx >= 4 && !showCard} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 1.0s both' : undefined} z={4} />
+          <CardLayer clip={ZONES.attr2} show={idx >= 4 && !showCard} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 1.5s both' : undefined} z={4} />
+
+          {/* FADE OUT — wygaszenie do czerni przed nowym cyklem */}
+          {isFade && (
+            <div style={{
+              position: 'absolute', inset: 0, background: '#07070f',
+              animation: 'raFadeToBlack 0.85s ease-in-out both',
+              zIndex: 8, pointerEvents: 'none',
+            }} />
+          )}
+
+          {/* FADE IN — płynne wejście z czerni na starcie cyklu */}
+          {isPhoto && (
+            <div style={{
+              position: 'absolute', inset: 0, background: '#07070f',
+              animation: 'raFadeFromBlack 0.7s ease-out both',
+              zIndex: 8, pointerEvents: 'none',
+            }} />
+          )}
 
           {/* SHINE — final */}
           {isFinal && (
@@ -220,7 +250,7 @@ export default function HeroCardAnimation() {
               <div style={{
                 position: 'absolute', top: 0, bottom: 0, width: '45%',
                 background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent)',
-                animation: 'raShine 1.6s ease-in-out 0.5s',
+                animation: 'raShine 2.4s ease-in-out 0.6s 2',
                 willChange: 'transform',
               }} />
             </div>
@@ -270,6 +300,7 @@ export default function HeroCardAnimation() {
             ✦ Twoja karta gotowa
           </span>
         )}
+        {isFade && <span style={{ fontSize: '11px' }}>&nbsp;</span>}
       </div>
     </div>
   )
