@@ -249,7 +249,7 @@ export default function Home() {
         marginTop: '57px',
       }}>
         <img
-          src="/logo.png"
+          src="/logo_kwadrat.png"
           alt="RaveAdventure — The best memories from your adventure deserve a card."
           style={{
             maxWidth: '100%',
