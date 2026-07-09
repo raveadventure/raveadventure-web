@@ -1,25 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_KEY!
 )
-
 export async function POST(req: NextRequest) {
   try {
     const { token } = await req.json()
     if (!token) return NextResponse.json({ error: 'Brak tokenu' }, { status: 400 })
-
     const { data: order, error } = await supabase
       .from('orders')
-      .update({ status: 'production' })
+      .update({ status: 'awaiting_payment' })
       .eq('review_token', token)
       .select('*')
       .single()
-
     if (error || !order) return NextResponse.json({ error: 'Nie znaleziono zamówienia' }, { status: 404 })
-
     // Powiadom admina
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -27,18 +22,19 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         from: 'RaveAdventure <zamowienia@raveadventure.pl>',
         to: ['michal.koch96@gmail.com'],
-        subject: `✅ Projekt zatwierdzony — ${order.name}`,
+        subject: `✅ Projekt zatwierdzony — ${order.name} (czeka na płatność)`,
         html: `<div style="font-family:sans-serif;background:#0a0a14;color:#f0eeff;padding:32px;border-radius:12px;">
-          <h2 style="color:#00e5a0;">✅ Klient zatwierdził projekt!</h2>
+          <h2 style="color:#ec4899;">✅ Klient zatwierdził projekt!</h2>
           <p><strong>Klient:</strong> ${order.name}</p>
           <p><strong>Email:</strong> ${order.email}</p>
           <p><strong>Motyw:</strong> ${order.theme}</p>
+          <p><strong>Kwota:</strong> ${order.total_price ? order.total_price + ' zł' : '—'}</p>
           <p><strong>Adres wysyłki:</strong> ${order.address}</p>
-          <p style="color:rgba(240,238,255,0.5);margin-top:20px;">Status zmieniony na: <strong style="color:#f97316;">Produkcja</strong></p>
+          <p style="color:rgba(240,238,255,0.5);margin-top:20px;">Status zmieniony na: <strong style="color:#ec4899;">Do opłacenia</strong></p>
+          <p style="color:rgba(240,238,255,0.5);">Klient otrzymał dane do płatności (BLIK / przelew) z prośbą o podanie pierwszych 8 znaków ID zamówienia w tytule. Sprawdź wpłatę i oznacz zlecenie jako opłacone w panelu — status przeskoczy automatycznie na "Produkcja".</p>
         </div>`,
       }),
     })
-
     return NextResponse.json({ success: true, order })
   } catch (err) {
     console.error(err)
