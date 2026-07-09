@@ -272,17 +272,54 @@ export default function AdminPage() {
     setSending(true)
     setSendMsg(null)
     try {
-      const fd = new FormData()
-      fd.append('orderId', selected.id)
-      fd.append('design', designFile)
-      fd.append('note', designNote)
-      if (designFileBack) fd.append('designBack', designFileBack)
-      const res = await fetch('/api/send-design', { method: 'POST', body: fd })
+      const timestamp = Date.now()
+
+      // 1. Upload PRZODU bezpośrednio do Supabase Storage z przeglądarki (omija limit 4.5MB na Vercel API)
+      const extFront = (designFile.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
+      const safeExtFront = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extFront) ? extFront : 'jpg'
+      const fileNameFront = `designs/${selected.id}-${timestamp}.${safeExtFront}`
+      const { error: uploadFrontError } = await supabase.storage
+        .from('order-photos')
+        .upload(fileNameFront, designFile, { upsert: false })
+      if (uploadFrontError) {
+        setSendMsg({ type: 'err', text: 'Błąd uploadu przodu: ' + uploadFrontError.message })
+        setSending(false)
+        return
+      }
+      const { data: urlFrontData } = supabase.storage.from('order-photos').getPublicUrl(fileNameFront)
+      const designUrl = urlFrontData.publicUrl + `?v=${timestamp}`
+
+      // 2. Upload TYŁU (opcjonalnie)
+      let designBackUrl: string | null = null
+      if (designFileBack) {
+        const extBack = (designFileBack.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
+        const safeExtBack = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extBack) ? extBack : 'jpg'
+        const fileNameBack = `designs/${selected.id}-${timestamp}-back.${safeExtBack}`
+        const { error: uploadBackError } = await supabase.storage
+          .from('order-photos')
+          .upload(fileNameBack, designFileBack, { upsert: false })
+        if (!uploadBackError) {
+          const { data: urlBackData } = supabase.storage.from('order-photos').getPublicUrl(fileNameBack)
+          designBackUrl = urlBackData.publicUrl
+        }
+      }
+
+      // 3. Wyślij do API tylko małe dane JSON (linki + notatka) — zero ryzyka 413
+      const res = await fetch('/api/send-design', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: selected.id,
+          designUrl,
+          designBackUrl,
+          note: designNote,
+        }),
+      })
       const data = await res.json()
       if (res.ok) {
         setSendMsg({ type: 'ok', text: 'Projekt wysłany do klienta! Status zmieniony na "Do akceptacji".' })
-        setOrders(prev => prev.map(o => o.id === selected.id ? { ...o, status: 'approval', design_url: data.designUrl, design_back_url: data.designBackUrl || null } : o))
-        setSelected(prev => prev ? { ...prev, status: 'approval', design_url: data.designUrl, design_back_url: data.designBackUrl || null } : null)
+        setOrders(prev => prev.map(o => o.id === selected.id ? { ...o, status: 'approval', design_url: designUrl, design_back_url: designBackUrl } : o))
+        setSelected(prev => prev ? { ...prev, status: 'approval', design_url: designUrl, design_back_url: designBackUrl } : null)
         setDesignFile(null)
         setDesignPreview(null)
         setDesignFileBack(null)
@@ -291,8 +328,8 @@ export default function AdminPage() {
       } else {
         setSendMsg({ type: 'err', text: data.error || 'Błąd wysyłki.' })
       }
-    } catch {
-      setSendMsg({ type: 'err', text: 'Błąd połączenia.' })
+    } catch (err) {
+      setSendMsg({ type: 'err', text: 'Błąd połączenia: ' + (err instanceof Error ? err.message : 'nieznany') })
     }
     setSending(false)
   }
