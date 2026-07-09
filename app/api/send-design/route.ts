@@ -7,6 +7,11 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY!
 )
 
+// ── DANE DO PŁATNOŚCI — PODMIEŃ NA SWOJE ──────────────────────
+const BLIK_PHONE = '[+48 785259525]'
+const BANK_ACCOUNT = '[WPISZ NUMER KONTA]'
+const BANK_RECIPIENT = '[WPISZ IMIĘ I NAZWISKO ODBIORCY]'
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
@@ -88,6 +93,15 @@ export async function POST(req: NextRequest) {
         statusPrompt: 'Chcesz sprawdzić status zamówienia?',
         statusBtn: 'Sprawdź status zamówienia →',
         subject: '🎴 Twój projekt karty RaveAdventure — sprawdź i zatwierdź',
+        paymentEyebrow: '// dane do płatności',
+        paymentIntro: 'Jeśli projekt Ci się podoba i klikniesz "Zatwierdzam", prosimy o dokonanie płatności jedną z poniższych metod:',
+        paymentTitleImportant: 'Ważne',
+        paymentTitleCode: 'W tytule przelewu / opisie BLIK koniecznie podaj numer zamówienia:',
+        blikLabel: 'Opcja 1 — BLIK na numer telefonu',
+        bankLabel: 'Opcja 2 — Przelew tradycyjny',
+        bankAccountLabel: 'Numer konta',
+        bankRecipientLabel: 'Odbiorca',
+        amountLabel: 'Kwota',
       },
       en: {
         htmlLang: 'en',
@@ -107,6 +121,15 @@ export async function POST(req: NextRequest) {
         statusPrompt: 'Want to check your order status?',
         statusBtn: 'Check order status →',
         subject: '🎴 Your RaveAdventure card design — review and approve',
+        paymentEyebrow: '// payment details',
+        paymentIntro: 'If you like the design and click "Approve design", please complete the payment using one of the methods below:',
+        paymentTitleImportant: 'Important',
+        paymentTitleCode: 'Please include the order number in the transfer title / BLIK description:',
+        blikLabel: 'Option 1 — BLIK to phone number',
+        bankLabel: 'Option 2 — Bank transfer',
+        bankAccountLabel: 'Account number',
+        bankRecipientLabel: 'Recipient',
+        amountLabel: 'Amount',
       },
     }[lang]
 
@@ -187,6 +210,46 @@ export async function POST(req: NextRequest) {
           <strong style="color:#00e5a0;">${L.infoApprove}</strong> — ${L.infoApproveDesc}<br>
           <strong style="color:#ff4d6d;">${L.infoReject}</strong> — ${L.infoRejectDesc}
         </p>
+      </td></tr>
+    </table>
+
+    <!-- DANE DO PŁATNOŚCI -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#16162a;border-radius:12px;padding:20px;margin-bottom:16px;">
+      <tr><td>
+        <p style="margin:0 0 12px;font-size:11px;color:#ec4899;letter-spacing:2px;font-family:monospace;">${L.paymentEyebrow}</p>
+        <p style="margin:0 0 16px;font-size:13px;color:rgba(240,238,255,0.7);line-height:1.6;">${L.paymentIntro}</p>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(255,77,109,0.06);border:1px solid rgba(255,77,109,0.25);border-radius:8px;padding:12px 16px;margin-bottom:16px;">
+          <tr><td>
+            <p style="margin:0 0 4px;font-size:12px;color:#ff4d6d;font-weight:700;">⚠ ${L.paymentTitleImportant}</p>
+            <p style="margin:0 0 6px;font-size:12px;color:#f0eeff;">${L.paymentTitleCode}</p>
+            <p style="margin:0;font-size:16px;color:#ff4d6d;font-weight:700;font-family:monospace;letter-spacing:2px;">${order.id.slice(0, 8).toUpperCase()}</p>
+          </td></tr>
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
+          <tr><td style="background:rgba(180,77,255,0.06);border:1px solid rgba(180,77,255,0.2);border-radius:8px;padding:14px 16px;">
+            <p style="margin:0 0 8px;font-size:13px;color:#b44dff;font-weight:700;">📱 ${L.blikLabel}</p>
+            <p style="margin:0 0 4px;font-size:18px;color:#f0eeff;font-weight:700;font-family:monospace;">${BLIK_PHONE}</p>
+          </td></tr>
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
+          <tr><td style="background:rgba(0,240,255,0.05);border:1px solid rgba(0,240,255,0.2);border-radius:8px;padding:14px 16px;">
+            <p style="margin:0 0 8px;font-size:13px;color:#00f0ff;font-weight:700;">🏦 ${L.bankLabel}</p>
+            <p style="margin:0 0 3px;font-size:11px;color:rgba(240,238,255,0.5);">${L.bankAccountLabel}</p>
+            <p style="margin:0 0 8px;font-size:16px;color:#f0eeff;font-weight:700;font-family:monospace;">${BANK_ACCOUNT}</p>
+            <p style="margin:0 0 3px;font-size:11px;color:rgba(240,238,255,0.5);">${L.bankRecipientLabel}</p>
+            <p style="margin:0;font-size:14px;color:#f0eeff;font-weight:600;">${BANK_RECIPIENT}</p>
+          </td></tr>
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="font-size:13px;color:rgba(240,238,255,0.5);">${L.amountLabel}</td>
+            <td align="right" style="font-size:18px;font-weight:700;color:#00e5a0;">${order.total_price ? order.total_price + ' zł' : '—'}</td>
+          </tr>
+        </table>
       </td></tr>
     </table>
 
