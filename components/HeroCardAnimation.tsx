@@ -14,6 +14,29 @@ const PHASES = [
 
 type Phase = typeof PHASES[number]['id']
 
+const TXT = {
+  pl: {
+    photo: '// twoje zdjęcie z eventu',
+    click: '📸 CLICK!',
+    artwork: '// przerabiamy w sztukę...',
+    frame: '// dodajemy ramkę',
+    attrs: ['NAZWA', 'ATRYBUT 1', 'UMIEJĘTNOŚĆ', 'ATRYBUT 2'],
+    final: '✦ Twoja karta gotowa',
+    photoAlt: 'Zdjęcie z festiwalu',
+    finalAlt: 'Gotowa karta RaveAdventure',
+  },
+  en: {
+    photo: '// your photo from the event',
+    click: '📸 CLICK!',
+    artwork: '// turning it into art...',
+    frame: '// adding the frame',
+    attrs: ['NAME', 'ATTRIBUTE 1', 'SKILL', 'ATTRIBUTE 2'],
+    final: '✦ Your card is ready',
+    photoAlt: 'Photo from the festival',
+    finalAlt: 'Finished RaveAdventure card',
+  },
+}
+
 // Strefy karty (procenty z anim-card.png 591x1063)
 const ZONES = {
   artwork: 'inset(11.5% 6% 29% 6%)',       // grafika (1)
@@ -24,7 +47,8 @@ const ZONES = {
   attr2: 'inset(92.5% 5% 1.7% 5%)',        // d — HAPPINESS x3
 }
 
-export default function HeroCardAnimation() {
+export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
+  const t = TXT[lang]
   const [phase, setPhase] = useState<Phase>('photo')
 
   useEffect(() => {
@@ -36,8 +60,8 @@ export default function HeroCardAnimation() {
     const current = PHASES.find(p => p.id === phase)!
     const idx = PHASES.indexOf(current)
     const next = PHASES[(idx + 1) % PHASES.length]
-    const t = setTimeout(() => setPhase(next.id), current.dur)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setPhase(next.id), current.dur)
+    return () => clearTimeout(timer)
   }, [phase])
 
   const idx = PHASES.findIndex(p => p.id === phase)
@@ -48,7 +72,6 @@ export default function HeroCardAnimation() {
   const isFade = phase === 'fade'
   const showCard = isFinal || isFade
 
-  // Warstwa karty — img z clip-path
   const CardLayer = ({ clip, show, anim, z = 2 }: { clip: string; show: boolean; anim?: string; z?: number }) => {
     if (!show) return null
     return (
@@ -126,7 +149,6 @@ export default function HeroCardAnimation() {
       `}</style>
 
       <div style={{ perspective: '900px', position: 'relative' }}>
-        {/* GLOW — osobna warstwa, animuje tylko opacity (GPU) */}
         {showCard && (
           <div style={{
             position: 'absolute',
@@ -154,11 +176,10 @@ export default function HeroCardAnimation() {
             transform: 'translateZ(0)',
           }}
         >
-          {/* ZDJĘCIE ORYGINALNE — znika po flashu */}
           {idx <= 1 && (
             <img
               src="/anim-photo.jpg"
-              alt="Zdjęcie z festiwalu"
+              alt={t.photoAlt}
               style={{
                 position: 'absolute',
                 inset: 0,
@@ -170,7 +191,6 @@ export default function HeroCardAnimation() {
             />
           )}
 
-          {/* VIEWFINDER */}
           {(isPhoto || isFlash) && (
             <>
               {[
@@ -191,24 +211,20 @@ export default function HeroCardAnimation() {
             </>
           )}
 
-          {/* FLASH */}
           {isFlash && (
             <div style={{ position: 'absolute', inset: 0, background: '#fff', animation: 'raFlash 0.45s ease-out forwards', zIndex: 6 }} />
           )}
 
-          {/* FINAL — jedna pełna grafika zamiast warstw (wydajność przy obrocie 3D) */}
           {showCard && (
             <img
               src="/anim-card.png"
-              alt="Gotowa karta RaveAdventure"
+              alt={t.finalAlt}
               style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 2, transform: 'translateZ(0)' }}
             />
           )}
 
-          {/* 1 — GRAFIKA (artwork na czarnym tle) */}
           <CardLayer clip={ZONES.artwork} show={idx >= 2 && !showCard} anim={isArtwork ? 'raArtIn 1.4s ease-out both' : undefined} z={2} />
 
-          {/* SCANLINE podczas artwork */}
           {isArtwork && (
             <div style={{
               position: 'absolute', left: '6%', right: '6%', height: '3px',
@@ -218,16 +234,13 @@ export default function HeroCardAnimation() {
             }} />
           )}
 
-          {/* 2 — RAMKA + górny pasek */}
           <CardLayer clip={ZONES.frame} show={idx >= 3 && !showCard} anim={phase === 'frame' ? 'raFrameIn 0.9s ease-out both' : undefined} z={3} />
 
-          {/* 3 — ATRYBUTY spadają kolejno: a, b, c, d */}
           <CardLayer clip={ZONES.name}  show={idx >= 4 && !showCard} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 0.0s both' : undefined} z={4} />
           <CardLayer clip={ZONES.attr1} show={idx >= 4 && !showCard} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 0.5s both' : undefined} z={4} />
           <CardLayer clip={ZONES.skill} show={idx >= 4 && !showCard} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 1.0s both' : undefined} z={4} />
           <CardLayer clip={ZONES.attr2} show={idx >= 4 && !showCard} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 1.5s both' : undefined} z={4} />
 
-          {/* FADE OUT — wygaszenie do czerni przed nowym cyklem */}
           {isFade && (
             <div style={{
               position: 'absolute', inset: 0, background: '#07070f',
@@ -236,7 +249,6 @@ export default function HeroCardAnimation() {
             }} />
           )}
 
-          {/* FADE IN — płynne wejście z czerni na starcie cyklu */}
           {isPhoto && (
             <div style={{
               position: 'absolute', inset: 0, background: '#07070f',
@@ -245,7 +257,6 @@ export default function HeroCardAnimation() {
             }} />
           )}
 
-          {/* SHINE — final */}
           {isFinal && (
             <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 7, pointerEvents: 'none' }}>
               <div style={{
@@ -265,27 +276,27 @@ export default function HeroCardAnimation() {
       <div style={{ display: 'flex', gap: '6px', minHeight: '26px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
         {isPhoto && (
           <span style={{ fontSize: '11px', fontFamily: 'monospace', letterSpacing: '1px', color: 'rgba(240,238,255,0.5)', animation: 'raPop 0.3s ease-out' }}>
-            // twoje zdjęcie z eventu
+            {t.photo}
           </span>
         )}
         {isFlash && (
           <span style={{ fontSize: '13px', fontFamily: 'monospace', fontWeight: 700, letterSpacing: '2px', color: '#fff', animation: 'raPop 0.2s ease-out' }}>
-            📸 CLICK!
+            {t.click}
           </span>
         )}
         {isArtwork && (
           <span style={{ fontSize: '11px', fontFamily: 'monospace', letterSpacing: '1px', color: '#00f0ff', animation: 'raPop 0.3s ease-out' }}>
-            // przerabiamy w sztukę...
+            {t.artwork}
           </span>
         )}
         {phase === 'frame' && (
           <span style={{ fontSize: '11px', fontFamily: 'monospace', letterSpacing: '1px', color: '#b44dff', animation: 'raPop 0.3s ease-out' }}>
-            // dodajemy ramkę
+            {t.frame}
           </span>
         )}
         {phase === 'attrs' && (
           <>
-            {['NAZWA', 'ATRYBUT 1', 'UMIEJĘTNOŚĆ', 'ATRYBUT 2'].map((label, i) => (
+            {t.attrs.map((label, i) => (
               <span key={label} style={{
                 fontSize: '10px', fontFamily: 'monospace', letterSpacing: '1px',
                 color: '#00e5a0', background: 'rgba(0,229,160,0.08)',
@@ -300,7 +311,7 @@ export default function HeroCardAnimation() {
         )}
         {isFinal && (
           <span style={{ fontSize: '11px', fontFamily: 'monospace', letterSpacing: '1px', color: '#b44dff', fontWeight: 700, animation: 'raPop 0.3s ease-out' }}>
-            ✦ Twoja karta gotowa
+            {t.final}
           </span>
         )}
         {isFade && <span style={{ fontSize: '11px' }}>&nbsp;</span>}
