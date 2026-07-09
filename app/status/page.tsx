@@ -4,12 +4,12 @@ import { useSearchParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 
 const STATUSES = [
-  { id: 'new',        label: 'Zamówienie przyjęte',  desc: 'Twoje zamówienie zostało zarejestrowane w systemie.',        color: '#f59e0b', icon: '📋' },
-  { id: 'in_project', label: 'W projekcie',           desc: 'Pracujemy nad Twoją kartą. Projekt będzie gotowy wkrótce.',  color: '#3b82f6', icon: '🎨' },
-  { id: 'approval',   label: 'Czeka na akceptację',   desc: 'Projekt został wysłany na Twój email. Sprawdź skrzynkę.',   color: '#8b5cf6', icon: '📬' },
-  { id: 'production', label: 'W produkcji',            desc: 'Projekt zaakceptowany! Karta jest drukowana.',              color: '#f97316', icon: '🖨' },
-  { id: 'shipped',    label: 'Wysłana',                desc: 'Karta została nadana i jest w drodze do Ciebie.',           color: '#10b981', icon: '📦' },
-  { id: 'done',       label: 'Dostarczona',            desc: 'Gotowe! Ciesz się swoją kartą.',                            color: '#6b7280', icon: '✅' },
+  { id: 'new',        labelPl: 'Zamówienie przyjęte',  labelEn: 'Order received',        descPl: 'Twoje zamówienie zostało zarejestrowane w systemie.', descEn: 'Your order has been registered in our system.', color: '#f59e0b', icon: '📋' },
+  { id: 'in_project', labelPl: 'W projekcie',           labelEn: 'In design',              descPl: 'Pracujemy nad Twoją kartą. Projekt będzie gotowy wkrótce.', descEn: 'We are working on your card. The design will be ready soon.', color: '#3b82f6', icon: '🎨' },
+  { id: 'approval',   labelPl: 'Czeka na akceptację',   labelEn: 'Awaiting approval',      descPl: 'Projekt został wysłany na Twój email. Sprawdź skrzynkę.', descEn: 'The design has been sent to your email. Please check your inbox.', color: '#8b5cf6', icon: '📬' },
+  { id: 'production', labelPl: 'W produkcji',            labelEn: 'In production',          descPl: 'Projekt zaakceptowany! Karta jest drukowana.', descEn: 'Design approved! Your card is being printed.', color: '#f97316', icon: '🖨' },
+  { id: 'shipped',    labelPl: 'Wysłana',                labelEn: 'Shipped',                descPl: 'Karta została nadana i jest w drodze do Ciebie.', descEn: 'Your card has been shipped and is on its way to you.', color: '#10b981', icon: '📦' },
+  { id: 'done',       labelPl: 'Dostarczona',            labelEn: 'Delivered',              descPl: 'Gotowe! Ciesz się swoją kartą.', descEn: 'All done! Enjoy your card.', color: '#6b7280', icon: '✅' },
 ]
 
 type Order = {
@@ -30,10 +30,13 @@ function timeSince(dateStr: string) {
   const mins = Math.floor(diff / 60000)
   const hours = Math.floor(diff / 3600000)
   const days = Math.floor(diff / 86400000)
-  if (days > 0) return `${days} ${days === 1 ? 'dzień' : days < 5 ? 'dni' : 'dni'} temu`
-  if (hours > 0) return `${hours} ${hours === 1 ? 'godzinę' : 'godziny'} temu`
-  if (mins > 0) return `${mins} min temu`
-  return 'przed chwilą'
+  const pl = days > 0 ? `${days} ${days === 1 ? 'dzień' : days < 5 ? 'dni' : 'dni'} temu`
+    : hours > 0 ? `${hours} ${hours === 1 ? 'godzinę' : 'godziny'} temu`
+    : mins > 0 ? `${mins} min temu` : 'przed chwilą'
+  const en = days > 0 ? `${days} ${days === 1 ? 'day' : 'days'} ago`
+    : hours > 0 ? `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
+    : mins > 0 ? `${mins} min ago` : 'just now'
+  return { pl, en }
 }
 
 function StatusContent() {
@@ -67,7 +70,7 @@ function StatusContent() {
           Rave<span style={{ color: '#b44dff' }}>Adventure</span>
         </a>
         <a href="/#order" style={{ fontSize: '13px', color: '#b44dff', textDecoration: 'none', border: '1px solid rgba(180,77,255,0.3)', padding: '6px 14px', borderRadius: '6px' }}>
-          Zamów kartę
+          Zamów kartę · Order
         </a>
       </nav>
       <div style={{ maxWidth: '600px', margin: '0 auto', padding: '40px 5vw 80px' }}>
@@ -76,13 +79,15 @@ function StatusContent() {
     </div>
   )
 
-  if (loading) return wrap(<p style={{ color: 'rgba(240,238,255,0.4)', textAlign: 'center', padding: '60px 0' }}>Ładowanie...</p>)
+  if (loading) return wrap(<p style={{ color: 'rgba(240,238,255,0.4)', textAlign: 'center', padding: '60px 0' }}>Ładowanie... · Loading...</p>)
 
   if (notFound || !order) return wrap(
     <div style={{ textAlign: 'center', padding: '60px 0' }}>
       <p style={{ fontSize: '32px', marginBottom: '16px' }}>🔍</p>
-      <p style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>Nie znaleziono zamówienia</p>
-      <p style={{ color: 'rgba(240,238,255,0.5)', fontSize: '14px', marginBottom: '24px' }}>Link może być nieprawidłowy lub zamówienie zostało usunięte.</p>
+      <p style={{ fontSize: '18px', fontWeight: 600, marginBottom: '4px' }}>Nie znaleziono zamówienia</p>
+      <p style={{ fontSize: '15px', fontWeight: 500, color: 'rgba(240,238,255,0.6)', marginBottom: '16px' }}>Order not found</p>
+      <p style={{ color: 'rgba(240,238,255,0.5)', fontSize: '14px', marginBottom: '4px' }}>Link może być nieprawidłowy lub zamówienie zostało usunięte.</p>
+      <p style={{ color: 'rgba(240,238,255,0.35)', fontSize: '13px', marginBottom: '24px' }}>This link may be invalid, or the order has been removed.</p>
       <a href="mailto:kontakt@raveadventure.pl" style={{ color: '#b44dff', fontSize: '14px' }}>kontakt@raveadventure.pl</a>
     </div>
   )
@@ -90,28 +95,43 @@ function StatusContent() {
   const currentIdx = STATUSES.findIndex(s => s.id === order.status)
   const current = STATUSES[currentIdx] || STATUSES[0]
 
-  const THEMES: Record<string, string> = { techno_rave: 'Techno / Rave', festival: 'Festiwal', adventure: 'Adventure', custom: 'Custom' }
-  const TYPES: Record<string, string> = { pvc: 'Karta PVC', laminated: 'Karta Laminowana' }
+  const THEMES: Record<string, { pl: string; en: string }> = {
+    techno_rave: { pl: 'Techno / Rave', en: 'Techno / Rave' },
+    festival: { pl: 'Festiwal', en: 'Festival' },
+    adventure: { pl: 'Adventure', en: 'Adventure' },
+    custom: { pl: 'Custom', en: 'Custom' },
+  }
+  const TYPES: Record<string, { pl: string; en: string }> = {
+    pvc: { pl: 'Karta PVC', en: 'PVC Card' },
+    laminated: { pl: 'Karta Laminowana', en: 'Laminated Card' },
+  }
+
+  const createdSince = timeSince(order.created_at)
+  const approvedSince = order.approved_at ? timeSince(order.approved_at) : null
+  const shippedSince = order.shipped_at ? timeSince(order.shipped_at) : null
 
   return wrap(<>
-    <p style={{ fontFamily: 'Space Mono', fontSize: '11px', color: '#b44dff', letterSpacing: '2px', margin: '0 0 12px' }}>// status zamówienia</p>
+    <p style={{ fontFamily: 'Space Mono', fontSize: '11px', color: '#b44dff', letterSpacing: '2px', margin: '0 0 12px' }}>// status zamówienia · order status</p>
     <h1 style={{ fontFamily: 'Space Mono', fontSize: '24px', fontWeight: 700, margin: '0 0 4px' }}>
-      Hej, {order.name.split(' ')[0]}!
+      Hej, {order.name.split(' ')[0]}! <span style={{ color: 'rgba(240,238,255,0.4)', fontSize: '18px' }}>· Hi, {order.name.split(' ')[0]}!</span>
     </h1>
-    <p style={{ color: 'rgba(240,238,255,0.5)', fontSize: '14px', margin: '0 0 32px' }}>
-      Zamówienie złożone {timeSince(order.created_at)}
+    <p style={{ margin: '0 0 32px' }}>
+      <span style={{ color: 'rgba(240,238,255,0.5)', fontSize: '14px' }}>Zamówienie złożone {createdSince.pl}</span>
+      <span style={{ color: 'rgba(240,238,255,0.3)', fontSize: '13px' }}> · Order placed {createdSince.en}</span>
     </p>
 
     {/* AKTUALNY STATUS */}
     <div style={{ background: '#0e0e1a', border: `1px solid ${current.color}44`, borderRadius: '12px', padding: '24px', marginBottom: '24px', textAlign: 'center' }}>
       <div style={{ fontSize: '40px', marginBottom: '12px' }}>{current.icon}</div>
-      <p style={{ fontFamily: 'Space Mono', fontSize: '16px', fontWeight: 700, color: current.color, margin: '0 0 8px' }}>{current.label}</p>
-      <p style={{ color: 'rgba(240,238,255,0.6)', fontSize: '14px', margin: 0, lineHeight: '1.6' }}>{current.desc}</p>
+      <p style={{ fontFamily: 'Space Mono', fontSize: '16px', fontWeight: 700, color: current.color, margin: '0 0 2px' }}>{current.labelPl}</p>
+      <p style={{ fontFamily: 'Space Mono', fontSize: '13px', fontWeight: 600, color: `${current.color}bb`, margin: '0 0 10px' }}>{current.labelEn}</p>
+      <p style={{ color: 'rgba(240,238,255,0.6)', fontSize: '14px', margin: '0 0 4px', lineHeight: '1.6' }}>{current.descPl}</p>
+      <p style={{ color: 'rgba(240,238,255,0.35)', fontSize: '13px', margin: 0, lineHeight: '1.6' }}>{current.descEn}</p>
     </div>
 
     {/* OŚ CZASU STATUSÓW */}
     <div style={{ background: '#0e0e1a', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-      <p style={{ fontFamily: 'Space Mono', fontSize: '10px', color: 'rgba(240,238,255,0.4)', letterSpacing: '2px', margin: '0 0 16px' }}>// postęp zamówienia</p>
+      <p style={{ fontFamily: 'Space Mono', fontSize: '10px', color: 'rgba(240,238,255,0.4)', letterSpacing: '2px', margin: '0 0 16px' }}>// postęp zamówienia · order progress</p>
       {STATUSES.map((s, i) => {
         const isDone = i <= currentIdx
         const isCurrent = i === currentIdx
@@ -126,8 +146,15 @@ function StatusContent() {
               )}
             </div>
             <div style={{ paddingTop: '4px', paddingBottom: '20px' }}>
-              <p style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: isCurrent ? 600 : 400, color: isDone ? '#f0eeff' : 'rgba(240,238,255,0.3)' }}>{s.label}</p>
-              {isCurrent && <p style={{ margin: 0, fontSize: '12px', color: 'rgba(240,238,255,0.5)' }}>{s.desc}</p>}
+              <p style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: isCurrent ? 600 : 400, color: isDone ? '#f0eeff' : 'rgba(240,238,255,0.3)' }}>
+                {s.labelPl} <span style={{ color: isDone ? 'rgba(240,238,255,0.4)' : 'rgba(240,238,255,0.2)', fontWeight: 400 }}>· {s.labelEn}</span>
+              </p>
+              {isCurrent && (
+                <>
+                  <p style={{ margin: '0 0 1px', fontSize: '12px', color: 'rgba(240,238,255,0.5)' }}>{s.descPl}</p>
+                  <p style={{ margin: 0, fontSize: '11px', color: 'rgba(240,238,255,0.3)' }}>{s.descEn}</p>
+                </>
+              )}
             </div>
           </div>
         )
@@ -136,28 +163,28 @@ function StatusContent() {
 
     {/* CZAS REALIZACJI */}
     <div style={{ background: '#0e0e1a', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-      <p style={{ fontFamily: 'Space Mono', fontSize: '10px', color: 'rgba(240,238,255,0.4)', letterSpacing: '2px', margin: '0 0 14px' }}>// czas realizacji</p>
+      <p style={{ fontFamily: 'Space Mono', fontSize: '10px', color: 'rgba(240,238,255,0.4)', letterSpacing: '2px', margin: '0 0 14px' }}>// czas realizacji · timeline</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-          <span style={{ color: 'rgba(240,238,255,0.5)' }}>Zamówienie złożone</span>
-          <span style={{ color: '#f0eeff' }}>{timeSince(order.created_at)}</span>
+          <span style={{ color: 'rgba(240,238,255,0.5)' }}>Zamówienie złożone <span style={{ color: 'rgba(240,238,255,0.3)', fontSize: '12px' }}>· Order placed</span></span>
+          <span style={{ color: '#f0eeff' }}>{createdSince.pl}</span>
         </div>
-        {order.approved_at && (
+        {approvedSince && (
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-            <span style={{ color: 'rgba(240,238,255,0.5)' }}>Projekt zaakceptowany</span>
-            <span style={{ color: '#00e5a0' }}>{timeSince(order.approved_at)}</span>
+            <span style={{ color: 'rgba(240,238,255,0.5)' }}>Projekt zaakceptowany <span style={{ color: 'rgba(240,238,255,0.3)', fontSize: '12px' }}>· Design approved</span></span>
+            <span style={{ color: '#00e5a0' }}>{approvedSince.pl}</span>
           </div>
         )}
-        {order.shipped_at && (
+        {shippedSince && (
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-            <span style={{ color: 'rgba(240,238,255,0.5)' }}>Karta wysłana</span>
-            <span style={{ color: '#10b981' }}>{timeSince(order.shipped_at)}</span>
+            <span style={{ color: 'rgba(240,238,255,0.5)' }}>Karta wysłana <span style={{ color: 'rgba(240,238,255,0.3)', fontSize: '12px' }}>· Card shipped</span></span>
+            <span style={{ color: '#10b981' }}>{shippedSince.pl}</span>
           </div>
         )}
-        {order.approved_at && !order.shipped_at && (
+        {approvedSince && !shippedSince && (
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-            <span style={{ color: 'rgba(240,238,255,0.5)' }}>Czas od akceptacji do teraz</span>
-            <span style={{ color: '#f97316' }}>{timeSince(order.approved_at)}</span>
+            <span style={{ color: 'rgba(240,238,255,0.5)' }}>Czas od akceptacji <span style={{ color: 'rgba(240,238,255,0.3)', fontSize: '12px' }}>· Time since approval</span></span>
+            <span style={{ color: '#f97316' }}>{approvedSince.pl}</span>
           </div>
         )}
       </div>
@@ -165,22 +192,26 @@ function StatusContent() {
 
     {/* SZCZEGÓŁY */}
     <div style={{ background: '#0e0e1a', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-      <p style={{ fontFamily: 'Space Mono', fontSize: '10px', color: 'rgba(240,238,255,0.4)', letterSpacing: '2px', margin: '0 0 14px' }}>// szczegóły zamówienia</p>
+      <p style={{ fontFamily: 'Space Mono', fontSize: '10px', color: 'rgba(240,238,255,0.4)', letterSpacing: '2px', margin: '0 0 14px' }}>// szczegóły zamówienia · order details</p>
       {[
-        { label: 'Typ karty', value: TYPES[order.card_type] || order.card_type },
-        { label: 'Motyw', value: THEMES[order.theme] || order.theme },
-        { label: 'Ilość', value: `${order.quantity} szt.` },
-        { label: 'Do zapłaty', value: `${order.total_price} zł` },
+        { labelPl: 'Typ karty', labelEn: 'Card type', value: TYPES[order.card_type]?.pl || order.card_type, valueEn: TYPES[order.card_type]?.en || order.card_type },
+        { labelPl: 'Motyw', labelEn: 'Theme', value: THEMES[order.theme]?.pl || order.theme, valueEn: THEMES[order.theme]?.en || order.theme },
+        { labelPl: 'Ilość', labelEn: 'Quantity', value: `${order.quantity} szt.`, valueEn: `${order.quantity} pcs.` },
+        { labelPl: 'Do zapłaty', labelEn: 'Total due', value: `${order.total_price} zł`, valueEn: `${order.total_price} zł` },
       ].map((row, i) => (
         <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '13px' }}>
-          <span style={{ color: 'rgba(240,238,255,0.5)' }}>{row.label}</span>
-          <span style={{ color: '#f0eeff', fontWeight: 500 }}>{row.value}</span>
+          <span style={{ color: 'rgba(240,238,255,0.5)' }}>{row.labelPl} <span style={{ color: 'rgba(240,238,255,0.3)', fontSize: '12px' }}>· {row.labelEn}</span></span>
+          <span style={{ color: '#f0eeff', fontWeight: 500, textAlign: 'right' }}>
+            {row.value}
+            {row.valueEn !== row.value && <span style={{ display: 'block', color: 'rgba(240,238,255,0.35)', fontSize: '11px', fontWeight: 400 }}>{row.valueEn}</span>}
+          </span>
         </div>
       ))}
     </div>
 
     <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(0,240,255,0.04)', borderRadius: '10px', border: '1px solid rgba(0,240,255,0.1)' }}>
-      <p style={{ fontSize: '13px', color: 'rgba(240,238,255,0.6)', margin: '0 0 6px' }}>Masz pytania do zamówienia?</p>
+      <p style={{ fontSize: '13px', color: 'rgba(240,238,255,0.6)', margin: '0 0 2px' }}>Masz pytania do zamówienia?</p>
+      <p style={{ fontSize: '12px', color: 'rgba(240,238,255,0.35)', margin: '0 0 8px' }}>Questions about your order?</p>
       <a href="mailto:kontakt@raveadventure.pl" style={{ color: '#00f0ff', fontSize: '14px', fontWeight: 600, textDecoration: 'none' }}>kontakt@raveadventure.pl</a>
     </div>
   </>)
@@ -190,7 +221,7 @@ export default function StatusPage() {
   return (
     <Suspense fallback={
       <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: 'rgba(240,238,255,0.3)', fontFamily: 'sans-serif' }}>Ładowanie...</p>
+        <p style={{ color: 'rgba(240,238,255,0.3)', fontFamily: 'sans-serif' }}>Ładowanie... · Loading...</p>
       </div>
     }>
       <StatusContent />
