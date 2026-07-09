@@ -8,61 +8,30 @@ const supabase = createClient(
 )
 
 // ── DANE DO PŁATNOŚCI — PODMIEŃ NA SWOJE ──────────────────────
-const BLIK_PHONE = '[+48 785259525]'
+const BLIK_PHONE = '[WPISZ NUMER TELEFONU]'
 const BANK_ACCOUNT = '[WPISZ NUMER KONTA]'
 const BANK_RECIPIENT = '[WPISZ IMIĘ I NAZWISKO ODBIORCY]'
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData()
-    const orderId = formData.get('orderId') as string
-    const file = formData.get('design') as File
-    const adminNote = (formData.get('note') as string) || ''
-    const fileBack = formData.get('designBack') as File | null
+    const body = await req.json()
+    const { orderId, designUrl, designBackUrl, note } = body
+    const adminNote = note || ''
 
-    if (!orderId || !file) {
+    if (!orderId || !designUrl) {
       return NextResponse.json({ error: 'Brak danych' }, { status: 400 })
     }
 
-    // 1. Upload grafiki do Supabase Storage
-    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
-    const safeExt = ['jpg','jpeg','png','gif','webp'].includes(ext) ? ext : 'jpg'
-    const timestamp = Date.now()
-    const fileName = `designs/${orderId}-${timestamp}.${safeExt}`
+    // Pliki są już wgrane do Storage bezpośrednio z przeglądarki (patrz panel admina) —
+    // tutaj tylko zapisujemy linki, generujemy token i wysyłamy maila.
 
-    const { error: uploadError } = await supabase.storage
-      .from('order-photos')
-      .upload(fileName, file, { upsert: false })
-
-    if (uploadError) {
-      return NextResponse.json({ error: 'Błąd uploadu: ' + uploadError.message }, { status: 500 })
-    }
-
-    const { data: urlData } = supabase.storage.from('order-photos').getPublicUrl(fileName)
-    const designUrl = urlData.publicUrl + `?v=${timestamp}`
-
-    // 1b. Upload tyłu karty (opcjonalnie)
-    let designUrlBack = null
-    if (fileBack && fileBack.size > 0) {
-      const extBack = (fileBack.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
-      const safeExtBack = ['jpg','jpeg','png','gif','webp'].includes(extBack) ? extBack : 'jpg'
-      const fileNameBack = `designs/${orderId}-${timestamp}-back.${safeExtBack}`
-      const { error: uploadBackError } = await supabase.storage
-        .from('order-photos')
-        .upload(fileNameBack, fileBack, { upsert: false })
-      if (!uploadBackError) {
-        const { data: urlDataBack } = supabase.storage.from('order-photos').getPublicUrl(fileNameBack)
-        designUrlBack = urlDataBack.publicUrl
-      }
-    }
-
-    // 2. Generuj unikalny token do zatwierdzenia
+    // 1. Generuj unikalny token do zatwierdzenia
     const token = crypto.randomBytes(32).toString('hex')
 
-    // 3. Zapisz design_url, token i zmień status — pobierz też lang zamówienia
+    // 2. Zapisz design_url, token i zmień status — pobierz też lang zamówienia
     const { data: order, error: updateError } = await supabase
       .from('orders')
-      .update({ design_url: designUrl, design_back_url: designUrlBack, review_token: token, status: 'approval' })
+      .update({ design_url: designUrl, design_back_url: designBackUrl || null, review_token: token, status: 'approval' })
       .eq('id', orderId)
       .select('*')
       .single()
@@ -176,12 +145,12 @@ export async function POST(req: NextRequest) {
       </td></tr>
     </table>
 
-    ${designUrlBack ? `
+    ${designBackUrl ? `
     <!-- PODGLĄD TYŁU KARTY -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
       <tr><td style="background:#16162a;border-radius:12px;padding:16px;text-align:center;">
         <p style="margin:0 0 12px;font-size:11px;color:#00f0ff;letter-spacing:2px;font-family:monospace;">${L.backEyebrow}</p>
-        <img src="${designUrlBack}" alt="Card back" style="max-width:100%;border-radius:8px;border:1px solid rgba(0,240,255,0.3);" />
+        <img src="${designBackUrl}" alt="Card back" style="max-width:100%;border-radius:8px;border:1px solid rgba(0,240,255,0.3);" />
       </td></tr>
     </table>
     ` : ''}
@@ -294,7 +263,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Błąd wysyłki maila' }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, designUrl, designBackUrl: designUrlBack })
+    return NextResponse.json({ success: true, designUrl, designBackUrl })
 
   } catch (err) {
     console.error('API error:', err)
