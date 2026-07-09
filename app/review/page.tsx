@@ -63,10 +63,10 @@ function ReviewContent() {
   )
 
   if (step === 'success-approve') return box(<>
-    <div style={{ width: '64px', height: '64px', background: '#00e5a0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', margin: '0 auto 20px' }}>✓</div>
-    <h2 style={{ color: '#00e5a0', fontSize: '22px', margin: '0 0 12px' }}>Projekt zatwierdzony!</h2>
+    <div style={{ width: '64px', height: '64px', background: '#ec4899', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', margin: '0 auto 20px' }}>💳</div>
+    <h2 style={{ color: '#ec4899', fontSize: '22px', margin: '0 0 12px' }}>Projekt zatwierdzony!</h2>
     <p style={{ color: 'rgba(240,238,255,0.6)', fontSize: '15px', lineHeight: '1.7', margin: '0 0 24px' }}>
-      Dziękujemy! Twoja karta trafi do druku. Wyślemy ją w ciągu 3–5 dni roboczych na podany adres.
+      Świetnie! Jeszcze tylko jeden krok — dokonaj płatności zgodnie z danymi które otrzymałeś/aś w mailu z projektem. Po zaksięgowaniu wpłaty od razu przekazujemy kartę do produkcji.
     </p>
     <p style={{ color: 'rgba(240,238,255,0.4)', fontSize: '13px', margin: 0 }}>
       Pytania? Napisz na <a href="mailto:kontakt@raveadventure.pl" style={{ color: '#b44dff' }}>kontakt@raveadventure.pl</a>
