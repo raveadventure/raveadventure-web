@@ -389,6 +389,14 @@ export default function AdminPage() {
                       <span title={order.review_notes} style={{ fontSize: '16px' }}>💬</span>
                     )}
                     <span style={{ background: `${st.color}22`, color: st.color, border: `1px solid ${st.color}44`, padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, whiteSpace: 'nowrap' }}>{st.label}</span>
+                    <span style={{
+                      background: order.paid ? 'rgba(0,229,160,0.15)' : 'rgba(245,158,11,0.15)',
+                      color: order.paid ? '#00e5a0' : '#f59e0b',
+                      border: `1px solid ${order.paid ? 'rgba(0,229,160,0.4)' : 'rgba(245,158,11,0.4)'}`,
+                      padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, whiteSpace: 'nowrap'
+                    }}>
+                      {order.paid ? '💰 Opłacone' : '⏳ Nieopłacone'}
+                    </span>
                     <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
                       {STATUSES.map(s => (
                         <button key={s.id} onClick={() => updateStatus(order.id, s.id)} disabled={order.status === s.id || updating === order.id}
