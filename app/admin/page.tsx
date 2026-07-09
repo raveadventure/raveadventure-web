@@ -34,6 +34,18 @@ type Order = {
   total_price: number | null
   paid: boolean
   status: string
+  lang: string | null
+}
+
+function LangBadge({ lang, size = 'normal' }: { lang: string | null; size?: 'normal' | 'small' }) {
+  if (lang !== 'en') return null
+  const fontSize = size === 'small' ? '10px' : '11px'
+  const padding = size === 'small' ? '1px 7px' : '2px 8px'
+  return (
+    <span style={{ background: 'rgba(0,240,255,0.15)', color: '#00f0ff', border: '1px solid rgba(0,240,255,0.3)', padding, borderRadius: '4px', fontSize, fontWeight: 700, whiteSpace: 'nowrap' }}>
+      🇬🇧 EN
+    </span>
+  )
 }
 
 function ClientMaterials({ order }: { order: Order }) {
@@ -65,7 +77,6 @@ function ClientMaterials({ order }: { order: Order }) {
     custom: 'Custom',
   }
 
-  // Placeholder dla tyłu standardowego
   const BackPlaceholder = ({ icon, title, value }: { icon: string; title: string; value?: string }) => (
     <div style={{ width: '100%', aspectRatio: '0.75', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: '#0d0d1a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', boxSizing: 'border-box' }}>
       <span style={{ fontSize: '28px' }}>{icon}</span>
@@ -83,7 +94,6 @@ function ClientMaterials({ order }: { order: Order }) {
           STYL KARTY: {THEME_LABELS[theme] || theme.toUpperCase()}
         </p>
 
-        {/* Tylko dla Custom — opis + link do ref */}
         {isCustomFront && (
           <>
             {(order as any).custom_desc && (
@@ -102,7 +112,6 @@ function ClientMaterials({ order }: { order: Order }) {
       {/* SIATKA: FRONT | BACK */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
 
-        {/* FRONT */}
         <div>
           <p style={{ margin: '0 0 5px', fontSize: '10px', color: '#b44dff', letterSpacing: '1px', fontWeight: 600 }}>FRONT</p>
           {order.photo_url ? (
@@ -122,7 +131,6 @@ function ClientMaterials({ order }: { order: Order }) {
           )}
         </div>
 
-        {/* BACK */}
         <div>
           <p style={{ margin: '0 0 5px', fontSize: '10px', color: '#00f0ff', letterSpacing: '1px', fontWeight: 600 }}>
             TYŁ — {backOption === 'logo' ? 'STANDARD' : backOption === 'dedication' ? 'DEDYKACJA' : backOption === 'qr' ? 'QR CODE' : 'CUSTOM ARTWORK'}
@@ -153,74 +161,6 @@ function ClientMaterials({ order }: { order: Order }) {
   )
 }
 
-function RefInspiration({ orderId }: { orderId: string }) {
-  const [url, setUrl] = React.useState<string | null>(null)
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-
-  React.useEffect(() => {
-    supabase.storage.from('order-photos').list('', { search: orderId })
-      .then(({ data }) => {
-        if (data) {
-          const ref = data.find(f => f.name.includes('-ref-front') || f.name.includes('-ref-back'))
-          if (ref) setUrl(`${supabaseUrl}/storage/v1/object/public/order-photos/${ref.name}`)
-        }
-      })
-  }, [orderId])
-
-  if (!url) return null
-
-  return (
-    <div style={{ marginTop: '10px', padding: '10px 12px', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '8px' }}>
-      <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#f59e0b', letterSpacing: '1px' }}>CUSTOM — INSPIRACJA KLIENTA</p>
-      <a href={url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: '#f59e0b', textDecoration: 'none' }}>
-        Otwórz plik referencyjny →
-      </a>
-    </div>
-  )
-}
-
-function RefFiles({ orderId, backOption }: { orderId: string; backOption: string }) {
-  const [files, setFiles] = React.useState<string[]>([])
-
-  React.useEffect(() => {
-    supabase.storage.from('order-photos').list('', { search: orderId })
-      .then(({ data }) => {
-        if (data) {
-          const refs = data
-            .filter(f => f.name.includes('-ref-'))
-            .map(f => f.name)
-          setFiles(refs)
-        }
-      })
-  }, [orderId])
-
-  if (files.length === 0) return null
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-
-  return (
-    <div style={{ marginBottom: '12px' }}>
-      <p style={{ margin: '0 0 8px', fontSize: '11px', color: 'rgba(240,238,255,0.4)', letterSpacing: '1px' }}>PLIKI REFERENCYJNE OD KLIENTA</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        {files.map(f => {
-          const url = `${supabaseUrl}/storage/v1/object/public/order-photos/${f}`
-          const label = f.includes('ref-front') ? '📎 Plik ref. front' : f.includes('ref-back') ? '📎 Plik ref. tył' : `📎 ${f}`
-          const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(f)
-          return (
-            <div key={f}>
-              {isImage && <img src={url} alt={label} style={{ width: '100%', borderRadius: '8px', marginBottom: '4px', border: '1px solid rgba(180,77,255,0.2)' }} />}
-              <a href={url} target="_blank" rel="noopener noreferrer"
-                style={{ fontSize: '12px', color: '#b44dff', textDecoration: 'none', display: 'block' }}>
-                {label} — otwórz →
-              </a>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
 export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
@@ -243,16 +183,10 @@ export default function AdminPage() {
     const filesToDelete: string[] = []
     const exts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'pdf']
 
-    // 1. Zdjęcie FRONT klienta: {id}-front.{ext}
     exts.forEach(ext => filesToDelete.push(`${id}-front.${ext}`))
-
-    // 2. Grafika referencyjna custom: {id}-custom.{ext}
     exts.forEach(ext => filesToDelete.push(`${id}-custom.${ext}`))
-
-    // 3. Zdjęcie tyłu klienta: {id}-ref-back.{ext}
     exts.forEach(ext => filesToDelete.push(`${id}-ref-back.${ext}`))
 
-    // 4. Projekty wysłane do klienta z folderu designs/
     const { data: designFiles } = await supabase.storage
       .from('order-photos')
       .list('designs')
@@ -262,13 +196,11 @@ export default function AdminPage() {
         .forEach(f => filesToDelete.push(`designs/${f.name}`))
     }
 
-    // 5. Usuń wszystkie pliki
     const unique = filesToDelete.filter((v, i, a) => a.indexOf(v) === i)
     if (unique.length > 0) {
       await supabase.storage.from('order-photos').remove(unique)
     }
 
-    // 6. Usuń rekord z bazy danych
     const { error } = await supabase.from('orders').delete().eq('id', id)
     if (!error) {
       setOrders(prev => prev.filter(o => o.id !== id))
@@ -440,9 +372,10 @@ export default function AdminPage() {
                       : <div style={{ width: '42px', height: '42px', borderRadius: '7px', background: '#16162a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>🎴</div>
                     }
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ margin: '0 0 2px', fontWeight: 600, fontSize: '14px', color: '#f0eeff' }}>
+                      <p style={{ margin: '0 0 2px', fontWeight: 600, fontSize: '14px', color: '#f0eeff', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                         {order.name}
-                        <span style={{ marginLeft: '8px', fontSize: '11px', fontWeight: 400, color: 'rgba(240,238,255,0.3)', fontFamily: 'monospace' }}>#{order.id.slice(0, 8)}</span>
+                        <span style={{ fontSize: '11px', fontWeight: 400, color: 'rgba(240,238,255,0.3)', fontFamily: 'monospace' }}>#{order.id.slice(0, 8)}</span>
+                        <LangBadge lang={order.lang} size="small" />
                       </p>
                       <p style={{ margin: 0, fontSize: '12px', color: 'rgba(240,238,255,0.4)' }}>
                         {THEMES[order.theme] || order.theme} · {formatDate(order.created_at)}
@@ -484,6 +417,14 @@ export default function AdminPage() {
               <p style={{ margin: 0, fontSize: '11px', color: '#b44dff', fontFamily: 'Space Mono', letterSpacing: '2px' }}>// szczegóły</p>
               <button onClick={() => { setSelected(null); setDesignFile(null); setDesignPreview(null); setSendMsg(null) }} style={{ background: 'none', border: 'none', color: 'rgba(240,238,255,0.4)', fontSize: '18px', cursor: 'pointer' }}>✕</button>
             </div>
+
+            {/* Znacznik języka zamówienia — widoczny na górze */}
+            {selected.lang === 'en' && (
+              <div style={{ background: 'rgba(0,240,255,0.08)', border: '1px solid rgba(0,240,255,0.3)', borderRadius: '10px', padding: '10px 14px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <LangBadge lang={selected.lang} />
+                <p style={{ margin: 0, fontSize: '12px', color: '#00f0ff' }}>Zamówienie złożone w wersji angielskiej — wyślij projekt i wiadomości po angielsku.</p>
+              </div>
+            )}
 
             {/* Uwagi klienta (jeśli są) */}
             {selected.review_notes && (
@@ -527,8 +468,9 @@ export default function AdminPage() {
 
             {/* UPLOAD I WYŚLIJ PROJEKT */}
             <div style={{ background: '#16162a', borderRadius: '10px', padding: '16px', marginBottom: '16px' }}>
-              <p style={{ margin: '0 0 12px', fontSize: '13px', fontWeight: 600, color: '#f0eeff' }}>
+              <p style={{ margin: '0 0 12px', fontSize: '13px', fontWeight: 600, color: '#f0eeff', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {selected.design_url ? '🔄 Wyślij poprawiony projekt' : '📤 Wyślij projekt do zatwierdzenia'}
+                <LangBadge lang={selected.lang} size="small" />
               </p>
               <div
                 onClick={() => fileRef.current?.click()}
@@ -570,10 +512,15 @@ export default function AdminPage() {
                   )}
                 </div>
 
+              {selected.lang === 'en' && (
+                <div style={{ background: 'rgba(0,240,255,0.06)', border: '1px solid rgba(0,240,255,0.2)', borderRadius: '8px', padding: '8px 10px', marginBottom: '10px' }}>
+                  <p style={{ margin: 0, fontSize: '11px', color: '#00f0ff' }}>💡 Wiadomość poniżej trafi do klienta EN — pisz po angielsku. Reszta maila (przyciski, teksty) jest już przetłumaczona automatycznie.</p>
+                </div>
+              )}
               <textarea
                 value={designNote}
                 onChange={e => setDesignNote(e.target.value)}
-                placeholder="Opcjonalna wiadomość do klienta — pytania, wskazówki, prośby o dodatkowe info..."
+                placeholder={selected.lang === 'en' ? 'Optional message to the client — questions, notes, extra info request...' : 'Opcjonalna wiadomość do klienta — pytania, wskazówki, prośby o dodatkowe info...'}
                 style={{ width: '100%', boxSizing: 'border-box', background: '#0e0e1a', border: '1px solid rgba(180,77,255,0.2)', borderRadius: '8px', color: '#f0eeff', padding: '10px 12px', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical', minHeight: '80px', outline: 'none', marginBottom: '10px' }}
               />
               <button
@@ -618,11 +565,12 @@ export default function AdminPage() {
             </div>
 
             {/* Dane klienta */}
-            <div style={{ background: '#16162a', borderRadius: '10px', overflow: 'hidden' }}>
+            <div style={{ background: '#16162a', borderRadius: '10px', overflow: 'hidden', marginTop: '8px' }}>
               {[
                 { label: 'ID', value: selected.id },
                 { label: 'Data', value: formatDate(selected.created_at) },
                 { label: 'Motyw', value: THEMES[selected.theme] || selected.theme },
+                { label: 'Język', value: selected.lang === 'en' ? '🇬🇧 English' : '🇵🇱 Polski' },
                 { label: 'Klient', value: selected.name },
                 { label: 'Email', value: selected.email, link: `mailto:${selected.email}` },
                 { label: 'Telefon', value: selected.phone || '—' },
