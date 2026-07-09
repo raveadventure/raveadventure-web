@@ -247,9 +247,16 @@ export default function AdminPage() {
       updates.status = 'production'
       updates.approved_at = new Date().toISOString()
     }
-    await supabase.from('orders').update(updates).eq('id', id)
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, ...updates } as Order : o))
-    setSelected(prev => prev?.id === id ? { ...prev, ...updates } as Order : prev)
+    const { data, error } = await supabase.from('orders').update(updates).eq('id', id).select('*').single()
+    if (error) {
+      console.error('Błąd zapisu płatności:', error.message)
+      alert('Błąd zapisu: ' + error.message)
+      return
+    }
+    if (data) {
+      setOrders(prev => prev.map(o => o.id === id ? (data as Order) : o))
+      setSelected(prev => prev?.id === id ? (data as Order) : prev)
+    }
   }
 
   const handleDesignFile = (file: File) => {
