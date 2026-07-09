@@ -189,7 +189,7 @@ export default function Home() {
         <img src="/logo_kwadrat.png" alt="RaveAdventure — The best memories from your adventure deserve a card." style={{ maxWidth: '100%', width: '900px', height: 'auto', display: 'block' }} />
       </div>
 
-      <PortfolioCarousel />
+      <PortfolioCarousel lang={lang} />
 
       <section className={styles.hero}>
         <div className={styles.heroGrid} aria-hidden="true" />
@@ -221,7 +221,7 @@ export default function Home() {
           <a href="#order" className={styles.btnHero}>{t.hero.cta}</a>
 
           <div style={{ marginTop: '36px' }}>
-            <HeroCardAnimation />
+            <HeroCardAnimation lang={lang} />
           </div>
         </div>
       </section>
