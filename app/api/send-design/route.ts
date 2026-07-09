@@ -20,7 +20,6 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Upload grafiki do Supabase Storage
-    // Timestamp w nazwie pliku = zawsze unikalny URL, brak problemów z cache
     const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
     const safeExt = ['jpg','jpeg','png','gif','webp'].includes(ext) ? ext : 'jpg'
     const timestamp = Date.now()
@@ -35,7 +34,6 @@ export async function POST(req: NextRequest) {
     }
 
     const { data: urlData } = supabase.storage.from('order-photos').getPublicUrl(fileName)
-    // Dodaj cache-buster do URL żeby maile zawsze pokazywały świeżą grafikę
     const designUrl = urlData.publicUrl + `?v=${timestamp}`
 
     // 1b. Upload tyłu karty (opcjonalnie)
@@ -56,7 +54,7 @@ export async function POST(req: NextRequest) {
     // 2. Generuj unikalny token do zatwierdzenia
     const token = crypto.randomBytes(32).toString('hex')
 
-    // 3. Zapisz design_url, token i zmień status
+    // 3. Zapisz design_url, token i zmień status — pobierz też lang zamówienia
     const { data: order, error: updateError } = await supabase
       .from('orders')
       .update({ design_url: designUrl, design_back_url: designUrlBack, review_token: token, status: 'approval' })
@@ -68,6 +66,50 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Błąd zapisu: ' + updateError?.message }, { status: 500 })
     }
 
+    const lang: 'pl' | 'en' = order.lang === 'en' ? 'en' : 'pl'
+
+    // ── TEKSTY DWUJĘZYCZNE ─────────────────────────────────────
+    const L = {
+      pl: {
+        htmlLang: 'pl',
+        brandSub: 'projekt Twojej karty gotowy',
+        hey: (firstName: string) => `Hej <strong>${firstName}</strong>! 👋`,
+        intro: 'Przygotowaliśmy indywidualny projekt Twojej karty. Sprawdź jak wygląda i daj nam znać czy wszystko gra.',
+        noteEyebrow: '// wiadomosc od nas',
+        previewEyebrow: '// podgląd projektu',
+        backEyebrow: '// tył karty',
+        approveBtn: '✓ Zatwierdzam projekt',
+        rejectBtn: '✗ Mam uwagi',
+        infoTitle: 'Co się stanie po kliknięciu?',
+        infoApprove: 'Zatwierdzam',
+        infoApproveDesc: 'projekt trafia do druku, wyślemy Ci kartę w ciągu 3–5 dni roboczych.',
+        infoReject: 'Mam uwagi',
+        infoRejectDesc: 'możesz opisać co chcesz zmienić, a my przygotujemy poprawiony projekt.',
+        statusPrompt: 'Chcesz sprawdzić status zamówienia?',
+        statusBtn: 'Sprawdź status zamówienia →',
+        subject: '🎴 Twój projekt karty RaveAdventure — sprawdź i zatwierdź',
+      },
+      en: {
+        htmlLang: 'en',
+        brandSub: 'your card design is ready',
+        hey: (firstName: string) => `Hey <strong>${firstName}</strong>! 👋`,
+        intro: "We've prepared an individual design for your card. Take a look and let us know if everything looks good.",
+        noteEyebrow: '// a note from us',
+        previewEyebrow: '// design preview',
+        backEyebrow: '// card back',
+        approveBtn: '✓ Approve design',
+        rejectBtn: '✗ I have feedback',
+        infoTitle: 'What happens after you click?',
+        infoApprove: 'Approve',
+        infoApproveDesc: "the design goes to print, we'll ship your card within 3–5 business days.",
+        infoReject: 'I have feedback',
+        infoRejectDesc: "you can describe what you'd like changed, and we'll prepare a revised design.",
+        statusPrompt: 'Want to check your order status?',
+        statusBtn: 'Check order status →',
+        subject: '🎴 Your RaveAdventure card design — review and approve',
+      },
+    }[lang]
+
     // 4. Wyślij email do klienta
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://raveadventure.pl'
     const approveUrl = `${baseUrl}/review?token=${token}&action=approve`
@@ -75,7 +117,7 @@ export async function POST(req: NextRequest) {
 
     const emailHtml = `
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="${L.htmlLang}">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#0a0a14;font-family:'Helvetica Neue',Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a14;padding:40px 20px;">
@@ -85,19 +127,19 @@ export async function POST(req: NextRequest) {
   <!-- HEADER -->
   <tr><td style="background:#13132a;border-radius:12px 12px 0 0;padding:28px 32px;border-bottom:2px solid #b44dff;text-align:center;">
     <h1 style="margin:0;font-size:26px;color:#f0eeff;font-weight:700;">Rave<span style="color:#b44dff;">Adventure</span></h1>
-    <p style="margin:8px 0 0;font-size:13px;color:rgba(240,238,255,0.5);">projekt Twojej karty gotowy</p>
+    <p style="margin:8px 0 0;font-size:13px;color:rgba(240,238,255,0.5);">${L.brandSub}</p>
   </td></tr>
 
   <!-- BODY -->
   <tr><td style="background:#0e0e1a;padding:32px;">
-    <p style="font-size:16px;color:#f0eeff;margin:0 0 8px;">Hej <strong>${order.name.split(' ')[0]}</strong>! 👋</p>
-    <p style="font-size:15px;color:rgba(240,238,255,0.7);margin:0 0 ${adminNote ? "16px" : "28px"};line-height:1.7;">Przygotowaliśmy indywidualny projekt Twojej karty. Sprawdź jak wygląda i daj nam znać czy wszystko gra.</p>
+    <p style="font-size:16px;color:#f0eeff;margin:0 0 8px;">${L.hey(order.name.split(' ')[0])}</p>
+    <p style="font-size:15px;color:rgba(240,238,255,0.7);margin:0 0 ${adminNote ? "16px" : "28px"};line-height:1.7;">${L.intro}</p>
 
     ${adminNote ? `
     <!-- NOTATKA OD NAS -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
       <tr><td style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-left:3px solid #f59e0b;border-radius:0 10px 10px 0;padding:16px 20px;">
-        <p style="margin:0 0 8px;font-size:11px;color:#f59e0b;letter-spacing:2px;font-family:monospace;">// wiadomosc od nas</p>
+        <p style="margin:0 0 8px;font-size:11px;color:#f59e0b;letter-spacing:2px;font-family:monospace;">${L.noteEyebrow}</p>
         <p style="margin:0;font-size:14px;color:#f0eeff;line-height:1.7;">${adminNote.split('\n').join('<br>')}</p>
       </td></tr>
     </table>
@@ -106,8 +148,8 @@ export async function POST(req: NextRequest) {
     <!-- PODGLĄD GRAFIKI -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
       <tr><td style="background:#16162a;border-radius:12px;padding:16px;text-align:center;">
-        <p style="margin:0 0 12px;font-size:11px;color:#b44dff;letter-spacing:2px;font-family:monospace;">// podgląd projektu</p>
-        <img src="${designUrl}" alt="Projekt karty" style="max-width:100%;border-radius:8px;border:1px solid rgba(180,77,255,0.3);" />
+        <p style="margin:0 0 12px;font-size:11px;color:#b44dff;letter-spacing:2px;font-family:monospace;">${L.previewEyebrow}</p>
+        <img src="${designUrl}" alt="Card design" style="max-width:100%;border-radius:8px;border:1px solid rgba(180,77,255,0.3);" />
       </td></tr>
     </table>
 
@@ -115,8 +157,8 @@ export async function POST(req: NextRequest) {
     <!-- PODGLĄD TYŁU KARTY -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
       <tr><td style="background:#16162a;border-radius:12px;padding:16px;text-align:center;">
-        <p style="margin:0 0 12px;font-size:11px;color:#00f0ff;letter-spacing:2px;font-family:monospace;">// tył karty</p>
-        <img src="${designUrlBack}" alt="Tył karty" style="max-width:100%;border-radius:8px;border:1px solid rgba(0,240,255,0.3);" />
+        <p style="margin:0 0 12px;font-size:11px;color:#00f0ff;letter-spacing:2px;font-family:monospace;">${L.backEyebrow}</p>
+        <img src="${designUrlBack}" alt="Card back" style="max-width:100%;border-radius:8px;border:1px solid rgba(0,240,255,0.3);" />
       </td></tr>
     </table>
     ` : ''}
@@ -126,12 +168,12 @@ export async function POST(req: NextRequest) {
       <tr>
         <td width="48%" align="center" style="padding-right:8px;">
           <a href="${approveUrl}" style="display:block;background:#00e5a0;color:#0a0014;padding:16px;border-radius:10px;font-size:16px;font-weight:700;text-decoration:none;text-align:center;">
-            ✓ Zatwierdzam projekt
+            ${L.approveBtn}
           </a>
         </td>
         <td width="48%" align="center" style="padding-left:8px;">
           <a href="${rejectUrl}" style="display:block;background:transparent;color:#ff4d6d;padding:15px;border-radius:10px;font-size:16px;font-weight:700;text-decoration:none;text-align:center;border:2px solid #ff4d6d;">
-            ✗ Mam uwagi
+            ${L.rejectBtn}
           </a>
         </td>
       </tr>
@@ -140,10 +182,10 @@ export async function POST(req: NextRequest) {
     <!-- INFO -->
     <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(0,240,255,0.05);border:1px solid rgba(0,240,255,0.2);border-radius:10px;padding:16px 20px;margin-bottom:16px;">
       <tr><td>
-        <p style="margin:0 0 6px;font-size:13px;color:#f0eeff;font-weight:600;">Co się stanie po kliknięciu?</p>
+        <p style="margin:0 0 6px;font-size:13px;color:#f0eeff;font-weight:600;">${L.infoTitle}</p>
         <p style="margin:0;font-size:13px;color:rgba(240,238,255,0.6);line-height:1.6;">
-          <strong style="color:#00e5a0;">Zatwierdzam</strong> — projekt trafia do druku, wyślemy Ci kartę w ciągu 3–5 dni roboczych.<br>
-          <strong style="color:#ff4d6d;">Mam uwagi</strong> — możesz opisać co chcesz zmienić, a my przygotujemy poprawiony projekt.
+          <strong style="color:#00e5a0;">${L.infoApprove}</strong> — ${L.infoApproveDesc}<br>
+          <strong style="color:#ff4d6d;">${L.infoReject}</strong> — ${L.infoRejectDesc}
         </p>
       </td></tr>
     </table>
@@ -151,9 +193,9 @@ export async function POST(req: NextRequest) {
     <!-- STATUS LINK -->
     <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(180,77,255,0.06);border:1px solid rgba(180,77,255,0.2);border-radius:10px;padding:14px 20px;text-align:center;">
       <tr><td>
-        <p style="margin:0 0 10px;font-size:12px;color:rgba(240,238,255,0.5);">Chcesz sprawdzić status zamówienia?</p>
+        <p style="margin:0 0 10px;font-size:12px;color:rgba(240,238,255,0.5);">${L.statusPrompt}</p>
         <a href="${baseUrl}/status?token=${order.id}" style="display:inline-block;color:#b44dff;font-size:13px;font-weight:600;text-decoration:none;border:1px solid rgba(180,77,255,0.4);padding:8px 20px;border-radius:6px;">
-          Sprawdź status zamówienia →
+          ${L.statusBtn}
         </a>
       </td></tr>
     </table>
@@ -178,7 +220,7 @@ export async function POST(req: NextRequest) {
         from: 'RaveAdventure <zamowienia@raveadventure.pl>',
         to: [order.email],
         reply_to: 'kontakt@raveadventure.pl',
-        subject: '🎴 Twój projekt karty RaveAdventure — sprawdź i zatwierdź',
+        subject: L.subject,
         html: emailHtml,
       }),
     })
