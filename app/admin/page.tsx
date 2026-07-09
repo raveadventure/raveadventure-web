@@ -6,6 +6,7 @@ const STATUSES = [
   { id: 'new',        label: 'Nowe',         color: '#f59e0b' },
   { id: 'in_project', label: 'W projekcie',   color: '#3b82f6' },
   { id: 'approval',   label: 'Do akceptacji', color: '#8b5cf6' },
+  { id: 'awaiting_payment', label: 'Do opłacenia', color: '#ec4899' },
   { id: 'production', label: 'Produkcja',      color: '#f97316' },
   { id: 'shipped',    label: 'Wysłane',        color: '#10b981' },
   { id: 'done',       label: 'Zakończone',     color: '#6b7280' },
@@ -239,10 +240,16 @@ export default function AdminPage() {
     setUpdating(null)
   }
 
-  const togglePaid = async (id: string, paid: boolean) => {
-    await supabase.from('orders').update({ paid: !paid }).eq('id', id)
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, paid: !paid } : o))
-    setSelected(prev => prev?.id === id ? { ...prev, paid: !paid } : prev)
+  const togglePaid = async (id: string, paid: boolean, currentStatus?: string) => {
+    const updates: Record<string, unknown> = { paid: !paid }
+    // Automatyczne przejście do produkcji gdy oznaczamy jako opłacone, a zlecenie czekało na płatność
+    if (!paid && currentStatus === 'awaiting_payment') {
+      updates.status = 'production'
+      updates.approved_at = new Date().toISOString()
+    }
+    await supabase.from('orders').update(updates).eq('id', id)
+    setOrders(prev => prev.map(o => o.id === id ? { ...o, ...updates } as Order : o))
+    setSelected(prev => prev?.id === id ? { ...prev, ...updates } as Order : prev)
   }
 
   const handleDesignFile = (file: File) => {
@@ -557,19 +564,24 @@ export default function AdminPage() {
             </div>
 
             {/* Kwota i płatność */}
-            <div style={{ background: selected.paid ? 'rgba(0,229,160,0.08)' : 'rgba(245,158,11,0.06)', border: `1px solid ${selected.paid ? 'rgba(0,229,160,0.3)' : 'rgba(245,158,11,0.25)'}`, borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-              <div>
-                <p style={{ margin: '0 0 2px', fontSize: '11px', color: 'rgba(240,238,255,0.4)', letterSpacing: '1px' }}>DO ZAPŁATY</p>
-                <p style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: selected.paid ? '#00e5a0' : '#f59e0b', fontFamily: 'Space Mono, monospace' }}>
-                  {selected.total_price ? `${selected.total_price} zł` : '— zł'}
-                </p>
+            <div style={{ background: selected.paid ? 'rgba(0,229,160,0.08)' : 'rgba(245,158,11,0.06)', border: `1px solid ${selected.paid ? 'rgba(0,229,160,0.3)' : 'rgba(245,158,11,0.25)'}`, borderRadius: '10px', padding: '14px 16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                <div>
+                  <p style={{ margin: '0 0 2px', fontSize: '11px', color: 'rgba(240,238,255,0.4)', letterSpacing: '1px' }}>DO ZAPŁATY</p>
+                  <p style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: selected.paid ? '#00e5a0' : '#f59e0b', fontFamily: 'Space Mono, monospace' }}>
+                    {selected.total_price ? `${selected.total_price} zł` : '— zł'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => togglePaid(selected.id, selected.paid, selected.status)}
+                  style={{ background: selected.paid ? 'rgba(0,229,160,0.15)' : 'rgba(245,158,11,0.15)', border: `1px solid ${selected.paid ? 'rgba(0,229,160,0.4)' : 'rgba(245,158,11,0.4)'}`, color: selected.paid ? '#00e5a0' : '#f59e0b', padding: '10px 18px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}
+                >
+                  {selected.paid ? '✓ Opłacone' : 'Oznacz jako opłacone'}
+                </button>
               </div>
-              <button
-                onClick={() => togglePaid(selected.id, selected.paid)}
-                style={{ background: selected.paid ? 'rgba(0,229,160,0.15)' : 'rgba(245,158,11,0.15)', border: `1px solid ${selected.paid ? 'rgba(0,229,160,0.4)' : 'rgba(245,158,11,0.4)'}`, color: selected.paid ? '#00e5a0' : '#f59e0b', padding: '10px 18px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}
-              >
-                {selected.paid ? '✓ Opłacone' : 'Oznacz jako opłacone'}
-              </button>
+              {!selected.paid && selected.status === 'awaiting_payment' && (
+                <p style={{ margin: '10px 0 0', fontSize: '11px', color: '#ec4899' }}>💡 Po oznaczeniu jako opłacone status automatycznie zmieni się na "Produkcja".</p>
+              )}
             </div>
 
             {/* Dane klienta */}
