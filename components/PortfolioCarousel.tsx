@@ -3,7 +3,13 @@ import { useEffect, useState, useRef } from 'react'
 
 type Item = { id: string; name: string; card_url: string; theme: string }
 
-export default function PortfolioCarousel() {
+const TXT = {
+  pl: { eyebrow: '// realizacje', title: 'Nasze karty', viewAll: 'Zobacz wszystkie →', prev: 'Poprzednia karta', next: 'Następna karta', card: (i: number) => `Karta ${i}` },
+  en: { eyebrow: '// our work', title: 'Our cards', viewAll: 'View all →', prev: 'Previous card', next: 'Next card', card: (i: number) => `Card ${i}` },
+}
+
+export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
+  const t = TXT[lang]
   const [items, setItems] = useState<Item[]>([])
   const [current, setCurrent] = useState(0)
   const [paused, setPaused] = useState(false)
@@ -45,14 +51,14 @@ export default function PortfolioCarousel() {
 
   return (
     <section style={{ padding: '32px 5vw 40px', maxWidth: '1100px', margin: '0 auto' }}>
-      <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: 'var(--neon)', letterSpacing: '2px', marginBottom: '12px' }}>// realizacje</p>
+      <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: 'var(--neon)', letterSpacing: '2px', marginBottom: '12px' }}>{t.eyebrow}</p>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
-        <h2 style={{ fontFamily: "'Space Mono', monospace", fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 700, color: 'var(--text)', margin: 0 }}>Nasze karty</h2>
-        <a href="/portfolio" style={{ fontSize: '13px', color: 'var(--neon)', textDecoration: 'none', whiteSpace: 'nowrap' }}>Zobacz wszystkie →</a>
+        <h2 style={{ fontFamily: "'Space Mono', monospace", fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 700, color: 'var(--text)', margin: 0 }}>{t.title}</h2>
+        <a href="/portfolio" style={{ fontSize: '13px', color: 'var(--neon)', textDecoration: 'none', whiteSpace: 'nowrap' }}>{t.viewAll}</a>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', gap: '16px' }}>
-        <button onClick={() => go(-1)} aria-label="Poprzednia karta"
+        <button onClick={() => go(-1)} aria-label={t.prev}
           style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           ←
         </button>
@@ -86,7 +92,7 @@ export default function PortfolioCarousel() {
           })}
         </div>
 
-        <button onClick={() => go(1)} aria-label="Następna karta"
+        <button onClick={() => go(1)} aria-label={t.next}
           style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           →
         </button>
@@ -97,7 +103,7 @@ export default function PortfolioCarousel() {
         <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
           {items.map((_, i) => (
             <button key={i} onClick={() => { setPaused(true); setCurrent(i); setTimeout(() => setPaused(false), 5000) }}
-              aria-label={`Karta ${i + 1}`}
+              aria-label={t.card(i + 1)}
               style={{ width: i === current ? '20px' : '6px', height: '6px', borderRadius: '3px', border: 'none', background: i === current ? 'var(--neon)' : 'var(--border)', cursor: 'pointer', padding: 0, transition: 'all .3s' }} />
           ))}
         </div>
