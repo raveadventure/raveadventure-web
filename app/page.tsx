@@ -196,15 +196,20 @@ export default function Home() {
         textDecoration: 'none',
         cursor: 'pointer',
       }}>
-        <span style={{ fontSize: '13px', fontWeight: 600, color: '#f0eeff' }}>
-          {lang === 'pl' ? '🎉 Wszystkie zamówienia po Audioriver są darmowe!' : '🎉 All orders after Audioriver are free!'}
-        </span>
-        <span style={{ fontSize: '13px', color: 'rgba(240,238,255,0.6)', marginLeft: '8px' }}>
-          {lang === 'pl' ? 'Użyj kodu' : 'Use code'}
-        </span>
-        <span style={{ fontFamily: 'var(--font-display)', fontSize: '13px', fontWeight: 700, color: '#b44dff', letterSpacing: '1px', marginLeft: '6px', textDecoration: 'underline' }}>
-          AUDIORIVER100
-        </span>
+        <div>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: '#f0eeff' }}>
+            {lang === 'pl' ? '🎉 Wszystkie zamówienia po Audioriver są darmowe!' : '🎉 All orders after Audioriver are free!'}
+          </span>
+          <span style={{ fontSize: '13px', color: 'rgba(240,238,255,0.6)', marginLeft: '8px' }}>
+            {lang === 'pl' ? 'Użyj kodu' : 'Use code'}
+          </span>
+          <span style={{ fontFamily: 'var(--font-display)', fontSize: '13px', fontWeight: 700, color: '#b44dff', letterSpacing: '1px', marginLeft: '6px', textDecoration: 'underline' }}>
+            AUDIORIVER100
+          </span>
+        </div>
+        <p style={{ margin: '3px 0 0', fontSize: '11px', color: 'rgba(240,238,255,0.5)' }}>
+          {lang === 'pl' ? 'Jedyny koszt to koszt wysyłki — resztę pokrywamy my.' : 'The only cost is shipping — we cover the rest.'}
+        </p>
       </a>
 
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '72px 5vw 0' }}>
