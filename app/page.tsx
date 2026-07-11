@@ -38,7 +38,7 @@ export default function Home() {
   const [discountPct, setDiscountPct] = useState(0)
   const [discountMsg, setDiscountMsg] = useState<string | null>(null)
 
-  const DISCOUNT_CODES: Record<string, number> = { 'RAVE10': 10, 'SIERRA20': 20, 'AWAKENINGS': 15, 'FRIENDS50': 50 }
+  const DISCOUNT_CODES: Record<string, number> = { 'RAVE10': 10, 'SIERRA20': 20, 'AWAKENINGS': 15, 'FRIENDS50': 50, 'AUDIORIVER100': 100 }
 
   const applyDiscount = () => {
     const code = discountCode.trim().toUpperCase()
@@ -185,7 +185,29 @@ export default function Home() {
         </div>
       </nav>
 
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '72px 5vw 0', marginTop: '57px' }}>
+      {/* PROMO BANNER — Audioriver */}
+      <a href="#order" style={{
+        display: 'block',
+        marginTop: '57px',
+        background: 'linear-gradient(90deg, rgba(180,77,255,0.18), rgba(0,240,255,0.12))',
+        borderBottom: '1px solid rgba(180,77,255,0.3)',
+        padding: '10px 5vw',
+        textAlign: 'center',
+        textDecoration: 'none',
+        cursor: 'pointer',
+      }}>
+        <span style={{ fontSize: '13px', fontWeight: 600, color: '#f0eeff' }}>
+          {lang === 'pl' ? '🎉 Wszystkie zamówienia po Audioriver są darmowe!' : '🎉 All orders after Audioriver are free!'}
+        </span>
+        <span style={{ fontSize: '13px', color: 'rgba(240,238,255,0.6)', marginLeft: '8px' }}>
+          {lang === 'pl' ? 'Użyj kodu' : 'Use code'}
+        </span>
+        <span style={{ fontFamily: 'var(--font-display)', fontSize: '13px', fontWeight: 700, color: '#b44dff', letterSpacing: '1px', marginLeft: '6px', textDecoration: 'underline' }}>
+          AUDIORIVER100
+        </span>
+      </a>
+
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '72px 5vw 0' }}>
         <img src="/logo_kwadrat.png" alt="RaveAdventure — The best memories from your adventure deserve a card." style={{ maxWidth: '100%', width: '900px', height: 'auto', display: 'block' }} />
       </div>
 
