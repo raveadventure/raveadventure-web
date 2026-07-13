@@ -1,562 +1,343 @@
-'use client'
-import { useState, useRef } from 'react'
-import { supabase } from '../lib/supabase'
-import styles from './page.module.css'
-import PortfolioCarousel from '../components/PortfolioCarousel'
-import HeroCardAnimation from '../components/HeroCardAnimation'
-import { T, CARD_TYPES_I18N, FRONT_THEMES_I18N, BACK_OPTIONS_I18N, Lang } from '../lib/translations'
+export type Lang = 'pl' | 'en'
 
-type Step = 1 | 2 | 3 | 4 | 5
+export const CARD_TYPES_I18N = {
+  pl: [
+    { id: 'pvc', label: 'Karta PVC', price: 60, dims: '85.6 × 54 mm · grubość 0.76 mm', desc: 'Format karty kredytowej. Twarda, wodoodporna, mieści się w każdym portfelu.', accent: '#b44dff' },
+    { id: 'laminated', label: 'Karta Laminowana', price: 40, dims: '63 × 88 mm', desc: 'Większy format, lżejsza produkcja. Idealna na festiwal lub jako zakładka.', accent: '#00f0ff' },
+  ],
+  en: [
+    { id: 'pvc', label: 'PVC Card', price: 60, dims: '85.6 × 54 mm · 0.76 mm thick', desc: 'Credit-card format. Hard, waterproof, fits in any wallet.', accent: '#b44dff' },
+    { id: 'laminated', label: 'Laminated Card', price: 40, dims: '63 × 88 mm', desc: 'Larger format, lighter production. Perfect for a festival or as a bookmark.', accent: '#00f0ff' },
+  ],
+}
 
-export default function Home() {
-  const [lang, setLang] = useState<Lang>('pl')
-  const t = T[lang]
-  const CARD_TYPES = CARD_TYPES_I18N[lang]
-  const FRONT_THEMES = FRONT_THEMES_I18N[lang]
-  const BACK_OPTIONS = BACK_OPTIONS_I18N[lang]
+export const FRONT_THEMES_I18N = {
+  pl: [
+    { id: 'techno_rave', label: 'Techno / Rave', desc: 'Nocny klimat, laser, dark vibe', accent: '#b44dff' },
+    { id: 'festival', label: 'Festiwal', desc: 'Scena, tłum, światła, energia', accent: '#ff6b35' },
+    { id: 'adventure', label: 'Adventure / Travel', desc: 'Droga, natura, wolność', accent: '#00e5a0' },
+    { id: 'custom', label: 'Custom', desc: 'Twój własny pomysł na projekt', accent: '#f59e0b' },
+  ],
+  en: [
+    { id: 'techno_rave', label: 'Techno / Rave', desc: 'Night vibe, lasers, dark atmosphere', accent: '#b44dff' },
+    { id: 'festival', label: 'Festival', desc: 'Stage, crowd, lights, energy', accent: '#ff6b35' },
+    { id: 'adventure', label: 'Adventure / Travel', desc: 'The road, nature, freedom', accent: '#00e5a0' },
+    { id: 'custom', label: 'Custom', desc: 'Your own idea for the design', accent: '#f59e0b' },
+  ],
+}
 
-  const [step, setStep] = useState<Step>(1)
-  const [cardType, setCardType] = useState('pvc')
-  const [frontTheme, setFrontTheme] = useState('techno_rave')
-  const [backOption, setBackOption] = useState('logo')
-  const [quantity, setQuantity] = useState(1)
-  const [form, setForm] = useState({
-    name: '', email: '', phone: '', address: '',
-    notesBack: '', customDesc: '', notes: '',
-    cardYear: '2025', cardRarity: 'RARE', cardName: '', attr1Label: '', attr1Value: '', cardSkill: '', attr2Label: '', attr2Value: '', cardDesc: '',
-  })
-  const [photo, setPhoto] = useState<File | null>(null)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
-  const [refFileFront, setRefFileFront] = useState<File | null>(null)
-  const [refFileBack, setRefFileBack] = useState<File | null>(null)
-  const [sending, setSending] = useState(false)
-  const [sent, setSent] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [agreed, setAgreed] = useState(false)
-  const [discountCode, setDiscountCode] = useState('')
-  const [discountApplied, setDiscountApplied] = useState(false)
-  const [discountPct, setDiscountPct] = useState(0)
-  const [discountMsg, setDiscountMsg] = useState<string | null>(null)
+export const BACK_OPTIONS_I18N = {
+  pl: [
+    { id: 'logo', label: 'RaveAdventure Logo', price: 0, desc: 'Nasze logo na rewersie karty' },
+    { id: 'dedication', label: 'Personal Dedication', price: 15, desc: 'Dedykacja, cytat lub tekst osobisty' },
+    { id: 'custom_back', label: 'Custom Artwork', price: 30, desc: 'Własna grafika lub motyw na rewersie' },
+    { id: 'qr', label: 'QR Code', price: 40, desc: 'Link do social media, strony lub portfolio' },
+  ],
+  en: [
+    { id: 'logo', label: 'RaveAdventure Logo', price: 0, desc: 'Our logo on the back of the card' },
+    { id: 'dedication', label: 'Personal Dedication', price: 15, desc: 'A dedication, quote, or personal text' },
+    { id: 'custom_back', label: 'Custom Artwork', price: 30, desc: 'Your own artwork or theme on the back' },
+    { id: 'qr', label: 'QR Code', price: 40, desc: 'Link to social media, a website, or portfolio' },
+  ],
+}
 
-  const DISCOUNT_CODES: Record<string, number> = { 'RAVE10': 10, 'SIERRA20': 20, 'AWAKENINGS': 15, 'FRIENDS50': 50, 'AUDIORIVER100': 100 }
-
-  const applyDiscount = () => {
-    const code = discountCode.trim().toUpperCase()
-    if (DISCOUNT_CODES[code]) {
-      setDiscountPct(DISCOUNT_CODES[code]); setDiscountApplied(true)
-      setDiscountMsg(t.discount.active(DISCOUNT_CODES[code]))
-    } else {
-      setDiscountPct(0); setDiscountApplied(false); setDiscountMsg(t.discount.invalid)
-    }
-  }
-  const fileRef = useRef<HTMLInputElement>(null)
-  const refFileFrontRef = useRef<HTMLInputElement>(null)
-  const refFileBackRef = useRef<HTMLInputElement>(null)
-
-  const cardObj = CARD_TYPES.find(c => c.id === cardType)!
-  const backObj = BACK_OPTIONS.find(b => b.id === backOption)!
-  const unitPrice = cardObj.price + backObj.price
-  const hasDiscount = quantity >= 3
-  const baseTotal = hasDiscount ? Math.round(unitPrice * quantity * 0.5) : unitPrice * quantity
-  const savedAmount = hasDiscount ? Math.round(unitPrice * quantity * 0.5) : 0
-  const discountSaved = discountApplied ? Math.round(baseTotal * discountPct / 100) : 0
-  const totalPrice = baseTotal - discountSaved
-
-  const handlePhoto = (file: File) => {
-    setPhoto(file)
-    const reader = new FileReader()
-    reader.onload = e => setPhotoPreview(e.target?.result as string)
-    reader.readAsDataURL(file)
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    const file = e.dataTransfer.files[0]
-    if (file && file.type.startsWith('image/')) handlePhoto(file)
-  }
-
-  const handleSubmit = async () => {
-    if (!form.name || !form.email || !form.address) { setError(t.order.step5.errRequired); return }
-    if (!agreed) { setError(t.order.step5.errAgree); return }
-    setSending(true); setError(null)
-    try {
-      const { data: orderData, error: insertError } = await supabase.from('orders').insert([{
-        theme: frontTheme, card_type: cardType, back_option: backOption, quantity,
-        unit_price: unitPrice, total_price: totalPrice, has_discount: hasDiscount,
-        name: form.name, email: form.email, phone: form.phone, address: form.address,
-        notes: form.notes, card_text: form.notesBack, custom_desc: form.customDesc, qr_link: form.notesBack,
-        card_year: form.cardYear, card_rarity: form.cardRarity, card_name_custom: form.cardName,
-        attr1_label: form.attr1Label, attr1_value: form.attr1Value, card_skill: form.cardSkill,
-        attr2_label: form.attr2Label, attr2_value: form.attr2Value, card_desc: form.cardDesc,
-        discount_code: discountApplied ? discountCode.trim().toUpperCase() : null, discount_pct: discountPct,
-        photo_url: null, status: 'new', lang,
-      }]).select('id').single()
-
-      if (insertError) throw new Error(insertError.message)
-
-      if (photo && orderData?.id) {
-        const ext = (photo.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
-        const safeExt = ['jpg','jpeg','png','gif','webp','heic'].includes(ext) ? ext : 'jpg'
-        const fileName = `${orderData.id}-front.${safeExt}`
-        const { error: uploadError } = await supabase.storage.from('order-photos').upload(fileName, photo, { upsert: true })
-        if (uploadError) { console.error('Photo upload error:', uploadError.message) }
-        else {
-          const { data: urlData } = supabase.storage.from('order-photos').getPublicUrl(fileName)
-          const { error: updateError } = await supabase.from('orders').update({ photo_url: urlData.publicUrl }).eq('id', orderData.id)
-          if (updateError) console.error('Photo URL update error:', updateError.message)
-        }
-      }
-
-      if (refFileFront && orderData?.id) {
-        const ext = (refFileFront.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
-        const safeExt = ['jpg','jpeg','png','gif','webp','pdf'].includes(ext) ? ext : 'jpg'
-        await supabase.storage.from('order-photos').upload(`${orderData.id}-custom.${safeExt}`, refFileFront, { upsert: true })
-      }
-      if (refFileBack && orderData?.id) {
-        const ext = (refFileBack.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
-        const safeExt = ['jpg','jpeg','png','gif','webp','pdf'].includes(ext) ? ext : 'jpg'
-        await supabase.storage.from('order-photos').upload(`${orderData.id}-ref-back.${safeExt}`, refFileBack, { upsert: true })
-      }
-
-      await fetch('/api/send-order', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: form.name, email: form.email, phone: form.phone, address: form.address, cardText: form.notesBack, notes: form.notes,
-          theme: frontTheme, orderId: orderData?.id, cardType, backOption, quantity, unitPrice, totalPrice, hasDiscount, savedAmount,
-          cardYear: form.cardYear, cardRarity: form.cardRarity, cardName: form.cardName,
-          attr1Label: form.attr1Label, attr1Value: form.attr1Value, cardSkill: form.cardSkill,
-          attr2Label: form.attr2Label, attr2Value: form.attr2Value, cardDesc: form.cardDesc, notesBack: form.notesBack,
-          lang,
-        }),
-      })
-
-      setSent(true)
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : (lang === 'pl' ? 'Nieznany błąd' : 'Unknown error')
-      setError(t.order.step5.errGeneric(msg))
-    } finally { setSending(false) }
-  }
-
-  const LangSwitch = () => (
-    <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '20px', padding: '3px' }}>
-      <button
-        onClick={() => setLang('pl')}
-        style={{ padding: '4px 10px', borderRadius: '16px', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '12px', fontWeight: 600, background: lang === 'pl' ? '#b44dff' : 'transparent', color: lang === 'pl' ? '#0a0014' : 'rgba(240,238,255,0.5)' }}
-        aria-pressed={lang === 'pl'}
-      >
-        PL
-      </button>
-      <button
-        onClick={() => setLang('en')}
-        style={{ padding: '4px 10px', borderRadius: '16px', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '12px', fontWeight: 600, background: lang === 'en' ? '#b44dff' : 'transparent', color: lang === 'en' ? '#0a0014' : 'rgba(240,238,255,0.5)' }}
-        aria-pressed={lang === 'en'}
-      >
-        EN
-      </button>
-    </div>
-  )
-
-  if (sent) {
-    return (
-      <div className={styles.sentWrap}>
-        <div className={styles.sentBox}>
-          <div className={styles.sentIcon}>✓</div>
-          <h2>{t.sent.title}</h2>
-          <p>{t.sent.body(form.email)}</p>
-          <div className={styles.sentSummary}>
-            <span>{cardObj.label} × {quantity}</span>
-            <strong>{totalPrice} zł</strong>
-          </div>
-          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',phone:'',address:'',notesBack:'',customDesc:'',notes:'',cardYear:'2025',cardRarity:'RARE',cardName:'',attr1Label:'',attr1Value:'',cardSkill:'',attr2Label:'',attr2Value:'',cardDesc:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setQuantity(1); setAgreed(false); setDiscountCode(''); setDiscountApplied(false); setDiscountPct(0); setDiscountMsg(null) }}>
-            {t.sent.newOrder}
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <main className={styles.main}>
-      <nav className={styles.nav}>
-        <span className={styles.logo}>Rave<span>Adventure</span></span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <LangSwitch />
-          <a href="#order" className={styles.navCta}>{t.nav.orderCta}</a>
-        </div>
-      </nav>
-
-      {/* PROMO BANNER — Audioriver */}
-      <a href="#order" style={{
-        display: 'block',
-        marginTop: '57px',
-        background: 'linear-gradient(90deg, rgba(180,77,255,0.18), rgba(0,240,255,0.12))',
-        borderBottom: '1px solid rgba(180,77,255,0.3)',
-        padding: '10px 5vw',
-        textAlign: 'center',
-        textDecoration: 'none',
-        cursor: 'pointer',
-      }}>
-        <div>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: '#f0eeff' }}>
-            {lang === 'pl' ? '🎉 Wszystkie zamówienia po Audioriver są darmowe do 17.07.2026!' : '🎉 All orders after Audioriver are free until July 17, 2026!'}
-          </span>
-          <span style={{ fontSize: '13px', color: 'rgba(240,238,255,0.6)', marginLeft: '8px' }}>
-            {lang === 'pl' ? 'Użyj kodu' : 'Use code'}
-          </span>
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: '13px', fontWeight: 700, color: '#b44dff', letterSpacing: '1px', marginLeft: '6px', textDecoration: 'underline' }}>
-            AUDIORIVER100
-          </span>
-        </div>
-        <p style={{ margin: '3px 0 0', fontSize: '11px', color: 'rgba(240,238,255,0.5)' }}>
-          {lang === 'pl' ? 'Jedyny koszt to koszt wysyłki (15 zł) — resztę pokrywamy my.' : 'The only cost is shipping (15 zł) — we cover the rest.'}
-        </p>
-      </a>
-
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '72px 5vw 0' }}>
-        <img src="/logo_kwadrat.png" alt="RaveAdventure — The best memories from your adventure deserve a card." style={{ maxWidth: '100%', width: '900px', height: 'auto', display: 'block' }} />
-      </div>
-
-      <PortfolioCarousel lang={lang} />
-
-      <section className={styles.hero}>
-        <div className={styles.heroGrid} aria-hidden="true" />
-        <div className={styles.heroContent}>
-          <p className={styles.eyebrow}>{t.hero.eyebrow}</p>
-          <h1 className={styles.heroTitle}>
-            {t.hero.title1}<br />
-            <span className={styles.neon}>{t.hero.title2}</span>
-          </h1>
-          <p className={styles.heroSub}>{t.hero.sub}</p>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', margin: '20px auto', width: '100%', maxWidth: '520px' }}>
-            {CARD_TYPES.map(c => (
-              <div key={c.id} style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${c.accent}33`, borderRadius: '10px', padding: '12px 14px', textAlign: 'left' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#f0eeff' }}>{c.label}</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: c.accent }}>{c.price} zł</span>
-                </div>
-                <p style={{ margin: '0 0 4px', fontSize: '10px', color: 'rgba(240,238,255,0.3)', fontFamily: 'var(--font-display)' }}>{c.dims}</p>
-                <p style={{ margin: 0, fontSize: '11px', color: 'rgba(240,238,255,0.5)', lineHeight: '1.5' }}>{c.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '20px' }}>
-            <span className={styles.badge}>{t.hero.badge1}</span>
-            <span className={styles.badge}>{t.hero.badge2}</span>
-          </div>
-          <a href="#order" className={styles.btnHero}>{t.hero.cta}</a>
-
-          <div style={{ marginTop: '36px' }}>
-            <HeroCardAnimation lang={lang} />
-          </div>
-        </div>
-      </section>
-
-      <section className={styles.section}>
-        <p className={styles.sectionEye}>{t.howItWorks.eyebrow}</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '24px' }}>
-          {t.howItWorks.steps.map(s => (
-            <div key={s.n} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px 12px' }}>
-              <span style={{ fontFamily: 'var(--font-display)', fontSize: '10px', color: 'var(--text-faint)', letterSpacing: '1px' }}>{s.n}</span>
-              <p style={{ margin: '3px 0 2px', fontSize: '12px', fontWeight: 600, color: 'var(--text)' }}>{s.t}</p>
-              <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.5' }}>{s.d}</p>
-            </div>
-          ))}
-        </div>
-
-        <p className={styles.sectionEye}>{t.options.eyebrow}</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-          {t.options.cards.map((o, i) => (
-            <div key={i} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                <span style={{ fontSize: '16px' }}>{o.icon}</span>
-                <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{o.title}</p>
-              </div>
-              <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{o.desc}</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                {o.tags.map(tag => (
-                  <span key={tag} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>{tag}</span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ marginTop: '10px', padding: '10px 14px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '10px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-          <span style={{ fontSize: '14px', flexShrink: 0 }}>⚙</span>
-          <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{t.options.attrNote}</p>
-        </div>
-      </section>
-
-      <section className={styles.section} id="order">
-        <p className={styles.sectionEye}>{t.order.eyebrow}</p>
-        <h2 className={styles.sectionTitle}>{t.order.title}</h2>
-
-        <div className={styles.progressWrap}>
-          {t.order.steps.map((s, i) => {
-            const n = (i + 1) as Step
-            return (
-              <div key={n} className={styles.progressItem}>
-                <div className={`${styles.stepDot} ${step === n ? styles.stepDotActive : ''} ${step > n ? styles.stepDotDone : ''}`}>
-                  {step > n ? '✓' : n}
-                </div>
-                <span className={styles.progressLabel}>{s}</span>
-              </div>
-            )
-          })}
-        </div>
-
-        <div className={styles.formBox}>
-          {step === 1 && (
-            <div className={styles.formStep}>
-              <p className={styles.formStepTitle}>{t.order.step1.title}</p>
-              <div className={styles.cardTypesGrid}>
-                {CARD_TYPES.map(c => (
-                  <div key={c.id}
-                    className={`${styles.cardTypeCard} ${cardType === c.id ? styles.themeSelected : ''}`}
-                    style={{ '--accent': c.accent } as React.CSSProperties}
-                    onClick={() => setCardType(c.id)} role="button" tabIndex={0}
-                    onKeyDown={e => e.key === 'Enter' && setCardType(c.id)} aria-pressed={cardType === c.id}>
-                    <div className={styles.themeAccentBar} />
-                    <div className={styles.cardTypeHeader}>
-                      <p className={styles.themeLabel}>{c.label}</p>
-                      <span className={styles.cardTypePrice}>{c.price} zł</span>
-                    </div>
-                    <p className={styles.cardTypeDims}>{c.dims}</p>
-                    <p className={styles.themeDesc}>{c.desc}</p>
-                    {cardType === c.id && <span className={styles.themeCheck}>✓</span>}
-                  </div>
-                ))}
-              </div>
-              <button className={styles.btnPrimary} onClick={() => setStep(2)}>{t.order.step1.next}</button>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className={styles.formStep}>
-              <p className={styles.formStepTitle}>{t.order.step2.title}</p>
-              <div className={styles.themesGrid}>
-                {FRONT_THEMES.map(th => (
-                  <div key={th.id}
-                    className={`${styles.themeCard} ${frontTheme === th.id ? styles.themeSelected : ''}`}
-                    style={{ '--accent': th.accent } as React.CSSProperties}
-                    onClick={() => setFrontTheme(th.id)} role="button" tabIndex={0}
-                    onKeyDown={e => e.key === 'Enter' && setFrontTheme(th.id)} aria-pressed={frontTheme === th.id}>
-                    <div className={styles.themeAccentBar} />
-                    <p className={styles.themeLabel}>{th.label}</p>
-                    <p className={styles.themeDesc}>{th.desc}</p>
-                    {frontTheme === th.id && <span className={styles.themeCheck}>✓</span>}
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: '12px' }}>
-                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>{t.order.step2.photoEyebrow}</p>
-                {!photo ? (
-                  <div className={styles.dropZone} onClick={() => fileRef.current?.click()} onDragOver={e => e.preventDefault()} onDrop={handleDrop} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && fileRef.current?.click()}>
-                    <span className={styles.dropIcon}>↑</span>
-                    <p className={styles.dropTitle}>{t.order.step2.dropTitle}</p>
-                    <p className={styles.dropSub}>{t.order.step2.dropSub}</p>
-                  </div>
-                ) : (
-                  <div className={styles.fileAdded}>
-                    <span className={styles.fileIcon}>🖼</span>
-                    <div className={styles.fileInfo}>
-                      <p className={styles.fileAddedTitle}>{t.order.step2.fileAddedTitle}</p>
-                      <p className={styles.fileName}>{photo.name}</p>
-                    </div>
-                    <button className={styles.fileRemove} onClick={() => { setPhoto(null); setPhotoPreview(null) }}>✕</button>
-                  </div>
-                )}
-                <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handlePhoto(e.target.files[0]) }} />
-                <div className={styles.field} style={{ marginTop: '10px' }}>
-                  <label className={styles.label}>{t.order.step2.photoCommentLabel} <span className={styles.optional}>{t.order.step2.optional}</span></label>
-                  <textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} placeholder={t.order.step2.photoCommentPlaceholder} />
-                </div>
-              </div>
-
-              <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '20px', marginTop: '12px' }}>
-                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 16px' }}>{t.order.step2.attrsEyebrow}</p>
-                <div className={styles.fieldGrid}>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.yearLabel}</label><input value={form.cardYear} onChange={e => setForm({...form, cardYear: e.target.value})} placeholder={t.order.step2.yearPlaceholder} /></div>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.rarityLabel}</label><input value={form.cardRarity} onChange={e => setForm({...form, cardRarity: e.target.value})} placeholder={t.order.step2.rarityPlaceholder} /></div>
-                  <div className={`${styles.field} ${styles.fieldFull}`}><label className={styles.label}>{t.order.step2.nameLabel}</label><input value={form.cardName} onChange={e => setForm({...form, cardName: e.target.value})} placeholder={t.order.step2.namePlaceholder} /></div>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.attr1LabelLabel}</label><input value={form.attr1Label} onChange={e => setForm({...form, attr1Label: e.target.value})} placeholder={t.order.step2.attr1LabelPlaceholder} /></div>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.attr1ValueLabel}</label><input value={form.attr1Value} onChange={e => setForm({...form, attr1Value: e.target.value})} placeholder={t.order.step2.attr1ValuePlaceholder} /></div>
-                  <div className={`${styles.field} ${styles.fieldFull}`}><label className={styles.label}>{t.order.step2.skillLabel}</label><input value={form.cardSkill} onChange={e => setForm({...form, cardSkill: e.target.value})} placeholder={t.order.step2.skillPlaceholder} /></div>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.attr2LabelLabel}</label><input value={form.attr2Label} onChange={e => setForm({...form, attr2Label: e.target.value})} placeholder={t.order.step2.attr2LabelPlaceholder} /></div>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.attr2ValueLabel}</label><input value={form.attr2Value} onChange={e => setForm({...form, attr2Value: e.target.value})} placeholder={t.order.step2.attr2ValuePlaceholder} /></div>
-                </div>
-              </div>
-
-              {frontTheme === 'custom' && (
-                <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '10px', padding: '16px', marginTop: '12px' }}>
-                  <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: '#f59e0b', letterSpacing: '2px', margin: '0 0 12px' }}>{t.order.step2.customEyebrow}</p>
-                  <button className={styles.btnSecondary} style={{ width: '100%', padding: '12px', fontSize: '13px' }} onClick={() => refFileFrontRef.current?.click()}>
-                    {refFileFront ? `✓ ${refFileFront.name}` : t.order.step2.customBtnEmpty}
-                  </button>
-                  <input ref={refFileFrontRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) setRefFileFront(e.target.files[0]) }} />
-                  <div className={styles.field} style={{ marginTop: '10px' }}>
-                    <label className={styles.label}>{t.order.step2.customDescLabel}</label>
-                    <textarea value={form.customDesc} onChange={e => setForm({...form, customDesc: e.target.value})} placeholder={t.order.step2.customDescPlaceholder} />
-                  </div>
-                </div>
-              )}
-
-              <div className={styles.formButtons}>
-                <button className={styles.btnSecondary} onClick={() => setStep(1)}>{t.order.step2.back}</button>
-                <button className={styles.btnPrimary} onClick={() => setStep(3)}>{t.order.step2.next}</button>
-              </div>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className={styles.formStep}>
-              <p className={styles.formStepTitle}>{t.order.step3.title}</p>
-              <div className={styles.backGrid}>
-                {BACK_OPTIONS.map(b => (
-                  <div key={b.id}
-                    className={`${styles.backCard} ${backOption === b.id ? styles.backCardSelected : ''}`}
-                    onClick={() => setBackOption(b.id)} role="button" tabIndex={0}
-                    onKeyDown={e => e.key === 'Enter' && setBackOption(b.id)} aria-pressed={backOption === b.id}>
-                    <div className={styles.backCardTop}>
-                      <p className={styles.backCardLabel}>{b.label}</p>
-                      <span className={styles.backCardPrice}>{b.price === 0 ? t.order.step3.freeLabel : `+${b.price} zł`}</span>
-                    </div>
-                    <p className={styles.backCardDesc}>{b.desc}</p>
-                    {backOption === b.id && <span className={styles.themeCheck}>✓</span>}
-                  </div>
-                ))}
-              </div>
-
-              {backOption === 'dedication' && (
-                <div className={styles.field} style={{ marginTop: '12px' }}>
-                  <label className={styles.label}>{t.order.step3.dedicationLabel}</label>
-                  <textarea value={form.notesBack} onChange={e => setForm({...form, notesBack: e.target.value})} placeholder={t.order.step3.dedicationPlaceholder} />
-                </div>
-              )}
-
-              {backOption === 'qr' && (
-                <div className={styles.field} style={{ marginTop: '12px' }}>
-                  <label className={styles.label}>{t.order.step3.qrLabel}</label>
-                  <textarea value={form.notesBack} onChange={e => setForm({...form, notesBack: e.target.value})} placeholder={t.order.step3.qrPlaceholder} />
-                  <p style={{ fontSize: '12px', color: 'var(--text-faint)', marginTop: '4px' }}>{t.order.step3.qrNote}</p>
-                </div>
-              )}
-
-              {backOption === 'custom_back' && (
-                <div style={{ marginTop: '12px' }}>
-                  <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>{t.order.step3.customBackEyebrow}</p>
-                  <button className={styles.btnSecondary} style={{ width: '100%', padding: '12px', fontSize: '13px' }} onClick={() => refFileBackRef.current?.click()}>
-                    {refFileBack ? `✓ ${refFileBack.name}` : t.order.step3.customBackBtnEmpty}
-                  </button>
-                  <input ref={refFileBackRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) setRefFileBack(e.target.files[0]) }} />
-                  <div className={styles.field} style={{ marginTop: '10px' }}>
-                    <label className={styles.label}>{t.order.step3.customBackCommentLabel}</label>
-                    <textarea value={form.notesBack} onChange={e => setForm({...form, notesBack: e.target.value})} placeholder={t.order.step3.customBackCommentPlaceholder} />
-                  </div>
-                </div>
-              )}
-
-              <div className={styles.formButtons}>
-                <button className={styles.btnSecondary} onClick={() => setStep(2)}>{t.order.step3.back}</button>
-                <button className={styles.btnPrimary} onClick={() => setStep(4)}>{t.order.step3.next}</button>
-              </div>
-            </div>
-          )}
-
-          {step === 4 && (
-            <div className={styles.formStep}>
-              <p className={styles.formStepTitle}>{t.order.step4.title}</p>
-              <div className={styles.quantityWrap}>
-                <button className={styles.qtyBtn} onClick={() => setQuantity(q => Math.max(1, q - 1))}>−</button>
-                <span className={styles.qtyValue}>{quantity}</span>
-                <button className={styles.qtyBtn} onClick={() => setQuantity(q => q + 1)}>+</button>
-              </div>
-              {hasDiscount && <div className={styles.discountBadge}>{t.order.step4.discountBadge(quantity)}</div>}
-              {quantity === 2 && <div className={styles.discountHint}>{t.order.step4.discountHint}</div>}
-              <div className={styles.priceSummary}>
-                <p className={styles.summaryRow}><span>{t.order.step4.cardTypeLabel}</span><strong>{cardObj.label}</strong></p>
-                <p className={styles.summaryRow}><span>{t.order.step4.themeLabel}</span><strong>{FRONT_THEMES.find(th=>th.id===frontTheme)?.label}</strong></p>
-                <p className={styles.summaryRow}><span>{t.order.step4.backLabel}</span><strong>{backObj.label}</strong></p>
-                <p className={styles.summaryRow}><span>{t.order.step4.unitPriceLabel}</span><strong>{unitPrice} zł</strong></p>
-                <p className={styles.summaryRow}><span>{t.order.step4.qtyLabel}</span><strong>× {quantity}</strong></p>
-                {hasDiscount && <p className={styles.summaryRow}><span>{t.order.step4.discountLabel}</span><strong className={styles.discount}>−{savedAmount} zł</strong></p>}
-                <div className={styles.summaryTotal}><span>{t.order.step4.totalLabel}</span><strong className={styles.totalPrice}>{totalPrice} zł</strong></div>
-                <p className={styles.summaryNote}>{t.order.step4.note}</p>
-              </div>
-              <div className={styles.formButtons}>
-                <button className={styles.btnSecondary} onClick={() => setStep(3)}>{t.order.step4.back}</button>
-                <button className={styles.btnPrimary} onClick={() => setStep(5)}>{t.order.step4.next}</button>
-              </div>
-            </div>
-          )}
-
-          {step === 5 && (
-            <div className={styles.formStep}>
-              <p className={styles.formStepTitle}>{t.order.step5.title}</p>
-              <div className={styles.fieldGrid}>
-                <div className={styles.field}><label className={styles.label}>{t.order.step5.nameLabel}</label><input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder={t.order.step5.namePlaceholder} /></div>
-                <div className={styles.field}><label className={styles.label}>{t.order.step5.emailLabel}</label><input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder={t.order.step5.emailPlaceholder} /></div>
-                <div className={styles.field}><label className={styles.label}>{t.order.step5.phoneLabel}</label><input type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder={t.order.step5.phonePlaceholder} /></div>
-                <div className={`${styles.field} ${styles.fieldFull}`}><label className={styles.label}>{t.order.step5.addressLabel}</label><input value={form.address} onChange={e => setForm({...form, address: e.target.value})} placeholder={t.order.step5.addressPlaceholder} /></div>
-              </div>
-
-              <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '16px', marginTop: '8px' }}>
-                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>{t.order.step5.discountEyebrow}</p>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <input value={discountCode} onChange={e => { setDiscountCode(e.target.value.toUpperCase()); setDiscountMsg(null); setDiscountApplied(false); setDiscountPct(0) }} placeholder={t.order.step5.discountPlaceholder} style={{ flex: 1, textTransform: 'uppercase', letterSpacing: '2px' }} disabled={discountApplied} />
-                  <button onClick={applyDiscount} disabled={!discountCode.trim() || discountApplied} className={styles.btnSecondary} style={{ width: 'auto', padding: '10px 18px', fontSize: '13px', flexShrink: 0 }}>{discountApplied ? t.order.step5.discountActive : t.order.step5.discountApply}</button>
-                </div>
-                {discountMsg && <p style={{ margin: '8px 0 0', fontSize: '12px', color: discountApplied ? 'var(--success)' : 'var(--error)' }}>{discountMsg}</p>}
-              </div>
-
-              <div className={styles.priceSummary} style={{ marginTop: '8px' }}>
-                <p className={styles.summaryRow}><span>{cardObj.label}</span><strong>{cardObj.price} zł</strong></p>
-                <p className={styles.summaryRow}><span>{t.order.step4.backLabel} — {backObj.label}</span><strong>{backObj.price === 0 ? t.order.step3.freeLabel : `+${backObj.price} zł`}</strong></p>
-                <p className={styles.summaryRow}><span>{t.order.step4.unitPriceLabel}</span><strong>{unitPrice} zł</strong></p>
-                <p className={styles.summaryRow}><span>{t.order.step4.qtyLabel}</span><strong>× {quantity}</strong></p>
-                {hasDiscount && <p className={styles.summaryRow}><span>{t.order.step5.quantityDiscountLabel}</span><strong className={styles.discount}>−{savedAmount} zł</strong></p>}
-                {discountApplied && <p className={styles.summaryRow}><span>{t.order.step5.codeDiscountLabel(discountCode.toUpperCase(), discountPct)}</span><strong className={styles.discount}>−{discountSaved} zł</strong></p>}
-                <div className={styles.summaryTotal}><span>{t.order.step5.payLabel}</span><strong className={styles.totalPrice}>{totalPrice} zł</strong></div>
-                <p className={styles.summaryNote}>{t.order.step5.payNote}</p>
-              </div>
-
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'var(--surface2)', border: `1px solid ${agreed ? 'rgba(0,229,160,0.3)' : 'var(--border)'}`, borderRadius: 'var(--radius)', padding: '14px', cursor: 'pointer' }} onClick={() => setAgreed(a => !a)}>
-                <div style={{ width: '20px', height: '20px', borderRadius: '4px', border: `2px solid ${agreed ? 'var(--success)' : 'var(--border)'}`, background: agreed ? 'var(--success)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px', transition: 'all .15s' }}>
-                  {agreed && <span style={{ color: '#0a0014', fontSize: '13px', fontWeight: 700 }}>✓</span>}
-                </div>
-                <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
-                  {t.order.step5.agreePrefix} <a href="/regulamin" target="_blank" style={{ color: 'var(--neon)' }} onClick={e => e.stopPropagation()}>{t.order.step5.agreeRegulamin}</a> {t.order.step5.agreeAnd} <a href="/polityka-prywatnosci" target="_blank" style={{ color: 'var(--neon)' }} onClick={e => e.stopPropagation()}>{t.order.step5.agreePrivacy}</a> {t.order.step5.agreeSuffix}
-                </p>
-              </div>
-
-              {error && <p className={styles.errorMsg}>{error}</p>}
-              <div className={styles.formButtons}>
-                <button className={styles.btnSecondary} onClick={() => setStep(4)}>{t.order.step5.back}</button>
-                <button className={styles.btnPrimary} onClick={handleSubmit} disabled={sending || !agreed} style={{ opacity: !agreed ? 0.5 : 1 }}>
-                  {sending ? t.order.step5.sending : t.order.step5.submit(totalPrice)}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      <footer className={styles.footer}>
-        <p className={styles.footerLogo}>RaveAdventure</p>
-        <p className={styles.footerSub}>kontakt@raveadventure.pl</p>
-        <div className={styles.footerLinks}>
-          <a href="https://www.instagram.com/rave_adventure_pl/" target="_blank" rel="noopener noreferrer" className={styles.footerLink}>Instagram</a>
-          <span className={styles.footerDot}>·</span>
-          <a href="/regulamin" className={styles.footerLink}>{t.footer.regulamin}</a>
-          <span className={styles.footerDot}>·</span>
-          <a href="/polityka-prywatnosci" className={styles.footerLink}>{t.footer.polityka}</a>
-          <span className={styles.footerDot}>·</span>
-          <a href="/portfolio" className={styles.footerLink}>{t.footer.portfolio}</a>
-        </div>
-        <p className={styles.footerCopy}>{t.footer.copy}</p>
-      </footer>
-    </main>
-  )
+export const T = {
+  pl: {
+    nav: { orderCta: 'Zamów kartę' },
+    hero: {
+      eyebrow: '// festival cards',
+      title1: 'Twoje zdjęcie.',
+      title2: 'Twoja karta.',
+      sub: 'Personalizowane karty z klimatem techno i rave. Mieszczą się w portfelu — zabierasz ze sobą na każdy event.',
+      badge1: '-50% przy 3+ sztukach',
+      badge2: 'Projekt w 24h',
+      cta: 'Zamów swoją kartę →',
+    },
+    howItWorks: {
+      eyebrow: '// jak to działa',
+      steps: [
+        { n: '01', t: 'Zamów online', d: 'Typ karty, motyw, rewers, zdjęcie.' },
+        { n: '02', t: 'Zatwierdź projekt', d: 'Projekt w 24h. Poprawki gratis.' },
+        { n: '03', t: 'Karta do Ciebie', d: 'Produkcja i wysyłka 3–5 dni.' },
+      ],
+    },
+    options: {
+      eyebrow: '// co możesz zamówić',
+      cards: [
+        { icon: '🎨', title: 'Karta z Twoim zdjęciem', desc: 'Wgrywasz zdjęcie — my przerabiamy w klimacie Techno, Festiwal lub Adventure. Dodajesz własną nazwę, atrybuty i umiejętność.', tags: ['Techno / Rave', 'Festiwal', 'Adventure'], color: 'var(--neon)' },
+        { icon: '✦', title: 'Karta w pełni niestandardowa', desc: 'Masz inspirację? Wgrywasz grafikę referencyjną i opisujesz styl. Tworzymy projekt od podstaw — unikalny, dopasowany do Twojej wizji.', tags: ['Custom', 'Pełna swoboda'], color: '#f59e0b' },
+        { icon: '✍', title: 'Dedykacja na rewersie', desc: 'Zamiast standardowego logo — Twój cytat, tekst lub osobista dedykacja. Idealne na prezent lub pamiątkę z eventu.', tags: ['Dedykacja', '+15 zł'], color: '#00e5a0' },
+        { icon: '⬛', title: 'QR Code na rewersie', desc: 'Link do mediów społecznościowych, portfolio lub muzyki zakodowany w QR. Ktoś skanuje kartę — trafia prosto do Ciebie.', tags: ['QR Code', '+40 zł'], color: '#00f0ff' },
+      ],
+      attrNote: 'Do każdej karty możesz dodać własne atrybuty — nazwę karty, rok, rzadkość (Common · Rare · Epic · Legendary), dwa atrybuty z wartościami i umiejętność. Twoja karta, Twoje zasady.',
+    },
+    order: {
+      eyebrow: '// zamówienie',
+      title: 'Zamów swoją kartę',
+      steps: ['Typ karty', 'Motyw frontu', 'Rewers', 'Ilość', 'Dane'],
+      step1: {
+        title: 'Wybierz typ karty',
+        next: 'Dalej — wybierz motyw →',
+      },
+      step2: {
+        title: 'Motyw frontu karty',
+        photoEyebrow: '// zdjęcie do przeróbki (front)',
+        dropTitle: 'Dodaj zdjęcie (FRONT)',
+        dropSub: 'To zdjęcie stanie się bazą Twojej karty · JPG, PNG, HEIC · maks. 20 MB',
+        fileAddedTitle: 'Zdjęcie FRONT dodane ✓',
+        photoCommentLabel: 'Komentarz do zdjęcia',
+        optional: '(opcjonalnie)',
+        photoCommentPlaceholder: 'np. skup się na twarzy, pomiń tło, dodaj efekt neonowy...',
+        attrsEyebrow: '// atrybuty karty',
+        yearLabel: '① Rok / wartość',
+        yearPlaceholder: 'np. 2025 · SEASON 1',
+        rarityLabel: '② Rzadkość',
+        rarityPlaceholder: 'COMMON · RARE · EPIC · LEGENDARY',
+        nameLabel: '③ Nazwa karty',
+        namePlaceholder: 'np. BARON VON KOCH · RAVE FAMILY · ADE 2025',
+        attr1LabelLabel: '④ Atrybut 1 — nazwa',
+        attr1LabelPlaceholder: 'np. ENERGY · VIBE · BPM',
+        attr1ValueLabel: '④ Atrybut 1 — wartość',
+        attr1ValuePlaceholder: 'np. x3 · x5 · 140',
+        skillLabel: '⑤ Umiejętność',
+        skillPlaceholder: 'np. HARD TECHNO MASTER · FRIENDS VIBE · PURE FUN',
+        attr2LabelLabel: '⑥ Atrybut 2 — nazwa',
+        attr2LabelPlaceholder: 'np. HAPPINESS · SUCCESS RATE',
+        attr2ValueLabel: '⑥ Atrybut 2 — wartość',
+        attr2ValuePlaceholder: 'np. x2 · x4',
+        customEyebrow: '// grafika referencyjna (styl karty)',
+        customBtnEmpty: '+ Dodaj zdjęcie referencyjne (np. karta Pokemon, inspiracja stylu)',
+        customDescLabel: 'Opis do karty niestandardowej',
+        customDescPlaceholder: 'np. styl kart Pokemon ale zielone kolory, klimat techno, mroczna atmosfera...',
+        back: '← Wstecz',
+        next: 'Dalej — rewers →',
+      },
+      step3: {
+        title: 'Co ma być na rewersie?',
+        freeLabel: 'gratis',
+        dedicationLabel: 'Komentarz tył — treść dedykacji *',
+        dedicationPlaceholder: "np. 'Za każdy rave z Tobą' · imię + data · cytat który chcesz umieścić...",
+        qrLabel: 'Komentarz tył — link do QR kodu *',
+        qrPlaceholder: 'https://instagram.com/twojprofil\nOpcjonalnie: dodatkowe uwagi do projektu tyłu...',
+        qrNote: 'Wygenerujemy QR kod z podanego linku',
+        customBackEyebrow: '// zdjęcie do tyłu karty (back)',
+        customBackBtnEmpty: '+ Dodaj zdjęcie (BACK) — np. zdjęcie budy, grafika na tył karty',
+        customBackCommentLabel: 'Komentarz tył *',
+        customBackCommentPlaceholder: 'Opisz co chcesz na rewersie — styl, kolory, nastrój, elementy...',
+        back: '← Wstecz',
+        next: 'Dalej — ilość →',
+      },
+      step4: {
+        title: 'Ile kart zamawiasz?',
+        discountBadge: (q: number) => `🎉 Rabat 50% aktywny — zamawiasz ${q} sztuki tego samego typu!`,
+        discountHint: 'Dodaj jeszcze 1 kartę i oszczędź 50% na całości!',
+        cardTypeLabel: 'Typ karty',
+        themeLabel: 'Motyw frontu',
+        backLabel: 'Rewers',
+        unitPriceLabel: 'Cena za sztukę',
+        qtyLabel: 'Ilość',
+        discountLabel: 'Rabat 50%',
+        totalLabel: 'Łącznie',
+        note: 'Płatność przelewem po zatwierdzeniu projektu.',
+        back: '← Wstecz',
+        next: 'Dalej — dane kontaktowe →',
+      },
+      step5: {
+        title: 'Dane kontaktowe',
+        nameLabel: 'Imię i nazwisko *',
+        namePlaceholder: 'Anna Kowalska',
+        emailLabel: 'Email *',
+        emailPlaceholder: 'anna@email.com',
+        phoneLabel: 'Telefon',
+        phonePlaceholder: '+48 500 000 000',
+        addressLabel: 'Adres wysyłki *',
+        addressPlaceholder: 'ul. Przykładowa 1, 00-000 Warszawa',
+        discountEyebrow: '// kod rabatowy',
+        discountPlaceholder: 'np. RAVE10',
+        discountApply: 'Zastosuj',
+        discountActive: '✓ Aktywny',
+        quantityDiscountLabel: 'Rabat ilościowy (50%)',
+        codeDiscountLabel: (code: string, pct: number) => `Kod rabatowy (${code} −${pct}%)`,
+        payLabel: 'Do zapłaty',
+        payNote: 'Płatność przelewem lub BLIK po zatwierdzeniu projektu. Dane do płatności wyślemy mailem.',
+        agreePrefix: 'Zapoznałem/am się z',
+        agreeRegulamin: 'regulaminem',
+        agreeAnd: 'oraz',
+        agreePrivacy: 'polityką prywatności',
+        agreeSuffix: 'i akceptuję warunki zamówienia. Wyrażam zgodę na przetwarzanie moich danych osobowych w celu realizacji zamówienia.',
+        back: '← Wstecz',
+        sending: 'Wysyłam...',
+        submit: (price: number) => `Wyślij zamówienie (${price} zł) →`,
+        errRequired: 'Uzupełnij imię, email i adres wysyłki.',
+        errAgree: 'Zaakceptuj regulamin i politykę prywatności aby kontynuować.',
+        errGeneric: (msg: string) => `Coś poszło nie tak: ${msg}`,
+      },
+    },
+    discount: {
+      active: (pct: number) => `Kod aktywny! Rabat ${pct}% zastosowany.`,
+      invalid: 'Nieprawidłowy kod rabatowy.',
+    },
+    sent: {
+      title: 'Zamówienie wysłane!',
+      body: (email: string) => (
+        <>Odezwiemy się w ciągu 24h na adres <strong>{email}</strong> z projektem karty do zatwierdzenia.</>
+      ),
+      newOrder: 'Zamów kolejną kartę',
+    },
+    footer: {
+      copy: '© 2025 RaveAdventure. Wszystkie prawa zastrzeżone.',
+      regulamin: 'Regulamin',
+      polityka: 'Polityka prywatności',
+      portfolio: 'Portfolio',
+    },
+  },
+  en: {
+    nav: { orderCta: 'Order a card' },
+    hero: {
+      eyebrow: '// festival cards',
+      title1: 'Your photo.',
+      title2: 'Your card.',
+      sub: 'Personalized cards with a techno and rave vibe. They fit in your wallet — take them to every event.',
+      badge1: '-50% at 3+ cards',
+      badge2: 'Design in 24h',
+      cta: 'Order your card →',
+    },
+    howItWorks: {
+      eyebrow: '// how it works',
+      steps: [
+        { n: '01', t: 'Order online', d: 'Card type, theme, back, photo.' },
+        { n: '02', t: 'Approve the design', d: 'Design in 24h. Free revisions.' },
+        { n: '03', t: 'Card to you', d: 'Production and shipping in 3–5 days.' },
+      ],
+    },
+    options: {
+      eyebrow: '// what you can order',
+      cards: [
+        { icon: '🎨', title: 'Card with your photo', desc: 'Upload a photo — we turn it into a Techno, Festival, or Adventure themed artwork. Add your own name, attributes, and skill.', tags: ['Techno / Rave', 'Festival', 'Adventure'], color: 'var(--neon)' },
+        { icon: '✦', title: 'Fully custom card', desc: "Have an inspiration? Upload a reference image and describe the style. We build the design from scratch — unique, matched to your vision.", tags: ['Custom', 'Full freedom'], color: '#f59e0b' },
+        { icon: '✍', title: 'Dedication on the back', desc: 'Instead of the standard logo — your quote, text, or personal dedication. Perfect as a gift or event keepsake.', tags: ['Dedication', '+15 zł'], color: '#00e5a0' },
+        { icon: '⬛', title: 'QR Code on the back', desc: 'A link to your social media, portfolio, or music, encoded in a QR. Someone scans the card — lands straight on your profile.', tags: ['QR Code', '+40 zł'], color: '#00f0ff' },
+      ],
+      attrNote: "You can add your own attributes to every card — card name, year, rarity (Common · Rare · Epic · Legendary), two attributes with values, and a skill. Your card, your rules.",
+    },
+    order: {
+      eyebrow: '// order',
+      title: 'Order your card',
+      steps: ['Card type', 'Front theme', 'Back', 'Quantity', 'Details'],
+      step1: {
+        title: 'Choose your card type',
+        next: 'Next — choose a theme →',
+      },
+      step2: {
+        title: 'Front theme',
+        photoEyebrow: '// photo to transform (front)',
+        dropTitle: 'Add a photo (FRONT)',
+        dropSub: 'This photo will become the base of your card · JPG, PNG, HEIC · max. 20 MB',
+        fileAddedTitle: 'Front photo added ✓',
+        photoCommentLabel: 'Comment on the photo',
+        optional: '(optional)',
+        photoCommentPlaceholder: 'e.g. focus on the face, skip the background, add a neon effect...',
+        attrsEyebrow: '// card attributes',
+        yearLabel: '① Year / value',
+        yearPlaceholder: 'e.g. 2025 · SEASON 1',
+        rarityLabel: '② Rarity',
+        rarityPlaceholder: 'COMMON · RARE · EPIC · LEGENDARY',
+        nameLabel: '③ Card name',
+        namePlaceholder: 'e.g. BARON VON KOCH · RAVE FAMILY · ADE 2025',
+        attr1LabelLabel: '④ Attribute 1 — name',
+        attr1LabelPlaceholder: 'e.g. ENERGY · VIBE · BPM',
+        attr1ValueLabel: '④ Attribute 1 — value',
+        attr1ValuePlaceholder: 'e.g. x3 · x5 · 140',
+        skillLabel: '⑤ Skill',
+        skillPlaceholder: 'e.g. HARD TECHNO MASTER · FRIENDS VIBE · PURE FUN',
+        attr2LabelLabel: '⑥ Attribute 2 — name',
+        attr2LabelPlaceholder: 'e.g. HAPPINESS · SUCCESS RATE',
+        attr2ValueLabel: '⑥ Attribute 2 — value',
+        attr2ValuePlaceholder: 'e.g. x2 · x4',
+        customEyebrow: '// reference artwork (card style)',
+        customBtnEmpty: '+ Add a reference image (e.g. a Pokemon card, style inspiration)',
+        customDescLabel: 'Description for the custom card',
+        customDescPlaceholder: 'e.g. Pokemon card style but green colors, techno vibe, dark atmosphere...',
+        back: '← Back',
+        next: 'Next — card back →',
+      },
+      step3: {
+        title: "What should be on the back?",
+        freeLabel: 'free',
+        dedicationLabel: 'Back comment — dedication text *',
+        dedicationPlaceholder: "e.g. 'For every rave with you' · name + date · a quote you want to include...",
+        qrLabel: 'Back comment — QR code link *',
+        qrPlaceholder: 'https://instagram.com/yourprofile\nOptional: additional notes for the back design...',
+        qrNote: "We'll generate a QR code from the link provided",
+        customBackEyebrow: '// photo for the back (back)',
+        customBackBtnEmpty: '+ Add a photo (BACK) — e.g. a photo to turn into the back artwork',
+        customBackCommentLabel: 'Back comment *',
+        customBackCommentPlaceholder: 'Describe what you want on the back — style, colors, mood, elements...',
+        back: '← Back',
+        next: 'Next — quantity →',
+      },
+      step4: {
+        title: 'How many cards are you ordering?',
+        discountBadge: (q: number) => `🎉 50% discount active — you're ordering ${q} cards of the same type!`,
+        discountHint: 'Add 1 more card and save 50% on the total!',
+        cardTypeLabel: 'Card type',
+        themeLabel: 'Front theme',
+        backLabel: 'Back',
+        unitPriceLabel: 'Price per card',
+        qtyLabel: 'Quantity',
+        discountLabel: '50% discount',
+        totalLabel: 'Total',
+        note: 'Payment by bank transfer after the design is approved.',
+        back: '← Back',
+        next: 'Next — contact details →',
+      },
+      step5: {
+        title: 'Contact details',
+        nameLabel: 'Full name *',
+        namePlaceholder: 'Anna Kowalska',
+        emailLabel: 'Email *',
+        emailPlaceholder: 'anna@email.com',
+        phoneLabel: 'Phone',
+        phonePlaceholder: '+48 500 000 000',
+        addressLabel: 'Shipping address *',
+        addressPlaceholder: '1 Example Street, 00-000 Warsaw',
+        discountEyebrow: '// discount code',
+        discountPlaceholder: 'e.g. RAVE10',
+        discountApply: 'Apply',
+        discountActive: '✓ Active',
+        quantityDiscountLabel: 'Quantity discount (50%)',
+        codeDiscountLabel: (code: string, pct: number) => `Discount code (${code} −${pct}%)`,
+        payLabel: 'Total due',
+        payNote: "Payment by bank transfer or BLIK after the design is approved. We'll send payment details by email.",
+        agreePrefix: "I have read the",
+        agreeRegulamin: 'terms of service',
+        agreeAnd: 'and',
+        agreePrivacy: 'privacy policy',
+        agreeSuffix: 'and I accept the terms of the order. I consent to the processing of my personal data for the purpose of fulfilling this order.',
+        back: '← Back',
+        sending: 'Sending...',
+        submit: (price: number) => `Send order (${price} zł) →`,
+        errRequired: 'Please fill in your name, email, and shipping address.',
+        errAgree: 'Please accept the terms of service and privacy policy to continue.',
+        errGeneric: (msg: string) => `Something went wrong: ${msg}`,
+      },
+    },
+    discount: {
+      active: (pct: number) => `Code active! ${pct}% discount applied.`,
+      invalid: 'Invalid discount code.',
+    },
+    sent: {
+      title: 'Order sent!',
+      body: (email: string) => (
+        <>We'll get back to you within 24h at <strong>{email}</strong> with the card design for approval.</>
+      ),
+      newOrder: 'Order another card',
+    },
+    footer: {
+      copy: '© 2025 RaveAdventure. All rights reserved.',
+      regulamin: 'Terms of service',
+      polityka: 'Privacy policy',
+      portfolio: 'Portfolio',
+    },
+  },
 }
