@@ -543,17 +543,20 @@ export default function Home() {
         </div>
       </section>
 
-      <div className={styles.footerLinks}>
-        <a href="https://www.instagram.com/rave_adventure_pl/" target="_blank" rel="noopener noreferrer" className={styles.footerLink}>Instagram</a>
-        <span className={styles.footerDot}>·</span>
-        <a href="https://www.facebook.com/raveadventurepl" target="_blank" rel="noopener noreferrer" className={styles.footerLink}>Facebook</a>
-        <span className={styles.footerDot}>·</span>
-        <a href="/regulamin" className={styles.footerLink}>{t.footer.regulamin}</a>
-        <span className={styles.footerDot}>·</span>
-        <a href="/polityka-prywatnosci" className={styles.footerLink}>{t.footer.polityka}</a>
-        <span className={styles.footerDot}>·</span>
-        <a href="/portfolio" className={styles.footerLink}>{t.footer.portfolio}</a>
-      </div>
+      <footer className={styles.footer}>
+        <p className={styles.footerLogo}>RaveAdventure</p>
+        <p className={styles.footerSub}>kontakt@raveadventure.pl</p>
+        <div className={styles.footerLinks}>
+          <a href="https://www.instagram.com/rave_adventure_pl/" target="_blank" rel="noopener noreferrer" className={styles.footerLink}>Instagram</a>
+          <span className={styles.footerDot}>·</span>
+          <a href="https://www.facebook.com/raveadventurepl" target="_blank" rel="noopener noreferrer" className={styles.footerLink}>Facebook</a>
+          <span className={styles.footerDot}>·</span>
+          <a href="/regulamin" className={styles.footerLink}>{t.footer.regulamin}</a>
+          <span className={styles.footerDot}>·</span>
+          <a href="/polityka-prywatnosci" className={styles.footerLink}>{t.footer.polityka}</a>
+          <span className={styles.footerDot}>·</span>
+          <a href="/portfolio" className={styles.footerLink}>{t.footer.portfolio}</a>
+        </div>
         <p className={styles.footerCopy}>{t.footer.copy}</p>
       </footer>
     </main>
