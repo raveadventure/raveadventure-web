@@ -198,7 +198,7 @@ export default function Home() {
       }}>
         <div>
           <span style={{ fontSize: '13px', fontWeight: 600, color: '#f0eeff' }}>
-            {lang === 'pl' ? '🎉 Wszystkie zamówienia po Audioriver są darmowe!' : '🎉 All orders after Audioriver are free!'}
+            {lang === 'pl' ? '🎉 Wszystkie zamówienia po Audioriver są darmowe do 17.07.2026!' : '🎉 All orders after Audioriver are free until July 17, 2026!'}
           </span>
           <span style={{ fontSize: '13px', color: 'rgba(240,238,255,0.6)', marginLeft: '8px' }}>
             {lang === 'pl' ? 'Użyj kodu' : 'Use code'}
@@ -208,7 +208,7 @@ export default function Home() {
           </span>
         </div>
         <p style={{ margin: '3px 0 0', fontSize: '11px', color: 'rgba(240,238,255,0.5)' }}>
-          {lang === 'pl' ? 'Jedyny koszt to koszt wysyłki — resztę pokrywamy my.' : 'The only cost is shipping — we cover the rest.'}
+          {lang === 'pl' ? 'Jedyny koszt to koszt wysyłki (15 zł) — resztę pokrywamy my.' : 'The only cost is shipping (15 zł) — we cover the rest.'}
         </p>
       </a>
 
