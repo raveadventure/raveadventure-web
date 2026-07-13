@@ -67,18 +67,50 @@ const CARDS = [
   { photo: '/anim-photo-2.jpg', card: '/anim-card-2.png', zones: ZONES_2 },
 ] as const
 
+// Proporcje (szerokość/wysokość) każdego pliku — używane, żeby "scena" mogła
+// pomieścić zdjęcie/kartę W CAŁOŚCI, bez przycinania, niezależnie od jej wymiarów.
+// Wartości poniżej to realne proporcje Twoich obecnych plików (auto-wykrywane
+// i nadpisywane po załadowaniu obrazu — więc jeśli kiedyś podmienisz plik na
+// inny o innych wymiarach, wszystko przeliczy się samo, bez zmian w kodzie).
+const DEFAULT_RATIOS: Record<string, number> = {
+  '/anim-photo.jpg': 0.75, // szacunek — brak oryginalnego pliku do zmierzenia, zostanie skorygowany automatycznie po załadowaniu
+  '/anim-card.png': 591 / 1063,
+  '/anim-photo-2.jpg': 900 / 1176,
+  '/anim-card-2.png': 638 / 1011,
+}
+
+// Proporcja samej "sceny" (czarnego tła). Dobrana tak, by przy obecnych
+// plikach czarne pasy były minimalne — nie musi pasować idealnie do żadnej
+// karty, bo dopasowanie treści (contain-fit) i tak zawsze wyklucza przycięcie.
+const STAGE_RATIO = 0.62
+
+function containFit(stageRatio: number, contentRatio: number) {
+  if (contentRatio >= stageRatio) {
+    return { width: '100%', height: `${(stageRatio / contentRatio) * 100}%` }
+  }
+  return { width: `${(contentRatio / stageRatio) * 100}%`, height: '100%' }
+}
+
 export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
   const t = TXT[lang]
   const [phase, setPhase] = useState<Phase>('photo')
   const [cardIndex, setCardIndex] = useState(0)
+  const [ratios, setRatios] = useState<Record<string, number>>(DEFAULT_RATIOS)
 
   const current = CARDS[cardIndex]
   const attrsLabels = cardIndex === 0 ? t.attrs : CARD2_ATTRS
 
   useEffect(() => {
-    CARDS.forEach(c => {
-      const i1 = new Image(); i1.src = c.photo
-      const i2 = new Image(); i2.src = c.card
+    const allSrcs = Array.from(new Set(CARDS.flatMap(c => [c.photo, c.card])))
+    allSrcs.forEach(src => {
+      const img = new Image()
+      img.onload = () => {
+        if (img.naturalWidth && img.naturalHeight) {
+          const real = img.naturalWidth / img.naturalHeight
+          setRatios(prev => (prev[src] === real ? prev : { ...prev, [src]: real }))
+        }
+      }
+      img.src = src
     })
   }, [])
 
@@ -103,6 +135,12 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
   const isFinal = phase === 'final'
   const isFade = phase === 'fade'
   const showCard = isFinal || isFade
+
+  // Dopóki widoczne jest zdjęcie źródłowe (photo/flash) dopasowujemy scenę do
+  // JEGO proporcji; od fazy "artwork" w górę — do proporcji finalnej karty.
+  const activeSrc = idx <= 1 ? current.photo : current.card
+  const activeRatio = ratios[activeSrc] ?? DEFAULT_RATIOS[activeSrc] ?? STAGE_RATIO
+  const frameSize = containFit(STAGE_RATIO, activeRatio)
 
   const CardLayer = ({ clip, show, anim, z = 2 }: { clip: string; show: boolean; anim?: string; z?: number }) => {
     if (!show) return null
@@ -180,7 +218,21 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
         }
       `}</style>
 
-      <div style={{ perspective: '900px', position: 'relative' }}>
+      {/* SCENA: stały, większy obszar z czarnym tłem — mieści zdjęcie/kartę
+          w całości niezależnie od jej proporcji (bez przycinania po bokach) */}
+      <div style={{
+        perspective: '900px',
+        position: 'relative',
+        width: 'min(280px, 68vw)',
+        aspectRatio: String(STAGE_RATIO),
+        background: '#07070f',
+        borderRadius: '16px',
+        border: '1px solid rgba(180,77,255,0.12)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+      <div style={{ position: 'relative', width: frameSize.width, height: frameSize.height }}>
         {showCard && (
           <div style={{
             position: 'absolute',
@@ -195,8 +247,8 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
         <div
           style={{
             position: 'relative',
-            width: 'min(240px, 62vw)',
-            aspectRatio: '0.556',
+            width: '100%',
+            height: '100%',
             borderRadius: '14px',
             overflow: 'hidden',
             background: '#07070f',
@@ -302,6 +354,7 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
             </div>
           )}
         </div>
+      </div>
       </div>
 
       {/* ETYKIETY PROCESU */}
