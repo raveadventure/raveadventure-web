@@ -554,7 +554,6 @@ export default function Home() {
         <span className={styles.footerDot}>·</span>
         <a href="/portfolio" className={styles.footerLink}>{t.footer.portfolio}</a>
       </div>
-        </div>
         <p className={styles.footerCopy}>{t.footer.copy}</p>
       </footer>
     </main>
