@@ -37,30 +37,62 @@ const TXT = {
   },
 }
 
-// Strefy karty (procenty z anim-card.png 591x1063)
-const ZONES = {
-  artwork: 'inset(11.5% 6% 29% 6%)',       // grafika (1)
-  frame: 'polygon(evenodd, 0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 6% 11.5%, 94% 11.5%, 94% 98.3%, 6% 98.3%, 6% 11.5%)', // ramka + top bar (2)
-  name: 'inset(71.3% 5% 18.4% 5%)',        // a — RAVE FAMILY
-  attr1: 'inset(81.8% 5% 12.6% 5%)',       // b — ENERGY x5
-  skill: 'inset(87.4% 5% 7.3% 5%)',        // c — EXIST WARSAW EXPO XXI
-  attr2: 'inset(92.5% 5% 1.7% 5%)',        // d — HAPPINESS x3
+// Strefy karty #1 (procenty z anim-card.png 591x1063)
+const ZONES_1 = {
+  artwork: 'inset(11.5% 6% 29% 6%)',
+  frame: 'polygon(evenodd, 0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 6% 11.5%, 94% 11.5%, 94% 98.3%, 6% 98.3%, 6% 11.5%)',
+  name: 'inset(71.3% 5% 18.4% 5%)',
+  attr1: 'inset(81.8% 5% 12.6% 5%)',
+  skill: 'inset(87.4% 5% 7.3% 5%)',
+  attr2: 'inset(92.5% 5% 1.7% 5%)',
 }
+
+// Strefy karty #2 "Rave Family" (procenty z anim-card-2.png 638x1011,
+// wyliczone z Twoich oznaczeń kolorami: zielony = ramka+top bar, żółty = blok atrybutów)
+const ZONES_2 = {
+  artwork: 'inset(9.7% 5% 27.8% 4.4%)',
+  frame: 'polygon(evenodd, 0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 4.4% 9.7%, 95% 9.7%, 95% 97.3%, 4.4% 97.3%, 4.4% 9.7%)',
+  name: 'inset(72.2% 5% 18.3% 4.4%)',
+  attr1: 'inset(81.7% 5% 13.0% 4.4%)',
+  skill: 'inset(87.0% 5% 7.9% 4.4%)',
+  attr2: 'inset(92.1% 5% 2.8% 4.4%)',
+}
+
+// Realne atrybuty widoczne na karcie #2 — pokazywane w plakietkach fazy "attrs"
+const CARD2_ATTRS = ['RAVE FAMILY', 'UNITY ×6', 'AUDIORIVER AURA', 'HAPPINESS ×100']
+
+// Kolejne karty odtwarzane w pętli: najpierw #1, potem #2, potem znów #1...
+const CARDS = [
+  { photo: '/anim-photo.jpg', card: '/anim-card.png', zones: ZONES_1 },
+  { photo: '/anim-photo-2.jpg', card: '/anim-card-2.png', zones: ZONES_2 },
+] as const
 
 export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
   const t = TXT[lang]
   const [phase, setPhase] = useState<Phase>('photo')
+  const [cardIndex, setCardIndex] = useState(0)
+
+  const current = CARDS[cardIndex]
+  const attrsLabels = cardIndex === 0 ? t.attrs : CARD2_ATTRS
 
   useEffect(() => {
-    const i1 = new Image(); i1.src = '/anim-photo.jpg'
-    const i2 = new Image(); i2.src = '/anim-card.png'
+    CARDS.forEach(c => {
+      const i1 = new Image(); i1.src = c.photo
+      const i2 = new Image(); i2.src = c.card
+    })
   }, [])
 
   useEffect(() => {
-    const current = PHASES.find(p => p.id === phase)!
-    const idx = PHASES.indexOf(current)
+    const idx = PHASES.findIndex(p => p.id === phase)
+    const isLastPhase = idx === PHASES.length - 1
     const next = PHASES[(idx + 1) % PHASES.length]
-    const timer = setTimeout(() => setPhase(next.id), current.dur)
+    const currentDur = PHASES[idx].dur
+    const timer = setTimeout(() => {
+      if (isLastPhase) {
+        setCardIndex(ci => (ci + 1) % CARDS.length)
+      }
+      setPhase(next.id)
+    }, currentDur)
     return () => clearTimeout(timer)
   }, [phase])
 
@@ -76,7 +108,7 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
     if (!show) return null
     return (
       <img
-        src="/anim-card.png"
+        src={current.card}
         alt=""
         aria-hidden="true"
         style={{
@@ -178,7 +210,7 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
         >
           {idx <= 1 && (
             <img
-              src="/anim-photo.jpg"
+              src={current.photo}
               alt={t.photoAlt}
               style={{
                 position: 'absolute',
@@ -217,13 +249,13 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
 
           {showCard && (
             <img
-              src="/anim-card.png"
+              src={current.card}
               alt={t.finalAlt}
               style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 2, transform: 'translateZ(0)' }}
             />
           )}
 
-          <CardLayer clip={ZONES.artwork} show={idx >= 2 && !showCard} anim={isArtwork ? 'raArtIn 1.4s ease-out both' : undefined} z={2} />
+          <CardLayer clip={current.zones.artwork} show={idx >= 2 && !showCard} anim={isArtwork ? 'raArtIn 1.4s ease-out both' : undefined} z={2} />
 
           {isArtwork && (
             <div style={{
@@ -234,12 +266,12 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
             }} />
           )}
 
-          <CardLayer clip={ZONES.frame} show={idx >= 3 && !showCard} anim={phase === 'frame' ? 'raFrameIn 0.9s ease-out both' : undefined} z={3} />
+          <CardLayer clip={current.zones.frame} show={idx >= 3 && !showCard} anim={phase === 'frame' ? 'raFrameIn 0.9s ease-out both' : undefined} z={3} />
 
-          <CardLayer clip={ZONES.name}  show={idx >= 4 && !showCard} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 0.0s both' : undefined} z={4} />
-          <CardLayer clip={ZONES.attr1} show={idx >= 4 && !showCard} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 0.5s both' : undefined} z={4} />
-          <CardLayer clip={ZONES.skill} show={idx >= 4 && !showCard} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 1.0s both' : undefined} z={4} />
-          <CardLayer clip={ZONES.attr2} show={idx >= 4 && !showCard} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 1.5s both' : undefined} z={4} />
+          <CardLayer clip={current.zones.name}  show={idx >= 4 && !showCard} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 0.0s both' : undefined} z={4} />
+          <CardLayer clip={current.zones.attr1} show={idx >= 4 && !showCard} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 0.5s both' : undefined} z={4} />
+          <CardLayer clip={current.zones.skill} show={idx >= 4 && !showCard} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 1.0s both' : undefined} z={4} />
+          <CardLayer clip={current.zones.attr2} show={idx >= 4 && !showCard} anim={phase === 'attrs' ? 'raDrop 0.5s ease-out 1.5s both' : undefined} z={4} />
 
           {isFade && (
             <div style={{
@@ -296,7 +328,7 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
         )}
         {phase === 'attrs' && (
           <>
-            {t.attrs.map((label, i) => (
+            {attrsLabels.map((label, i) => (
               <span key={label} style={{
                 fontSize: '10px', fontFamily: 'monospace', letterSpacing: '1px',
                 color: '#00e5a0', background: 'rgba(0,229,160,0.08)',
