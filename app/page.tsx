@@ -22,8 +22,8 @@ export default function Home() {
       label: lang === 'pl' ? 'Wizytówka (100 sztuk)' : 'Business Card (100 pcs)',
       dims: '55 × 85 mm lub 90 × 50 mm',
       desc: lang === 'pl'
-        ? 'Zestaw 100 wizytówek z Twoją personalizowaną grafiką. Wybrany rozmiar (55×85mm lub 90×50mm) napisz w komentarzu do zdjęcia w kroku 2 — jeśli nic nie napiszesz, ustalimy to z Tobą przy realizacji.'
-        : 'Set of 100 business cards with your personalized artwork. Note your preferred size (55×85mm or 90×50mm) in the photo comment in step 2 — if you don\'t, we\'ll confirm it with you before production.',
+        ? 'Zestaw 100 wizytówek z Twoją personalizowaną grafiką. Wybrany rozmiar (55×85mm lub 90×50mm)'
+        : 'Set of 100 business cards with your personalized artwork. Note your preferred size (55×85mm or 90×50mm).',
     }
     return c
   })
