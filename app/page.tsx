@@ -20,10 +20,10 @@ export default function Home() {
       ...c,
       price: 50,
       label: lang === 'pl' ? 'Wizytówka (100 sztuk)' : 'Business Card (100 pcs)',
-      dims: '55 × 85 mm lub 90 × 50 mm — do wyboru',
+      dims: '55 × 85 mm lub 90 × 50 mm',
       desc: lang === 'pl'
-        ? 'Zestaw 100 wizytówek z Twoją personalizowaną grafiką. Idealne do rozdania na evencie.'
-        : 'Set of 100 business cards with your personalized artwork. Perfect for handing out at events.',
+        ? 'Zestaw 100 wizytówek z Twoją personalizowaną grafiką. Wybrany rozmiar (55×85mm lub 90×50mm) napisz w komentarzu do zdjęcia w kroku 2 — jeśli nic nie napiszesz, ustalimy to z Tobą przy realizacji.'
+        : 'Set of 100 business cards with your personalized artwork. Note your preferred size (55×85mm or 90×50mm) in the photo comment in step 2 — if you don\'t, we\'ll confirm it with you before production.',
     }
     return c
   })
@@ -38,7 +38,6 @@ export default function Home() {
 
   const [step, setStep] = useState<Step>(1)
   const [cardType, setCardType] = useState('pvc')
-  const [cardSize, setCardSize] = useState('90x50')
   const [frontTheme, setFrontTheme] = useState('techno_rave')
   const [backOption, setBackOption] = useState('logo')
   const [quantity, setQuantity] = useState(1)
@@ -104,7 +103,7 @@ export default function Home() {
     setSending(true); setError(null)
     try {
       const { data: orderData, error: insertError } = await supabase.from('orders').insert([{
-        theme: frontTheme, card_type: cardType, card_size: cardType === 'laminated' ? cardSize : null, back_option: backOption, quantity,
+        theme: frontTheme, card_type: cardType, back_option: backOption, quantity,
         unit_price: unitPrice, total_price: totalPrice, has_discount: hasDiscount,
         name: form.name, email: form.email, phone: form.phone, address: form.address,
         notes: form.notes, card_text: form.notesBack, custom_desc: form.customDesc, qr_link: form.notesBack,
@@ -145,7 +144,7 @@ export default function Home() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: form.name, email: form.email, phone: form.phone, address: form.address, cardText: form.notesBack, notes: form.notes,
-          theme: frontTheme, orderId: orderData?.id, cardType, cardSize: cardType === 'laminated' ? cardSize : null, backOption, quantity, unitPrice, totalPrice, hasDiscount, savedAmount,
+          theme: frontTheme, orderId: orderData?.id, cardType, backOption, quantity, unitPrice, totalPrice, hasDiscount, savedAmount,
           cardYear: form.cardYear, cardRarity: form.cardRarity, cardName: form.cardName,
           attr1Label: form.attr1Label, attr1Value: form.attr1Value, cardSkill: form.cardSkill,
           attr2Label: form.attr2Label, attr2Value: form.attr2Value, cardDesc: form.cardDesc, notesBack: form.notesBack,
@@ -327,25 +326,11 @@ export default function Home() {
               </div>
               {cardType === 'laminated' && (
                 <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '16px', marginTop: '12px' }}>
-                  <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>
-                    {lang === 'pl' ? '// wybierz wymiar wizytówki' : '// choose business card size'}
+                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+                    {lang === 'pl'
+                      ? '💡 Dostępne rozmiary: 55 × 85 mm lub 90 × 50 mm. Wybrany rozmiar napisz w komentarzu do zdjęcia w następnym kroku — jeśli nic nie napiszesz, ustalimy to z Tobą przed realizacją.'
+                      : '💡 Available sizes: 55 × 85 mm or 90 × 50 mm. Note your preferred size in the photo comment in the next step — if you don\'t, we\'ll confirm it with you before production.'}
                   </p>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    {['55x85', '90x50'].map(sz => (
-                      <div key={sz}
-                        onClick={() => setCardSize(sz)} role="button" tabIndex={0}
-                        onKeyDown={e => e.key === 'Enter' && setCardSize(sz)} aria-pressed={cardSize === sz}
-                        style={{
-                          padding: '10px 18px', borderRadius: '10px', cursor: 'pointer',
-                          border: `1px solid ${cardSize === sz ? '#b44dff' : 'var(--border)'}`,
-                          background: cardSize === sz ? 'rgba(180,77,255,0.12)' : 'transparent',
-                          color: cardSize === sz ? '#f0eeff' : 'var(--text-muted)',
-                          fontSize: '13px', fontWeight: 600,
-                        }}>
-                        {sz === '55x85' ? '55 × 85 mm' : '90 × 50 mm'}
-                      </div>
-                    ))}
-                  </div>
                 </div>
               )}
               <button className={styles.btnPrimary} onClick={() => setStep(2)}>{t.order.step1.next}</button>
