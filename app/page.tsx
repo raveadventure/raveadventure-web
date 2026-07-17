@@ -20,7 +20,7 @@ export default function Home() {
       ...c,
       price: 50,
       label: lang === 'pl' ? 'Wizytówka (100 sztuk)' : 'Business Card (100 pcs)',
-      dims: '90 × 50 mm',
+      dims: '55 × 85 mm lub 90 × 50 mm — do wyboru',
       desc: lang === 'pl'
         ? 'Zestaw 100 wizytówek z Twoją personalizowaną grafiką. Idealne do rozdania na evencie.'
         : 'Set of 100 business cards with your personalized artwork. Perfect for handing out at events.',
@@ -28,10 +28,17 @@ export default function Home() {
     return c
   })
   const FRONT_THEMES = FRONT_THEMES_I18N[lang]
-  const BACK_OPTIONS = BACK_OPTIONS_I18N[lang]
+  const BACK_OPTIONS = BACK_OPTIONS_I18N[lang].map(b => {
+    if (b.id === 'logo') return {
+      ...b,
+      label: lang === 'pl' ? 'RaveAdventure Logo lub Pusta biała karta' : 'RaveAdventure Logo or Blank White Card',
+    }
+    return b
+  })
 
   const [step, setStep] = useState<Step>(1)
   const [cardType, setCardType] = useState('pvc')
+  const [cardSize, setCardSize] = useState('90x50')
   const [frontTheme, setFrontTheme] = useState('techno_rave')
   const [backOption, setBackOption] = useState('logo')
   const [quantity, setQuantity] = useState(1)
@@ -97,7 +104,7 @@ export default function Home() {
     setSending(true); setError(null)
     try {
       const { data: orderData, error: insertError } = await supabase.from('orders').insert([{
-        theme: frontTheme, card_type: cardType, back_option: backOption, quantity,
+        theme: frontTheme, card_type: cardType, card_size: cardType === 'laminated' ? cardSize : null, back_option: backOption, quantity,
         unit_price: unitPrice, total_price: totalPrice, has_discount: hasDiscount,
         name: form.name, email: form.email, phone: form.phone, address: form.address,
         notes: form.notes, card_text: form.notesBack, custom_desc: form.customDesc, qr_link: form.notesBack,
@@ -138,7 +145,7 @@ export default function Home() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: form.name, email: form.email, phone: form.phone, address: form.address, cardText: form.notesBack, notes: form.notes,
-          theme: frontTheme, orderId: orderData?.id, cardType, backOption, quantity, unitPrice, totalPrice, hasDiscount, savedAmount,
+          theme: frontTheme, orderId: orderData?.id, cardType, cardSize: cardType === 'laminated' ? cardSize : null, backOption, quantity, unitPrice, totalPrice, hasDiscount, savedAmount,
           cardYear: form.cardYear, cardRarity: form.cardRarity, cardName: form.cardName,
           attr1Label: form.attr1Label, attr1Value: form.attr1Value, cardSkill: form.cardSkill,
           attr2Label: form.attr2Label, attr2Value: form.attr2Value, cardDesc: form.cardDesc, notesBack: form.notesBack,
@@ -318,6 +325,29 @@ export default function Home() {
                   </div>
                 ))}
               </div>
+              {cardType === 'laminated' && (
+                <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '16px', marginTop: '12px' }}>
+                  <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>
+                    {lang === 'pl' ? '// wybierz wymiar wizytówki' : '// choose business card size'}
+                  </p>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {['55x85', '90x50'].map(sz => (
+                      <div key={sz}
+                        onClick={() => setCardSize(sz)} role="button" tabIndex={0}
+                        onKeyDown={e => e.key === 'Enter' && setCardSize(sz)} aria-pressed={cardSize === sz}
+                        style={{
+                          padding: '10px 18px', borderRadius: '10px', cursor: 'pointer',
+                          border: `1px solid ${cardSize === sz ? '#b44dff' : 'var(--border)'}`,
+                          background: cardSize === sz ? 'rgba(180,77,255,0.12)' : 'transparent',
+                          color: cardSize === sz ? '#f0eeff' : 'var(--text-muted)',
+                          fontSize: '13px', fontWeight: 600,
+                        }}>
+                        {sz === '55x85' ? '55 × 85 mm' : '90 × 50 mm'}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <button className={styles.btnPrimary} onClick={() => setStep(2)}>{t.order.step1.next}</button>
             </div>
           )}
@@ -418,6 +448,13 @@ export default function Home() {
                 ))}
               </div>
 
+              {backOption === 'logo' && (
+                <div className={styles.field} style={{ marginTop: '12px' }}>
+                  <label className={styles.label}>{lang === 'pl' ? 'Komentarz' : 'Comment'} <span className={styles.optional}>{t.order.step2.optional}</span></label>
+                  <textarea value={form.notesBack} onChange={e => setForm({...form, notesBack: e.target.value})} placeholder={lang === 'pl' ? 'Napisz, czy chcesz logo RaveAdventure czy pustą białą kartę — albo dodaj inną uwagę' : "Let us know if you'd like the RaveAdventure logo or a blank white card — or add any other note"} />
+                </div>
+              )}
+
               {backOption === 'dedication' && (
                 <div className={styles.field} style={{ marginTop: '12px' }}>
                   <label className={styles.label}>{t.order.step3.dedicationLabel}</label>
@@ -457,6 +494,11 @@ export default function Home() {
           {step === 4 && (
             <div className={styles.formStep}>
               <p className={styles.formStepTitle}>{t.order.step4.title}</p>
+              <p style={{ margin: '0 0 10px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                {cardType === 'laminated'
+                  ? (lang === 'pl' ? 'Ile zestawów wizytówek zamawiasz? Każdy zestaw to 100 sztuk.' : 'How many business card sets are you ordering? Each set is 100 pieces.')
+                  : (lang === 'pl' ? 'Ile kart zamawiasz?' : 'How many cards are you ordering?')}
+              </p>
               <div className={styles.quantityWrap}>
                 <button className={styles.qtyBtn} onClick={() => setQuantity(q => Math.max(1, q - 1))}>−</button>
                 <span className={styles.qtyValue}>{quantity}</span>
