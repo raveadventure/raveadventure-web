@@ -11,7 +11,22 @@ type Step = 1 | 2 | 3 | 4 | 5
 export default function Home() {
   const [lang, setLang] = useState<Lang>('pl')
   const t = T[lang]
-  const CARD_TYPES = CARD_TYPES_I18N[lang]
+  // Nadpisania cen/nazw względem lib/translations.tsx (na życzenie: PVC 50 zł,
+  // "Karta Laminowana" -> "Wizytówka (100 sztuk)" 50 zł). Jeśli wolisz zmienić
+  // to docelowo w samym translations.tsx, ten override można wtedy usunąć.
+  const CARD_TYPES = CARD_TYPES_I18N[lang].map(c => {
+    if (c.id === 'pvc') return { ...c, price: 50 }
+    if (c.id === 'laminated') return {
+      ...c,
+      price: 50,
+      label: lang === 'pl' ? 'Wizytówka (100 sztuk)' : 'Business Card (100 pcs)',
+      dims: '90 × 50 mm',
+      desc: lang === 'pl'
+        ? 'Zestaw 100 wizytówek z Twoją personalizowaną grafiką. Idealne do rozdania na evencie.'
+        : 'Set of 100 business cards with your personalized artwork. Perfect for handing out at events.',
+    }
+    return c
+  })
   const FRONT_THEMES = FRONT_THEMES_I18N[lang]
   const BACK_OPTIONS = BACK_OPTIONS_I18N[lang]
 
@@ -38,7 +53,7 @@ export default function Home() {
   const [discountPct, setDiscountPct] = useState(0)
   const [discountMsg, setDiscountMsg] = useState<string | null>(null)
 
-  const DISCOUNT_CODES: Record<string, number> = { 'RAVE10': 10, 'SIERRA20': 20, 'AWAKENINGS': 15, 'FRIENDS50': 50, 'AUDIORIVER100': 100 }
+  const DISCOUNT_CODES: Record<string, number> = { 'RAVE10': 10, 'SIERRA20': 20, 'AWAKENINGS': 15, 'FRIENDS50': 50 }
 
   const applyDiscount = () => {
     const code = discountCode.trim().toUpperCase()
@@ -55,12 +70,13 @@ export default function Home() {
 
   const cardObj = CARD_TYPES.find(c => c.id === cardType)!
   const backObj = BACK_OPTIONS.find(b => b.id === backOption)!
+  const SHIPPING_COST = 15
   const unitPrice = cardObj.price + backObj.price
   const hasDiscount = quantity >= 3
   const baseTotal = hasDiscount ? Math.round(unitPrice * quantity * 0.5) : unitPrice * quantity
   const savedAmount = hasDiscount ? Math.round(unitPrice * quantity * 0.5) : 0
   const discountSaved = discountApplied ? Math.round(baseTotal * discountPct / 100) : 0
-  const totalPrice = baseTotal - discountSaved
+  const totalPrice = baseTotal - discountSaved + SHIPPING_COST
 
   const handlePhoto = (file: File) => {
     setPhoto(file)
@@ -185,34 +201,7 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* PROMO BANNER — Audioriver */}
-      <a href="#order" style={{
-        display: 'block',
-        marginTop: '57px',
-        background: 'linear-gradient(90deg, rgba(180,77,255,0.18), rgba(0,240,255,0.12))',
-        borderBottom: '1px solid rgba(180,77,255,0.3)',
-        padding: '10px 5vw',
-        textAlign: 'center',
-        textDecoration: 'none',
-        cursor: 'pointer',
-      }}>
-        <div>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: '#f0eeff' }}>
-            {lang === 'pl' ? '🎉 Wszystkie zamówienia po Audioriver są darmowe do 17.07.2026!' : '🎉 All orders after Audioriver are free until July 17, 2026!'}
-          </span>
-          <span style={{ fontSize: '13px', color: 'rgba(240,238,255,0.6)', marginLeft: '8px' }}>
-            {lang === 'pl' ? 'Użyj kodu' : 'Use code'}
-          </span>
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: '13px', fontWeight: 700, color: '#b44dff', letterSpacing: '1px', marginLeft: '6px', textDecoration: 'underline' }}>
-            AUDIORIVER100
-          </span>
-        </div>
-        <p style={{ margin: '3px 0 0', fontSize: '11px', color: 'rgba(240,238,255,0.5)' }}>
-          {lang === 'pl' ? 'Jedyny koszt to koszt wysyłki (15 zł) — resztę pokrywamy my.' : 'The only cost is shipping (15 zł) — we cover the rest.'}
-        </p>
-      </a>
-
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '72px 5vw 0' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '129px 5vw 0' }}>
         <img src="/logo_kwadrat.png" alt="RaveAdventure — The best memories from your adventure deserve a card." style={{ maxWidth: '100%', width: '900px', height: 'auto', display: 'block' }} />
       </div>
 
@@ -482,8 +471,10 @@ export default function Home() {
                 <p className={styles.summaryRow}><span>{t.order.step4.unitPriceLabel}</span><strong>{unitPrice} zł</strong></p>
                 <p className={styles.summaryRow}><span>{t.order.step4.qtyLabel}</span><strong>× {quantity}</strong></p>
                 {hasDiscount && <p className={styles.summaryRow}><span>{t.order.step4.discountLabel}</span><strong className={styles.discount}>−{savedAmount} zł</strong></p>}
+                <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Wysyłka' : 'Shipping'}</span><strong>{SHIPPING_COST} zł</strong></p>
                 <div className={styles.summaryTotal}><span>{t.order.step4.totalLabel}</span><strong className={styles.totalPrice}>{totalPrice} zł</strong></div>
                 <p className={styles.summaryNote}>{t.order.step4.note}</p>
+                <p className={styles.summaryNote}>{lang === 'pl' ? `Do ceny doliczamy stały koszt wysyłki: ${SHIPPING_COST} zł za zamówienie.` : `A flat shipping fee of ${SHIPPING_COST} zł is added to every order.`}</p>
               </div>
               <div className={styles.formButtons}>
                 <button className={styles.btnSecondary} onClick={() => setStep(3)}>{t.order.step4.back}</button>
@@ -505,7 +496,7 @@ export default function Home() {
               <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '16px', marginTop: '8px' }}>
                 <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>{t.order.step5.discountEyebrow}</p>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <input value={discountCode} onChange={e => { setDiscountCode(e.target.value.toUpperCase()); setDiscountMsg(null); setDiscountApplied(false); setDiscountPct(0) }} placeholder={t.order.step5.discountPlaceholder} style={{ flex: 1, textTransform: 'uppercase', letterSpacing: '2px' }} disabled={discountApplied} />
+                  <input value={discountCode} onChange={e => { setDiscountCode(e.target.value.toUpperCase()); setDiscountMsg(null); setDiscountApplied(false); setDiscountPct(0) }} placeholder="" style={{ flex: 1, textTransform: 'uppercase', letterSpacing: '2px' }} disabled={discountApplied} />
                   <button onClick={applyDiscount} disabled={!discountCode.trim() || discountApplied} className={styles.btnSecondary} style={{ width: 'auto', padding: '10px 18px', fontSize: '13px', flexShrink: 0 }}>{discountApplied ? t.order.step5.discountActive : t.order.step5.discountApply}</button>
                 </div>
                 {discountMsg && <p style={{ margin: '8px 0 0', fontSize: '12px', color: discountApplied ? 'var(--success)' : 'var(--error)' }}>{discountMsg}</p>}
@@ -518,6 +509,7 @@ export default function Home() {
                 <p className={styles.summaryRow}><span>{t.order.step4.qtyLabel}</span><strong>× {quantity}</strong></p>
                 {hasDiscount && <p className={styles.summaryRow}><span>{t.order.step5.quantityDiscountLabel}</span><strong className={styles.discount}>−{savedAmount} zł</strong></p>}
                 {discountApplied && <p className={styles.summaryRow}><span>{t.order.step5.codeDiscountLabel(discountCode.toUpperCase(), discountPct)}</span><strong className={styles.discount}>−{discountSaved} zł</strong></p>}
+                <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Wysyłka' : 'Shipping'}</span><strong>{SHIPPING_COST} zł</strong></p>
                 <div className={styles.summaryTotal}><span>{t.order.step5.payLabel}</span><strong className={styles.totalPrice}>{totalPrice} zł</strong></div>
                 <p className={styles.summaryNote}>{t.order.step5.payNote}</p>
               </div>
