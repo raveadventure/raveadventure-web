@@ -22,8 +22,8 @@ export default function Home() {
       label: lang === 'pl' ? 'Wizytówka (100 sztuk)' : 'Business Card (100 pcs)',
       dims: '55 × 85 mm lub 90 × 50 mm',
       desc: lang === 'pl'
-        ? 'Zestaw 100 wizytówek z Twoją personalizowaną grafiką. Wybrany rozmiar (55×85mm lub 90×50mm)'
-        : 'Set of 100 business cards with your personalized artwork. Note your preferred size (55×85mm or 90×50mm).',
+        ? 'Zestaw 100 wizytówek z Twoją personalizowaną grafiką. Wybrany rozmiar (55×85mm lub 90×50mm) napisz w komentarzu do zdjęcia w kroku 2 — jeśli nic nie napiszesz, ustalimy to z Tobą przy realizacji.'
+        : 'Set of 100 business cards with your personalized artwork. Note your preferred size (55×85mm or 90×50mm) in the photo comment in step 2 — if you don\'t, we\'ll confirm it with you before production.',
     }
     return c
   })
@@ -223,23 +223,6 @@ export default function Home() {
           </h1>
           <p className={styles.heroSub}>{t.hero.sub}</p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', margin: '20px auto', width: '100%', maxWidth: '520px' }}>
-            {CARD_TYPES.map(c => (
-              <div key={c.id} style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${c.accent}33`, borderRadius: '10px', padding: '12px 14px', textAlign: 'left' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#f0eeff' }}>{c.label}</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: c.accent }}>{c.price} zł</span>
-                </div>
-                <p style={{ margin: '0 0 4px', fontSize: '10px', color: 'rgba(240,238,255,0.3)', fontFamily: 'var(--font-display)' }}>{c.dims}</p>
-                <p style={{ margin: 0, fontSize: '11px', color: 'rgba(240,238,255,0.5)', lineHeight: '1.5' }}>{c.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '20px' }}>
-            <span className={styles.badge}>{t.hero.badge1}</span>
-            <span className={styles.badge}>{t.hero.badge2}</span>
-          </div>
           <a href="#order" className={styles.btnHero}>{t.hero.cta}</a>
 
           <div style={{ marginTop: '36px' }}>
@@ -323,6 +306,10 @@ export default function Home() {
                     {cardType === c.id && <span className={styles.themeCheck}>✓</span>}
                   </div>
                 ))}
+              </div>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', margin: '12px 0 4px' }}>
+                <span className={styles.badge}>{t.hero.badge1}</span>
+                <span className={styles.badge}>{t.hero.badge2}</span>
               </div>
               {cardType === 'laminated' && (
                 <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '16px', marginTop: '12px' }}>
