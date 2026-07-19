@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { name, email, theme, address, phone, cardText, notes, orderId, totalPrice, lang: langRaw } = body
+    const { name, email, theme, address, phone, cardText, notes, orderId, totalPrice, cardType, nfcEnabled, nfcPrice, lang: langRaw } = body
     const lang: 'pl' | 'en' = langRaw === 'en' ? 'en' : 'pl'
 
     const themeLabels: Record<string, { pl: string; en: string }> = {
@@ -13,6 +13,13 @@ export async function POST(req: NextRequest) {
       custom: { pl: 'Custom', en: 'Custom' },
     }
     const themeLabel = themeLabels[theme]?.[lang] || theme
+
+    // ── TYP KARTY (PVC / Wizytówka) + NFC — do wyświetlenia w obu mailach ──
+    const cardTypeLabels: Record<string, { pl: string; en: string }> = {
+      pvc: { pl: 'Karta PVC', en: 'PVC Card' },
+      laminated: { pl: 'Wizytówka (100 szt.)', en: 'Business Card (100 pcs)' },
+    }
+    const cardTypeLabel = cardTypeLabels[cardType]?.[lang] || cardType || '—'
     const price = totalPrice || 89
 
     // ── TEKSTY DWUJĘZYCZNE (mail do klienta) ──────────────────────
@@ -24,6 +31,9 @@ export async function POST(req: NextRequest) {
         confirmed: 'Zamówienie przyjęte!',
         orderDetailsEyebrow: '// twoje zamówienie',
         themeRow: 'Motyw karty',
+        cardTypeRow: 'Typ karty',
+        nfcRow: 'NFC/RFID',
+        nfcActiveText: '📲 Tak — karta zostanie zaprogramowana',
         cardTextRow: 'Tekst na karcie',
         addressRow: 'Adres wysyłki',
         whatsNext: 'Co dalej?',
@@ -47,6 +57,9 @@ export async function POST(req: NextRequest) {
         confirmed: 'Order received!',
         orderDetailsEyebrow: '// your order',
         themeRow: 'Card theme',
+        cardTypeRow: 'Card type',
+        nfcRow: 'NFC/RFID',
+        nfcActiveText: '📲 Yes — the card will be programmed',
         cardTextRow: 'Text on the card',
         addressRow: 'Shipping address',
         whatsNext: "What's next?",
@@ -68,6 +81,10 @@ export async function POST(req: NextRequest) {
     // ── EMAIL DO CIEBIE (zawsze PL, ze znacznikiem EN gdy dotyczy) ─
     const langBadge = lang === 'en'
       ? `<span style="background:rgba(0,240,255,0.15);color:#00f0ff;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:700;margin-left:8px;">🇬🇧 EN</span>`
+      : ''
+
+    const nfcBadgeAdmin = nfcEnabled
+      ? `<span style="background:rgba(0,229,160,0.15);color:#00e5a0;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:700;margin-left:6px;">📲 NFC${nfcPrice ? ` (+${nfcPrice} zł)` : ''}</span>`
       : ''
 
     const adminEmailHtml = `
@@ -101,6 +118,12 @@ export async function POST(req: NextRequest) {
             <tr>
               <td style="padding:12px 20px;font-size:13px;color:rgba(240,238,255,0.5);border-bottom:1px solid rgba(255,255,255,0.05);">Motyw</td>
               <td style="padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.05);"><span style="background:rgba(180,77,255,0.15);color:#b44dff;padding:3px 10px;border-radius:4px;font-size:13px;font-weight:600;">${themeLabel}</span></td>
+            </tr>
+            <tr>
+              <td style="padding:12px 20px;font-size:13px;color:rgba(240,238,255,0.5);border-bottom:1px solid rgba(255,255,255,0.05);">Typ karty</td>
+              <td style="padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.05);">
+                <span style="background:rgba(180,77,255,0.15);color:#b44dff;padding:3px 10px;border-radius:4px;font-size:13px;font-weight:600;">${cardTypeLabel}</span>${nfcBadgeAdmin}
+              </td>
             </tr>
             <tr>
               <td style="padding:12px 20px;font-size:13px;color:rgba(240,238,255,0.5);border-bottom:1px solid rgba(255,255,255,0.05);">Klient</td>
@@ -158,6 +181,10 @@ export async function POST(req: NextRequest) {
 </html>`
 
     // ── EMAIL DO KLIENTA (PL lub EN wg lang) ──────────────────────
+    const nfcBadgeClient = nfcEnabled
+      ? `<span style="background:rgba(0,229,160,0.15);color:#00e5a0;padding:3px 10px;border-radius:4px;font-size:13px;font-weight:600;margin-left:6px;">${L.nfcActiveText}</span>`
+      : ''
+
     const clientEmailHtml = `
 <!DOCTYPE html>
 <html lang="${L.htmlLang}">
@@ -193,6 +220,12 @@ export async function POST(req: NextRequest) {
             <tr>
               <td style="padding:12px 20px;font-size:13px;color:rgba(240,238,255,0.5);width:140px;border-bottom:1px solid rgba(255,255,255,0.05);">${L.themeRow}</td>
               <td style="padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.05);"><span style="background:rgba(180,77,255,0.15);color:#b44dff;padding:3px 10px;border-radius:4px;font-size:13px;font-weight:600;">${themeLabel}</span></td>
+            </tr>
+            <tr>
+              <td style="padding:12px 20px;font-size:13px;color:rgba(240,238,255,0.5);border-bottom:1px solid rgba(255,255,255,0.05);">${L.cardTypeRow}</td>
+              <td style="padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.05);">
+                <span style="background:rgba(180,77,255,0.15);color:#b44dff;padding:3px 10px;border-radius:4px;font-size:13px;font-weight:600;">${cardTypeLabel}</span>${nfcBadgeClient}
+              </td>
             </tr>
             <tr>
               <td style="padding:12px 20px;font-size:13px;color:rgba(240,238,255,0.5);border-bottom:1px solid rgba(255,255,255,0.05);">${L.cardTextRow}</td>
