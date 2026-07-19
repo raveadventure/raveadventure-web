@@ -15,15 +15,15 @@ export default function Home() {
   // "Karta Laminowana" -> "Wizytówka (100 sztuk)" 50 zł). Jeśli wolisz zmienić
   // to docelowo w samym translations.tsx, ten override można wtedy usunąć.
   const CARD_TYPES = CARD_TYPES_I18N[lang].map(c => {
-    if (c.id === 'pvc') return { ...c, price: 50 }
+    if (c.id === 'pvc') return { ...c, price: 40 }
     if (c.id === 'laminated') return {
       ...c,
       price: 50,
       label: lang === 'pl' ? 'Wizytówka (100 sztuk)' : 'Business Card (100 pcs)',
       dims: '55 × 85 mm lub 90 × 50 mm',
       desc: lang === 'pl'
-        ? 'Zestaw 100 wizytówek z Twoją personalizowaną grafiką. Wybrany rozmiar (55×85mm lub 90×50mm) napisz w komentarzu do zdjęcia w kroku 2 — jeśli nic nie napiszesz, ustalimy to z Tobą przy realizacji.'
-        : 'Set of 100 business cards with your personalized artwork. Note your preferred size (55×85mm or 90×50mm) in the photo comment in step 2 — if you don\'t, we\'ll confirm it with you before production.',
+        ? 'Zestaw 100 wizytówek z Twoją personalizowaną grafiką.'
+        : 'Set of 100 business cards with your personalized artwork.',
     }
     return c
   })
@@ -297,7 +297,7 @@ export default function Home() {
         </div>
 
         <p className={styles.sectionEye}>{t.options.eyebrow}</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
           {t.options.cards.map((o, i) => (
             <div key={i} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
