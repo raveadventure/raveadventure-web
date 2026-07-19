@@ -60,7 +60,7 @@ export default function Home() {
   const [discountPct, setDiscountPct] = useState(0)
   const [discountMsg, setDiscountMsg] = useState<string | null>(null)
 
-  const DISCOUNT_CODES: Record<string, number> = { 'RAVE10': 10, 'SIERRA20': 20, 'AWAKENINGS': 15, 'FRIENDS50': 50 }
+  const DISCOUNT_CODES: Record<string, number> = { 'RAVE10': 10, 'SIERRA20': 20, 'AWAKENINGS': 15, 'FRIENDS50': 50, 'COFFEERAVE': 20 }
 
   const applyDiscount = () => {
     const code = discountCode.trim().toUpperCase()
@@ -227,6 +227,35 @@ export default function Home() {
         </div>
       </nav>
 
+      <a
+        href="#order"
+        style={{
+          display: 'block',
+          marginTop: `${navHeight}px`,
+          background: 'linear-gradient(90deg, rgba(180,77,255,0.18), rgba(0,240,255,0.12))',
+          borderBottom: '1px solid rgba(180,77,255,0.3)',
+          padding: '10px 5vw',
+          textAlign: 'center',
+          textDecoration: 'none',
+          cursor: 'pointer',
+        }}
+      >
+        <div>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: '#f0eeff' }}>
+            {lang === 'pl' ? '☕ Z okazji Coffee Rave „Wstań i Tańcz" — 20% zniżki na wszystkie karty!' : '☕ To celebrate Coffee Rave "Wstań i Tańcz" — 20% off all cards!'}
+          </span>
+          <span style={{ fontSize: '13px', color: 'rgba(240,238,255,0.6)', marginLeft: '8px' }}>
+            {lang === 'pl' ? 'Użyj kodu' : 'Use code'}
+          </span>
+          <span style={{ fontFamily: 'var(--font-display)', fontSize: '13px', fontWeight: 700, color: '#b44dff', letterSpacing: '1px', marginLeft: '6px', textDecoration: 'underline' }}>
+            COFFEERAVE
+          </span>
+        </div>
+        <p style={{ margin: '3px 0 0', fontSize: '11px', color: 'rgba(240,238,255,0.5)' }}>
+          {lang === 'pl' ? 'Kod ważny do 26.07.2026' : 'Code valid until July 26, 2026'}
+        </p>
+      </a>
+
       <div
         style={{
           display: 'flex',
@@ -234,7 +263,6 @@ export default function Home() {
           justifyContent: 'center',
           gap: '14px',
           flexWrap: 'wrap',
-          marginTop: `${navHeight}px`,
           background: 'linear-gradient(90deg, rgba(180,77,255,0.14), rgba(0,240,255,0.10))',
           borderBottom: '1px solid rgba(180,77,255,0.25)',
           padding: '10px 5vw',
