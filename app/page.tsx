@@ -22,8 +22,8 @@ export default function Home() {
       label: lang === 'pl' ? 'Wizytówka (100 sztuk)' : 'Business Card (100 pcs)',
       dims: '55 × 85 mm lub 90 × 50 mm',
       desc: lang === 'pl'
-        ? 'Zestaw 100 wizytówek z Twoją personalizowaną grafiką. Wybrany rozmiar (55×85mm lub 90×50mm)'
-        : 'Set of 100 business cards with your personalized artwork. Note your preferred size (55×85mm or 90×50mm)',
+        ? 'Zestaw 100 wizytówek z Twoją personalizowaną grafiką. Wybrany rozmiar (55×85mm lub 90×50mm) napisz w komentarzu do zdjęcia w kroku 2 — jeśli nic nie napiszesz, ustalimy to z Tobą przy realizacji.'
+        : 'Set of 100 business cards with your personalized artwork. Note your preferred size (55×85mm or 90×50mm) in the photo comment in step 2 — if you don\'t, we\'ll confirm it with you before production.',
     }
     return c
   })
@@ -207,8 +207,41 @@ export default function Home() {
         </div>
       </nav>
 
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '129px 5vw 0' }}>
-        <img src="/logo_kwadrat.png" alt="RaveAdventure — The best memories from your adventure deserve a card." style={{ maxWidth: '100%', width: '900px', height: 'auto', display: 'block' }} />
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '14px',
+          flexWrap: 'wrap',
+          marginTop: '57px',
+          background: 'linear-gradient(90deg, rgba(180,77,255,0.14), rgba(0,240,255,0.10))',
+          borderBottom: '1px solid rgba(180,77,255,0.25)',
+          padding: '10px 5vw',
+        }}
+      >
+        <span style={{ fontSize: '13px', fontWeight: 600, color: '#f0eeff' }}>
+          {lang === 'pl' ? 'Zapraszamy na nasze sociale' : 'Follow us on social media'}
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <a href="https://www.instagram.com/rave_adventure_pl/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" style={{ display: 'inline-flex' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b44dff" strokeWidth="2">
+              <rect x="2" y="2" width="20" height="20" rx="5" />
+              <circle cx="12" cy="12" r="4.2" />
+              <circle cx="17.3" cy="6.7" r="1.1" fill="#b44dff" stroke="none" />
+            </svg>
+          </a>
+          <a href="https://www.facebook.com/raveadventurepl" target="_blank" rel="noopener noreferrer" aria-label="Facebook" style={{ display: 'inline-flex' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M13.8 21v-7.2h2.4l.4-2.8h-2.8v-1.8c0-.8.2-1.4 1.4-1.4h1.5V5.3C16.2 5.2 15.3 5 14.3 5c-2.1 0-3.5 1.3-3.5 3.6v2.4H8.4v2.8h2.4V21" fill="none" />
+            </svg>
+          </a>
+        </span>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '32px 5vw 0' }}>
+        <img src="/logo_kwadrat.png" alt="RaveAdventure — The best memories from your adventure deserve a card." style={{ maxWidth: '100%', width: '720px', height: 'auto', display: 'block' }} />
       </div>
 
       <PortfolioCarousel lang={lang} />
