@@ -29,6 +29,8 @@ type Order = {
   photo_url: string | null
   design_url: string | null
   design_back_url: string | null
+  design_original_url: string | null
+  design_back_original_url: string | null
   review_notes: string | null
   approved_at: string | null
   shipped_at: string | null
@@ -36,6 +38,52 @@ type Order = {
   paid: boolean
   status: string
   lang: string | null
+}
+
+// Kompresuje obraz w przeglądarce przed uploadem (canvas) — zwraca lżejszy Blob JPG.
+// Oryginalny plik wybrany przez użytkownika pozostaje nietknięty.
+async function compressImage(file: File, maxWidth = 1200, quality = 0.82): Promise<Blob> {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = reject
+    image.src = dataUrl
+  })
+  const scale = Math.min(1, maxWidth / img.width)
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.round(img.width * scale)
+  canvas.height = Math.round(img.height * scale)
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Canvas context unavailable')
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Kompresja nie powiodła się')), 'image/jpeg', quality)
+  })
+}
+
+// Obraz "na kliknięcie" — nic nie pobiera się automatycznie, dopóki admin sam nie kliknie.
+function LazyImage({ src, alt, style, label }: { src: string; alt: string; style?: React.CSSProperties; label?: string }) {
+  const [show, setShow] = useState(false)
+  if (show) {
+    return <img src={src} alt={alt} style={style} />
+  }
+  return (
+    <div
+      onClick={e => { e.stopPropagation(); setShow(true) }} role="button" tabIndex={0}
+      onKeyDown={e => { if (e.key === 'Enter') { e.stopPropagation(); setShow(true) } }}
+      style={{ ...style, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px', background: '#0d0d1a', cursor: 'pointer' }}
+      title="Kliknij, aby wczytać obraz"
+    >
+      <span style={{ fontSize: '20px', opacity: 0.6 }}>🖼</span>
+      {label && <span style={{ fontSize: '9px', color: 'rgba(240,238,255,0.4)', textAlign: 'center', padding: '0 4px' }}>{label}</span>}
+    </div>
+  )
 }
 
 function LangBadge({ lang, size = 'normal' }: { lang: string | null; size?: 'normal' | 'small' }) {
@@ -133,7 +181,7 @@ function ClientMaterials({ order }: { order: Order }) {
           <p style={{ margin: '0 0 5px', fontSize: '10px', color: '#b44dff', letterSpacing: '1px', fontWeight: 600 }}>FRONT</p>
           {order.photo_url ? (
             <>
-              <img src={order.photo_url} alt="Front" style={{ width: '100%', borderRadius: '8px', border: '1px solid rgba(180,77,255,0.3)', display: 'block' }} />
+              <LazyImage src={order.photo_url} alt="Front" style={{ width: '100%', aspectRatio: '0.75', borderRadius: '8px', border: '1px solid rgba(180,77,255,0.3)', display: 'block' }} label="Kliknij, aby wczytać" />
               <a href={order.photo_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '10px', color: '#b44dff', textDecoration: 'none', marginTop: '3px', textAlign: 'center' }}>pełne zdjęcie →</a>
             </>
           ) : (
@@ -159,7 +207,7 @@ function ClientMaterials({ order }: { order: Order }) {
           {backOption === 'custom_back' && (
             refBackUrl ? (
               <>
-                <img src={refBackUrl} alt="Back" style={{ width: '100%', borderRadius: '8px', border: '1px solid rgba(0,240,255,0.3)', display: 'block' }} />
+                <LazyImage src={refBackUrl} alt="Back" style={{ width: '100%', aspectRatio: '0.75', borderRadius: '8px', border: '1px solid rgba(0,240,255,0.3)', display: 'block' }} label="Kliknij, aby wczytać" />
                 <a href={refBackUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '10px', color: '#00f0ff', textDecoration: 'none', marginTop: '3px', textAlign: 'center' }}>pełne zdjęcie →</a>
               </>
             ) : (
@@ -297,30 +345,56 @@ export default function AdminPage() {
     try {
       const timestamp = Date.now()
 
-      // 1. Upload PRZODU bezpośrednio do Supabase Storage z przeglądarki (omija limit 4.5MB na Vercel API)
+      // 1. PRZÓD — upload ORYGINAŁU (pełna rozdzielczość, bez zmian) osobno od LEKKIEGO PODGLĄDU (skompresowany).
+      //    Podgląd trafia do maila i jest tym, co się automatycznie wyświetla — to on generuje powtarzalny ruch (egress),
+      //    więc ma być lekki. Oryginał leży w Storage i nie jest nigdzie ładowany automatycznie.
       const extFront = (designFile.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
       const safeExtFront = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extFront) ? extFront : 'jpg'
-      const fileNameFront = `designs/${selected.id}-${timestamp}.${safeExtFront}`
+      const fileNameFrontOriginal = `designs/${selected.id}-${timestamp}-original.${safeExtFront}`
+      const { error: uploadFrontOriginalError } = await supabase.storage
+        .from('order-photos')
+        .upload(fileNameFrontOriginal, designFile, { upsert: false })
+      if (uploadFrontOriginalError) {
+        setSendMsg({ type: 'err', text: 'Błąd uploadu oryginału przodu: ' + uploadFrontOriginalError.message })
+        setSending(false)
+        return
+      }
+      const { data: urlFrontOriginalData } = supabase.storage.from('order-photos').getPublicUrl(fileNameFrontOriginal)
+      const designOriginalUrl = urlFrontOriginalData.publicUrl
+
+      const compressedFront = await compressImage(designFile)
+      const fileNameFront = `designs/${selected.id}-${timestamp}.jpg`
       const { error: uploadFrontError } = await supabase.storage
         .from('order-photos')
-        .upload(fileNameFront, designFile, { upsert: false })
+        .upload(fileNameFront, compressedFront, { upsert: false, contentType: 'image/jpeg' })
       if (uploadFrontError) {
-        setSendMsg({ type: 'err', text: 'Błąd uploadu przodu: ' + uploadFrontError.message })
+        setSendMsg({ type: 'err', text: 'Błąd uploadu podglądu przodu: ' + uploadFrontError.message })
         setSending(false)
         return
       }
       const { data: urlFrontData } = supabase.storage.from('order-photos').getPublicUrl(fileNameFront)
       const designUrl = urlFrontData.publicUrl + `?v=${timestamp}`
 
-      // 2. Upload TYŁU (opcjonalnie)
+      // 2. TYŁ (opcjonalnie) — ta sama zasada: oryginał + skompresowany podgląd
       let designBackUrl: string | null = null
+      let designBackOriginalUrl: string | null = null
       if (designFileBack) {
         const extBack = (designFileBack.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
         const safeExtBack = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extBack) ? extBack : 'jpg'
-        const fileNameBack = `designs/${selected.id}-${timestamp}-back.${safeExtBack}`
+        const fileNameBackOriginal = `designs/${selected.id}-${timestamp}-back-original.${safeExtBack}`
+        const { error: uploadBackOriginalError } = await supabase.storage
+          .from('order-photos')
+          .upload(fileNameBackOriginal, designFileBack, { upsert: false })
+        if (!uploadBackOriginalError) {
+          const { data: urlBackOriginalData } = supabase.storage.from('order-photos').getPublicUrl(fileNameBackOriginal)
+          designBackOriginalUrl = urlBackOriginalData.publicUrl
+        }
+
+        const compressedBack = await compressImage(designFileBack)
+        const fileNameBack = `designs/${selected.id}-${timestamp}-back.jpg`
         const { error: uploadBackError } = await supabase.storage
           .from('order-photos')
-          .upload(fileNameBack, designFileBack, { upsert: false })
+          .upload(fileNameBack, compressedBack, { upsert: false, contentType: 'image/jpeg' })
         if (!uploadBackError) {
           const { data: urlBackData } = supabase.storage.from('order-photos').getPublicUrl(fileNameBack)
           designBackUrl = urlBackData.publicUrl
@@ -335,14 +409,16 @@ export default function AdminPage() {
           orderId: selected.id,
           designUrl,
           designBackUrl,
+          designOriginalUrl,
+          designBackOriginalUrl,
           note: designNote,
         }),
       })
       const data = await res.json()
       if (res.ok) {
         setSendMsg({ type: 'ok', text: 'Projekt wysłany do klienta! Status zmieniony na "Do akceptacji".' })
-        setOrders(prev => prev.map(o => o.id === selected.id ? { ...o, status: 'approval', design_url: designUrl, design_back_url: designBackUrl } : o))
-        setSelected(prev => prev ? { ...prev, status: 'approval', design_url: designUrl, design_back_url: designBackUrl } : null)
+        setOrders(prev => prev.map(o => o.id === selected.id ? { ...o, status: 'approval', design_url: designUrl, design_back_url: designBackUrl, design_original_url: designOriginalUrl, design_back_original_url: designBackOriginalUrl } : o))
+        setSelected(prev => prev ? { ...prev, status: 'approval', design_url: designUrl, design_back_url: designBackUrl, design_original_url: designOriginalUrl, design_back_original_url: designBackOriginalUrl } : null)
         setDesignFile(null)
         setDesignPreview(null)
         setDesignFileBack(null)
@@ -435,7 +511,7 @@ export default function AdminPage() {
                   <div key={order.id} onClick={() => setSelected(isSelected ? null : order)}
                     style={{ background: isSelected ? '#16162a' : '#0e0e1a', border: `1px solid ${isSelected ? '#b44dff' : 'rgba(255,255,255,0.08)'}`, borderRadius: '10px', padding: '14px 18px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
                     {order.photo_url
-                      ? <img src={order.photo_url} alt="" style={{ width: '42px', height: '42px', borderRadius: '7px', objectFit: 'cover', flexShrink: 0 }} />
+                      ? <LazyImage src={order.photo_url} alt="" style={{ width: '42px', height: '42px', borderRadius: '7px', objectFit: 'cover', flexShrink: 0 }} />
                       : <div style={{ width: '42px', height: '42px', borderRadius: '7px', background: '#16162a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>🎴</div>
                     }
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -523,15 +599,21 @@ export default function AdminPage() {
                 <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'rgba(240,238,255,0.4)', letterSpacing: '1px' }}>WYSŁANY PROJEKT</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                   <div>
-                    <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#b44dff', letterSpacing: '1px' }}>PRZÓD</p>
-                    <img src={selected.design_url} alt="Przód" style={{ width: '100%', borderRadius: '8px', border: '1px solid rgba(180,77,255,0.3)' }} />
-                    <a href={selected.design_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '11px', color: '#b44dff', textDecoration: 'none', marginTop: '4px', textAlign: 'center' }}>pełne zdjęcie →</a>
+                    <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#b44dff', letterSpacing: '1px' }}>PRZÓD (podgląd)</p>
+                    <LazyImage src={selected.design_url} alt="Przód" style={{ width: '100%', aspectRatio: '0.7', borderRadius: '8px', border: '1px solid rgba(180,77,255,0.3)' }} label="Kliknij, aby wczytać" />
+                    <a href={selected.design_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '11px', color: '#b44dff', textDecoration: 'none', marginTop: '4px', textAlign: 'center' }}>podgląd w nowej karcie →</a>
+                    {selected.design_original_url && (
+                      <a href={selected.design_original_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '11px', color: '#00e5a0', textDecoration: 'none', marginTop: '2px', textAlign: 'center' }}>⬇ oryginał (pełna rozdzielczość) →</a>
+                    )}
                   </div>
                   {selected.design_back_url ? (
                     <div>
-                      <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#00f0ff', letterSpacing: '1px' }}>TYŁ</p>
-                      <img src={selected.design_back_url} alt="Tył" style={{ width: '100%', borderRadius: '8px', border: '1px solid rgba(0,240,255,0.3)' }} />
-                      <a href={selected.design_back_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '11px', color: '#00f0ff', textDecoration: 'none', marginTop: '4px', textAlign: 'center' }}>pełne zdjęcie →</a>
+                      <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#00f0ff', letterSpacing: '1px' }}>TYŁ (podgląd)</p>
+                      <LazyImage src={selected.design_back_url} alt="Tył" style={{ width: '100%', aspectRatio: '0.7', borderRadius: '8px', border: '1px solid rgba(0,240,255,0.3)' }} label="Kliknij, aby wczytać" />
+                      <a href={selected.design_back_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '11px', color: '#00f0ff', textDecoration: 'none', marginTop: '4px', textAlign: 'center' }}>podgląd w nowej karcie →</a>
+                      {selected.design_back_original_url && (
+                        <a href={selected.design_back_original_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '11px', color: '#00e5a0', textDecoration: 'none', marginTop: '2px', textAlign: 'center' }}>⬇ oryginał (pełna rozdzielczość) →</a>
+                      )}
                     </div>
                   ) : (
                     <div>
