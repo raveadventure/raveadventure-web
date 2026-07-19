@@ -314,20 +314,17 @@ export default function Home() {
               background: 'rgba(0,229,160,0.08)',
               border: '1px solid rgba(0,229,160,0.3)',
               borderRadius: 'var(--radius-lg)',
-              padding: '16px 20px',
+              padding: '14px 20px',
               cursor: 'pointer',
-              textAlign: 'center',
+              textAlign: 'left',
             }}
           >
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-              <span style={{
-                fontSize: '26px', fontWeight: 800, color: '#00e5a0',
-                textDecoration: 'line-through', textDecorationThickness: '3px', textDecorationColor: '#00e5a0',
-                lineHeight: 1,
-              }}>
-                $$
-              </span>
-              <p style={{ margin: 0, fontSize: '13px', color: '#00e5a0', lineHeight: '1.6' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{ position: 'relative', width: '42px', height: '42px', borderRadius: '50%', border: '2.5px solid #00e5a0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: '#fff', letterSpacing: '-1px' }}>$$</span>
+                <div style={{ position: 'absolute', top: '50%', left: '-3px', right: '-3px', height: '2.5px', background: '#00e5a0', transform: 'rotate(-35deg)' }} />
+              </div>
+              <p style={{ margin: 0, fontSize: '13px', color: '#00e5a0', lineHeight: '1.6', flex: 1 }}>
                 {lang === 'pl' ? (
                   <>
                     <span style={{ fontWeight: 700 }}>Przy zamówieniu nie ponosisz żadnej opłaty!</span><br />
@@ -342,7 +339,7 @@ export default function Home() {
                   </>
                 )}
               </p>
-              <span style={{ fontSize: '11px', color: 'rgba(0,229,160,0.6)' }}>{showPaymentInfo ? '▲' : '▼'}</span>
+              <span style={{ fontSize: '11px', color: 'rgba(0,229,160,0.6)', flexShrink: 0, alignSelf: 'center' }}>{showPaymentInfo ? '▲' : '▼'}</span>
             </div>
             {showPaymentInfo && (
               <p style={{ margin: '10px 0 0', paddingTop: '10px', borderTop: '1px solid rgba(0,229,160,0.2)', fontSize: '12.5px', color: 'rgba(240,238,255,0.7)', lineHeight: '1.7', textAlign: 'left' }}>
@@ -417,30 +414,36 @@ export default function Home() {
         <p className={styles.sectionEye}>{t.order.eyebrow}</p>
         <h2 className={styles.sectionTitle}>{t.order.title}</h2>
 
-        <p style={{
+        <div style={{
           maxWidth: '620px',
           margin: '0 auto 24px',
-          fontSize: '13px',
-          color: '#00e5a0',
           background: 'rgba(0,229,160,0.08)',
           border: '1px solid rgba(0,229,160,0.3)',
           borderRadius: 'var(--radius-lg)',
-          padding: '10px 18px',
-          lineHeight: '1.5',
-          textAlign: 'center',
+          padding: '14px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+          textAlign: 'left',
         }}>
-          {lang === 'pl' ? (
-            <>
-              <span style={{ fontWeight: 700 }}>Przy zamówieniu nie ponosisz żadnej opłaty!</span><br />
-              Śmiało składaj zamówienie wraz ze swoim zdjęciem.
-            </>
-          ) : (
-            <>
-              <span style={{ fontWeight: 700 }}>No payment is required to place your order!</span><br />
-              Go ahead and order with your photo.
-            </>
-          )}
-        </p>
+          <div style={{ position: 'relative', width: '42px', height: '42px', borderRadius: '50%', border: '2.5px solid #00e5a0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ fontSize: '13px', fontWeight: 800, color: '#fff', letterSpacing: '-1px' }}>$$</span>
+            <div style={{ position: 'absolute', top: '50%', left: '-3px', right: '-3px', height: '2.5px', background: '#00e5a0', transform: 'rotate(-35deg)' }} />
+          </div>
+          <p style={{ margin: 0, fontSize: '13px', color: '#00e5a0', lineHeight: '1.6', flex: 1 }}>
+            {lang === 'pl' ? (
+              <>
+                <span style={{ fontWeight: 700 }}>Przy zamówieniu nie ponosisz żadnej opłaty!</span><br />
+                Śmiało składaj zamówienie wraz ze swoim zdjęciem.
+              </>
+            ) : (
+              <>
+                <span style={{ fontWeight: 700 }}>No payment is required to place your order!</span><br />
+                Go ahead and order with your photo.
+              </>
+            )}
+          </p>
+        </div>
 
         <div className={styles.progressWrap}>
           {t.order.steps.map((s, i) => {
