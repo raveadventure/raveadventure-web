@@ -39,6 +39,7 @@ export default function Home() {
   const [step, setStep] = useState<Step>(1)
   const [cardType, setCardType] = useState('pvc')
   const [nfcEnabled, setNfcEnabled] = useState(false)
+  const [showPaymentInfo, setShowPaymentInfo] = useState(false)
   const [frontTheme, setFrontTheme] = useState('techno_rave')
   const [backOption, setBackOption] = useState('logo')
   const [quantity, setQuantity] = useState(1)
@@ -244,15 +245,13 @@ export default function Home() {
           <span style={{ fontSize: '13px', fontWeight: 600, color: '#f0eeff' }}>
             {lang === 'pl' ? '☕ Z okazji Coffee Rave „Wstań i Tańcz" — 20% zniżki na wszystkie karty!' : '☕ To celebrate Coffee Rave "Wstań i Tańcz" — 20% off all cards!'}
           </span>
-          <span style={{ fontSize: '13px', color: 'rgba(240,238,255,0.6)', marginLeft: '8px' }}>
-            {lang === 'pl' ? 'Użyj kodu' : 'Use code'}
-          </span>
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: '13px', fontWeight: 700, color: '#b44dff', letterSpacing: '1px', marginLeft: '6px', textDecoration: 'underline' }}>
-            COFFEERAVE
-          </span>
         </div>
         <p style={{ margin: '3px 0 0', fontSize: '11px', color: 'rgba(240,238,255,0.5)' }}>
-          {lang === 'pl' ? 'Kod ważny do 26.07.2026' : 'Code valid until July 26, 2026'}
+          {lang === 'pl' ? 'Użyj kodu' : 'Use code'}
+          <span style={{ fontFamily: 'var(--font-display)', fontSize: '12px', fontWeight: 700, color: '#b44dff', letterSpacing: '1px', margin: '0 6px', textDecoration: 'underline' }}>
+            COFFEERAVE
+          </span>
+          · {lang === 'pl' ? 'ważny do 26.07.2026' : 'valid until July 26, 2026'}
         </p>
       </a>
 
@@ -306,22 +305,42 @@ export default function Home() {
 
           <a href="#order" className={styles.btnHero}>{t.hero.cta}</a>
 
-          <p style={{
-            margin: '14px auto 0',
-            maxWidth: '440px',
-            fontSize: '13px',
-            fontWeight: 600,
-            color: '#00e5a0',
-            background: 'rgba(0,229,160,0.08)',
-            border: '1px solid rgba(0,229,160,0.3)',
-            borderRadius: '20px',
-            padding: '8px 18px',
-            lineHeight: '1.5',
-          }}>
-            {lang === 'pl'
-              ? '✓ Przy zamówieniu nie ponosisz żadnej opłaty — śmiało składaj zamówienie. Płatność BLIK dopiero po zatwierdzeniu grafiki, dane do przelewu dostaniesz w mailu razem z projektem do akceptacji.'
-              : "✓ No payment is required to place your order — go ahead and order with confidence. Payment (BLIK/bank transfer) is only due after you approve the design, with details sent by email along with your design for approval."}
-          </p>
+          <div
+            onClick={() => setShowPaymentInfo(v => !v)} role="button" tabIndex={0}
+            onKeyDown={e => e.key === 'Enter' && setShowPaymentInfo(v => !v)}
+            style={{
+              margin: '14px auto 0',
+              maxWidth: '620px',
+              background: 'rgba(0,229,160,0.08)',
+              border: '1px solid rgba(0,229,160,0.3)',
+              borderRadius: 'var(--radius-lg)',
+              padding: '12px 20px',
+              cursor: 'pointer',
+              textAlign: 'left',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00e5a0" strokeWidth="2" style={{ flexShrink: 0 }}>
+                <circle cx="12" cy="12" r="9" />
+                <path d="M9 10.5c0-1.1 1.3-2 3-2s3 .9 3 2c0 1-.8 1.5-2 1.8" />
+                <path d="M12 15v1" /><path d="M12 8v1" />
+                <line x1="4" y1="20" x2="20" y2="4" />
+              </svg>
+              <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#00e5a0', lineHeight: '1.5', flex: 1 }}>
+                {lang === 'pl'
+                  ? 'Przy zamówieniu nie ponosisz żadnej opłaty — śmiało składaj zamówienie wraz ze swoim zdjęciem.'
+                  : 'No payment is required to place your order — go ahead and order with your photo.'}
+              </p>
+              <span style={{ fontSize: '11px', color: 'rgba(0,229,160,0.6)', flexShrink: 0 }}>{showPaymentInfo ? '▲' : '▼'}</span>
+            </div>
+            {showPaymentInfo && (
+              <p style={{ margin: '10px 0 0', paddingTop: '10px', borderTop: '1px solid rgba(0,229,160,0.2)', fontSize: '12.5px', color: 'rgba(240,238,255,0.7)', lineHeight: '1.7' }}>
+                {lang === 'pl'
+                  ? 'Po przygotowaniu projektu otrzymasz go na maila do zatwierdzenia lub do poprawek. W tym samym mailu znajdziesz informację o opłacie — możliwość przelewu BLIK na telefon lub na numer konta. Po zaksięgowaniu opłaty karta trafia do druku, a następnie do wysyłki.'
+                  : "Once your design is ready, you'll receive it by email for approval or revisions. That same email includes payment details — BLIK to a phone number or a bank transfer. Once payment is confirmed, your card goes to print and then shipping."}
+              </p>
+            )}
+          </div>
 
           <div style={{ marginTop: '36px' }}>
             <HeroCardAnimation lang={lang} />
@@ -386,6 +405,24 @@ export default function Home() {
       <section className={styles.section} id="order">
         <p className={styles.sectionEye}>{t.order.eyebrow}</p>
         <h2 className={styles.sectionTitle}>{t.order.title}</h2>
+
+        <p style={{
+          maxWidth: '620px',
+          margin: '0 auto 24px',
+          fontSize: '13px',
+          fontWeight: 600,
+          color: '#00e5a0',
+          background: 'rgba(0,229,160,0.08)',
+          border: '1px solid rgba(0,229,160,0.3)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '10px 18px',
+          lineHeight: '1.5',
+          textAlign: 'center',
+        }}>
+          {lang === 'pl'
+            ? 'Przy zamówieniu nie ponosisz żadnej opłaty — śmiało składaj zamówienie wraz ze swoim zdjęciem.'
+            : 'No payment is required to place your order — go ahead and order with your photo.'}
+        </p>
 
         <div className={styles.progressWrap}>
           {t.order.steps.map((s, i) => {
