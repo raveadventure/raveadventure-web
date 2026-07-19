@@ -38,6 +38,7 @@ export default function Home() {
 
   const [step, setStep] = useState<Step>(1)
   const [cardType, setCardType] = useState('pvc')
+  const [nfcEnabled, setNfcEnabled] = useState(false)
   const [frontTheme, setFrontTheme] = useState('techno_rave')
   const [backOption, setBackOption] = useState('logo')
   const [quantity, setQuantity] = useState(1)
@@ -89,12 +90,17 @@ export default function Home() {
   const cardObj = CARD_TYPES.find(c => c.id === cardType)!
   const backObj = BACK_OPTIONS.find(b => b.id === backOption)!
   const SHIPPING_COST = 15
+  const NFC_PRICE_STANDARD = 15
+  const NFC_PRICE_BULK = 8
+  const nfcActive = nfcEnabled && cardType === 'pvc'
+  const nfcUnitPrice = quantity > 3 ? NFC_PRICE_BULK : NFC_PRICE_STANDARD
+  const nfcTotal = nfcActive ? nfcUnitPrice * quantity : 0
   const unitPrice = cardObj.price + backObj.price
   const hasDiscount = quantity >= 3
   const baseTotal = hasDiscount ? Math.round(unitPrice * quantity * 0.5) : unitPrice * quantity
   const savedAmount = hasDiscount ? Math.round(unitPrice * quantity * 0.5) : 0
   const discountSaved = discountApplied ? Math.round(baseTotal * discountPct / 100) : 0
-  const totalPrice = baseTotal - discountSaved + SHIPPING_COST
+  const totalPrice = baseTotal - discountSaved + SHIPPING_COST + nfcTotal
 
   const handlePhoto = (file: File) => {
     setPhoto(file)
@@ -116,6 +122,7 @@ export default function Home() {
     try {
       const { data: orderData, error: insertError } = await supabase.from('orders').insert([{
         theme: frontTheme, card_type: cardType, back_option: backOption, quantity,
+        nfc_enabled: nfcActive, nfc_price: nfcTotal,
         unit_price: unitPrice, total_price: totalPrice, has_discount: hasDiscount,
         name: form.name, email: form.email, phone: form.phone, address: form.address,
         notes: form.notes, card_text: form.notesBack, custom_desc: form.customDesc, qr_link: form.notesBack,
@@ -157,6 +164,7 @@ export default function Home() {
         body: JSON.stringify({
           name: form.name, email: form.email, phone: form.phone, address: form.address, cardText: form.notesBack, notes: form.notes,
           theme: frontTheme, orderId: orderData?.id, cardType, backOption, quantity, unitPrice, totalPrice, hasDiscount, savedAmount,
+          nfcEnabled: nfcActive, nfcPrice: nfcTotal,
           cardYear: form.cardYear, cardRarity: form.cardRarity, cardName: form.cardName,
           attr1Label: form.attr1Label, attr1Value: form.attr1Value, cardSkill: form.cardSkill,
           attr2Label: form.attr2Label, attr2Value: form.attr2Value, cardDesc: form.cardDesc, notesBack: form.notesBack,
@@ -201,7 +209,7 @@ export default function Home() {
             <span>{cardObj.label} × {quantity}</span>
             <strong>{totalPrice} zł</strong>
           </div>
-          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',phone:'',address:'',notesBack:'',customDesc:'',notes:'',cardYear:'2025',cardRarity:'RARE',cardName:'',attr1Label:'',attr1Value:'',cardSkill:'',attr2Label:'',attr2Value:'',cardDesc:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setQuantity(1); setAgreed(false); setDiscountCode(''); setDiscountApplied(false); setDiscountPct(0); setDiscountMsg(null) }}>
+          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',phone:'',address:'',notesBack:'',customDesc:'',notes:'',cardYear:'2025',cardRarity:'RARE',cardName:'',attr1Label:'',attr1Value:'',cardSkill:'',attr2Label:'',attr2Value:'',cardDesc:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setQuantity(1); setNfcEnabled(false); setAgreed(false); setDiscountCode(''); setDiscountApplied(false); setDiscountPct(0); setDiscountMsg(null) }}>
             {t.sent.newOrder}
           </button>
         </div>
@@ -304,6 +312,24 @@ export default function Home() {
               </div>
             </div>
           ))}
+          <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+              <span style={{ fontSize: '16px' }}>📲</span>
+              <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
+                {lang === 'pl' ? 'Karta z NFC/RFID' : 'NFC/RFID Card'}
+              </p>
+            </div>
+            <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+              {lang === 'pl'
+                ? 'Chcesz, żeby Twoja karta robiła coś więcej niż tylko dobrze wyglądała? Zaprogramuj wbudowany chip NFC — wystarczy zbliżyć telefon, żeby błyskawicznie udostępnić Twój Instagram, TikTok albo hasło do WiFi na imprezie. Bez wpisywania, bez szukania — jeden dotyk.'
+                : 'Want your card to do more than just look good? Program the built-in NFC chip — one tap of a phone instantly shares your Instagram, TikTok, or the WiFi password at your party. No typing, no searching — just a tap.'}
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+              {['NFC', 'RFID', '+15 zł'].map(tag => (
+                <span key={tag} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>{tag}</span>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div style={{ marginTop: '10px', padding: '10px 14px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '10px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
@@ -363,6 +389,30 @@ export default function Home() {
                       ? '💡 Dostępne rozmiary: 55 × 85 mm lub 90 × 50 mm. Wybrany rozmiar napisz w komentarzu do zdjęcia w następnym kroku — jeśli nic nie napiszesz, ustalimy to z Tobą przed realizacją.'
                       : '💡 Available sizes: 55 × 85 mm or 90 × 50 mm. Note your preferred size in the photo comment in the next step — if you don\'t, we\'ll confirm it with you before production.'}
                   </p>
+                </div>
+              )}
+              {cardType === 'pvc' && (
+                <div
+                  onClick={() => setNfcEnabled(v => !v)} role="button" tabIndex={0}
+                  onKeyDown={e => e.key === 'Enter' && setNfcEnabled(v => !v)}
+                  style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'var(--surface2)', border: `1px solid ${nfcEnabled ? 'var(--neon)' : 'var(--border)'}`, borderRadius: 'var(--radius-lg)', padding: '14px', marginTop: '12px', cursor: 'pointer' }}
+                >
+                  <div style={{ width: '20px', height: '20px', borderRadius: '4px', border: `2px solid ${nfcEnabled ? 'var(--neon)' : 'var(--border)'}`, background: nfcEnabled ? 'var(--neon)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>
+                    {nfcEnabled && <span style={{ color: '#0a0014', fontSize: '13px', fontWeight: 700 }}>✓</span>}
+                  </div>
+                  <div>
+                    <p style={{ margin: '0 0 4px', fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
+                      📲 {lang === 'pl' ? 'Dodaj programowanie NFC/RFID' : 'Add NFC/RFID programming'}
+                      <span style={{ marginLeft: '8px', fontSize: '12px', fontWeight: 700, color: 'var(--neon)' }}>
+                        +{quantity > 3 ? NFC_PRICE_BULK : NFC_PRICE_STANDARD} zł{lang === 'pl' ? '/kartę' : '/card'}
+                      </span>
+                    </p>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+                      {lang === 'pl'
+                        ? 'Zbliżenie telefonu do karty błyskawicznie udostępni Twój Instagram, TikTok albo hasło do WiFi. Przy zamówieniu powyżej 3 kart cena spada do 8 zł/kartę.'
+                        : 'Tapping a phone to the card instantly shares your Instagram, TikTok, or WiFi password. Orders above 3 cards drop to 8 zł/card.'}
+                    </p>
+                  </div>
                 </div>
               )}
               <button className={styles.btnPrimary} onClick={() => setStep(2)}>{t.order.step1.next}</button>
@@ -530,6 +580,7 @@ export default function Home() {
                 <p className={styles.summaryRow}><span>{t.order.step4.unitPriceLabel}</span><strong>{unitPrice} zł</strong></p>
                 <p className={styles.summaryRow}><span>{t.order.step4.qtyLabel}</span><strong>× {quantity}</strong></p>
                 {hasDiscount && <p className={styles.summaryRow}><span>{t.order.step4.discountLabel}</span><strong className={styles.discount}>−{savedAmount} zł</strong></p>}
+                {nfcActive && <p className={styles.summaryRow}><span>{lang === 'pl' ? `NFC/RFID (${quantity} × ${nfcUnitPrice} zł)` : `NFC/RFID (${quantity} × ${nfcUnitPrice} zł)`}</span><strong>{nfcTotal} zł</strong></p>}
                 <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Wysyłka' : 'Shipping'}</span><strong>{SHIPPING_COST} zł</strong></p>
                 <div className={styles.summaryTotal}><span>{t.order.step4.totalLabel}</span><strong className={styles.totalPrice}>{totalPrice} zł</strong></div>
                 <p className={styles.summaryNote}>{t.order.step4.note}</p>
@@ -568,6 +619,7 @@ export default function Home() {
                 <p className={styles.summaryRow}><span>{t.order.step4.qtyLabel}</span><strong>× {quantity}</strong></p>
                 {hasDiscount && <p className={styles.summaryRow}><span>{t.order.step5.quantityDiscountLabel}</span><strong className={styles.discount}>−{savedAmount} zł</strong></p>}
                 {discountApplied && <p className={styles.summaryRow}><span>{t.order.step5.codeDiscountLabel(discountCode.toUpperCase(), discountPct)}</span><strong className={styles.discount}>−{discountSaved} zł</strong></p>}
+                {nfcActive && <p className={styles.summaryRow}><span>{lang === 'pl' ? `NFC/RFID (${quantity} × ${nfcUnitPrice} zł)` : `NFC/RFID (${quantity} × ${nfcUnitPrice} zł)`}</span><strong>{nfcTotal} zł</strong></p>}
                 <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Wysyłka' : 'Shipping'}</span><strong>{SHIPPING_COST} zł</strong></p>
                 <div className={styles.summaryTotal}><span>{t.order.step5.payLabel}</span><strong className={styles.totalPrice}>{totalPrice} zł</strong></div>
                 <p className={styles.summaryNote}>{t.order.step5.payNote}</p>
