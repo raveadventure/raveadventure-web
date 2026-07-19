@@ -314,35 +314,38 @@ export default function Home() {
               background: 'rgba(0,229,160,0.08)',
               border: '1px solid rgba(0,229,160,0.3)',
               borderRadius: 'var(--radius-lg)',
-              padding: '12px 20px',
+              padding: '16px 20px',
               cursor: 'pointer',
-              textAlign: 'left',
+              textAlign: 'center',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#00e5a0" strokeWidth="1.6" style={{ flexShrink: 0 }}>
-                <circle cx="12" cy="12" r="9" />
-                <path d="M9 10.5c0-1.1 1.3-2 3-2s3 .9 3 2c0 1-.8 1.5-2 1.8" />
-                <path d="M12 15v1" /><path d="M12 8v1" />
-                <line x1="4" y1="20" x2="20" y2="4" />
-              </svg>
-              <p style={{ margin: 0, fontSize: '13px', color: '#00e5a0', lineHeight: '1.5', flex: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+              <span style={{
+                fontSize: '26px', fontWeight: 800, color: '#00e5a0',
+                textDecoration: 'line-through', textDecorationThickness: '3px', textDecorationColor: '#00e5a0',
+                lineHeight: 1,
+              }}>
+                $$
+              </span>
+              <p style={{ margin: 0, fontSize: '13px', color: '#00e5a0', lineHeight: '1.6' }}>
                 {lang === 'pl' ? (
                   <>
                     <span style={{ fontWeight: 700 }}>Przy zamówieniu nie ponosisz żadnej opłaty!</span><br />
-                    Śmiało składaj zamówienie wraz ze swoim zdjęciem.
+                    Śmiało składaj zamówienie wraz ze swoim zdjęciem.<br />
+                    Opłata dopiero po zatwierdzeniu projektu.
                   </>
                 ) : (
                   <>
                     <span style={{ fontWeight: 700 }}>No payment is required to place your order!</span><br />
-                    Go ahead and order with your photo.
+                    Go ahead and order with your photo.<br />
+                    Payment is only due after the design is approved.
                   </>
                 )}
               </p>
-              <span style={{ fontSize: '11px', color: 'rgba(0,229,160,0.6)', flexShrink: 0 }}>{showPaymentInfo ? '▲' : '▼'}</span>
+              <span style={{ fontSize: '11px', color: 'rgba(0,229,160,0.6)' }}>{showPaymentInfo ? '▲' : '▼'}</span>
             </div>
             {showPaymentInfo && (
-              <p style={{ margin: '10px 0 0', paddingTop: '10px', borderTop: '1px solid rgba(0,229,160,0.2)', fontSize: '12.5px', color: 'rgba(240,238,255,0.7)', lineHeight: '1.7' }}>
+              <p style={{ margin: '10px 0 0', paddingTop: '10px', borderTop: '1px solid rgba(0,229,160,0.2)', fontSize: '12.5px', color: 'rgba(240,238,255,0.7)', lineHeight: '1.7', textAlign: 'left' }}>
                 {lang === 'pl'
                   ? 'Po przygotowaniu projektu otrzymasz go na maila do zatwierdzenia lub do poprawek. W tym samym mailu znajdziesz informację o opłacie — możliwość przelewu BLIK na telefon lub na numer konta. Po zaksięgowaniu opłaty karta trafia do druku, a następnie do wysyłki.'
                   : "Once your design is ready, you'll receive it by email for approval or revisions. That same email includes payment details — BLIK to a phone number or a bank transfer. Once payment is confirmed, your card goes to print and then shipping."}
