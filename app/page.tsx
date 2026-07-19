@@ -306,6 +306,23 @@ export default function Home() {
 
           <a href="#order" className={styles.btnHero}>{t.hero.cta}</a>
 
+          <p style={{
+            margin: '14px auto 0',
+            maxWidth: '440px',
+            fontSize: '13px',
+            fontWeight: 600,
+            color: '#00e5a0',
+            background: 'rgba(0,229,160,0.08)',
+            border: '1px solid rgba(0,229,160,0.3)',
+            borderRadius: '20px',
+            padding: '8px 18px',
+            lineHeight: '1.5',
+          }}>
+            {lang === 'pl'
+              ? '✓ Przy zamówieniu nie ponosisz żadnej opłaty — śmiało składaj zamówienie. Płatność BLIK dopiero po zatwierdzeniu grafiki, dane do przelewu dostaniesz w mailu razem z projektem do akceptacji.'
+              : "✓ No payment is required to place your order — go ahead and order with confidence. Payment (BLIK/bank transfer) is only due after you approve the design, with details sent by email along with your design for approval."}
+          </p>
+
           <div style={{ marginTop: '36px' }}>
             <HeroCardAnimation lang={lang} />
           </div>
