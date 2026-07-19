@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import styles from './page.module.css'
 import PortfolioCarousel from '../components/PortfolioCarousel'
@@ -73,6 +73,18 @@ export default function Home() {
   const fileRef = useRef<HTMLInputElement>(null)
   const refFileFrontRef = useRef<HTMLInputElement>(null)
   const refFileBackRef = useRef<HTMLInputElement>(null)
+  const navRef = useRef<HTMLElement>(null)
+  const [navHeight, setNavHeight] = useState(64)
+
+  useEffect(() => {
+    if (!navRef.current) return
+    const el = navRef.current
+    const update = () => setNavHeight(el.offsetHeight)
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   const cardObj = CARD_TYPES.find(c => c.id === cardType)!
   const backObj = BACK_OPTIONS.find(b => b.id === backOption)!
@@ -199,7 +211,7 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <nav className={styles.nav}>
+      <nav ref={navRef} className={styles.nav}>
         <span className={styles.logo}>Rave<span>Adventure</span></span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <LangSwitch />
@@ -214,7 +226,7 @@ export default function Home() {
           justifyContent: 'center',
           gap: '14px',
           flexWrap: 'wrap',
-          marginTop: '57px',
+          marginTop: `${navHeight}px`,
           background: 'linear-gradient(90deg, rgba(180,77,255,0.14), rgba(0,240,255,0.10))',
           borderBottom: '1px solid rgba(180,77,255,0.25)',
           padding: '10px 5vw',
