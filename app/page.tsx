@@ -320,16 +320,24 @@ export default function Home() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00e5a0" strokeWidth="2" style={{ flexShrink: 0 }}>
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#00e5a0" strokeWidth="1.6" style={{ flexShrink: 0 }}>
                 <circle cx="12" cy="12" r="9" />
                 <path d="M9 10.5c0-1.1 1.3-2 3-2s3 .9 3 2c0 1-.8 1.5-2 1.8" />
                 <path d="M12 15v1" /><path d="M12 8v1" />
                 <line x1="4" y1="20" x2="20" y2="4" />
               </svg>
-              <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#00e5a0', lineHeight: '1.5', flex: 1 }}>
-                {lang === 'pl'
-                  ? 'Przy zamówieniu nie ponosisz żadnej opłaty — śmiało składaj zamówienie wraz ze swoim zdjęciem.'
-                  : 'No payment is required to place your order — go ahead and order with your photo.'}
+              <p style={{ margin: 0, fontSize: '13px', color: '#00e5a0', lineHeight: '1.5', flex: 1 }}>
+                {lang === 'pl' ? (
+                  <>
+                    <span style={{ fontWeight: 700 }}>Przy zamówieniu nie ponosisz żadnej opłaty!</span><br />
+                    Śmiało składaj zamówienie wraz ze swoim zdjęciem.
+                  </>
+                ) : (
+                  <>
+                    <span style={{ fontWeight: 700 }}>No payment is required to place your order!</span><br />
+                    Go ahead and order with your photo.
+                  </>
+                )}
               </p>
               <span style={{ fontSize: '11px', color: 'rgba(0,229,160,0.6)', flexShrink: 0 }}>{showPaymentInfo ? '▲' : '▼'}</span>
             </div>
@@ -410,7 +418,6 @@ export default function Home() {
           maxWidth: '620px',
           margin: '0 auto 24px',
           fontSize: '13px',
-          fontWeight: 600,
           color: '#00e5a0',
           background: 'rgba(0,229,160,0.08)',
           border: '1px solid rgba(0,229,160,0.3)',
@@ -419,9 +426,17 @@ export default function Home() {
           lineHeight: '1.5',
           textAlign: 'center',
         }}>
-          {lang === 'pl'
-            ? 'Przy zamówieniu nie ponosisz żadnej opłaty — śmiało składaj zamówienie wraz ze swoim zdjęciem.'
-            : 'No payment is required to place your order — go ahead and order with your photo.'}
+          {lang === 'pl' ? (
+            <>
+              <span style={{ fontWeight: 700 }}>Przy zamówieniu nie ponosisz żadnej opłaty!</span><br />
+              Śmiało składaj zamówienie wraz ze swoim zdjęciem.
+            </>
+          ) : (
+            <>
+              <span style={{ fontWeight: 700 }}>No payment is required to place your order!</span><br />
+              Go ahead and order with your photo.
+            </>
+          )}
         </p>
 
         <div className={styles.progressWrap}>
