@@ -15,7 +15,7 @@ const BANK_RECIPIENT = '[MICHAŁ KOCH]'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { orderId, designUrl, designBackUrl, note } = body
+    const { orderId, designUrl, designBackUrl, designOriginalUrl, designBackOriginalUrl, note } = body
     const adminNote = note || ''
 
     if (!orderId || !designUrl) {
@@ -31,7 +31,14 @@ export async function POST(req: NextRequest) {
     // 2. Zapisz design_url, token i zmień status — pobierz też lang zamówienia
     const { data: order, error: updateError } = await supabase
       .from('orders')
-      .update({ design_url: designUrl, design_back_url: designBackUrl || null, review_token: token, status: 'approval' })
+      .update({
+        design_url: designUrl,
+        design_back_url: designBackUrl || null,
+        design_original_url: designOriginalUrl || null,
+        design_back_original_url: designBackOriginalUrl || null,
+        review_token: token,
+        status: 'approval',
+      })
       .eq('id', orderId)
       .select('*')
       .single()
@@ -52,6 +59,9 @@ export async function POST(req: NextRequest) {
         noteEyebrow: '// wiadomosc od nas',
         previewEyebrow: '// podgląd projektu',
         backEyebrow: '// tył karty',
+        cardTypePvc: 'Karta PVC',
+        cardTypeLaminated: 'Wizytówka (100 szt.)',
+        nfcActiveText: '📲 z programowaniem NFC/RFID',
         approveBtn: '✓ Zatwierdzam projekt',
         rejectBtn: '✗ Mam uwagi',
         infoTitle: 'Co się stanie po kliknięciu?',
@@ -80,6 +90,9 @@ export async function POST(req: NextRequest) {
         noteEyebrow: '// a note from us',
         previewEyebrow: '// design preview',
         backEyebrow: '// card back',
+        cardTypePvc: 'PVC Card',
+        cardTypeLaminated: 'Business Card (100 pcs)',
+        nfcActiveText: '📲 with NFC/RFID programming',
         approveBtn: '✓ Approve design',
         rejectBtn: '✗ I have feedback',
         infoTitle: 'What happens after you click?',
@@ -101,6 +114,12 @@ export async function POST(req: NextRequest) {
         amountLabel: 'Amount',
       },
     }[lang]
+
+    // Typ karty + NFC — dane już mamy w `order` (select('*') przy update wyżej)
+    const cardTypeLabel = order.card_type === 'laminated' ? L.cardTypeLaminated : L.cardTypePvc
+    const nfcBadge = order.nfc_enabled
+      ? `<span style="background:rgba(0,229,160,0.15);color:#00e5a0;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:700;margin-left:6px;">${L.nfcActiveText}</span>`
+      : ''
 
     // 4. Wyślij email do klienta
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://raveadventure.pl'
@@ -125,7 +144,14 @@ export async function POST(req: NextRequest) {
   <!-- BODY -->
   <tr><td style="background:#0e0e1a;padding:32px;">
     <p style="font-size:16px;color:#f0eeff;margin:0 0 8px;">${L.hey(order.name.split(' ')[0])}</p>
-    <p style="font-size:15px;color:rgba(240,238,255,0.7);margin:0 0 ${adminNote ? "16px" : "28px"};line-height:1.7;">${L.intro}</p>
+    <p style="font-size:15px;color:rgba(240,238,255,0.7);margin:0 0 14px;line-height:1.7;">${L.intro}</p>
+
+    <!-- TYP KARTY / NFC -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:${adminNote ? "16px" : "28px"};">
+      <tr><td>
+        <span style="background:rgba(180,77,255,0.15);color:#b44dff;padding:3px 10px;border-radius:4px;font-size:13px;font-weight:600;">${cardTypeLabel}</span>${nfcBadge}
+      </td></tr>
+    </table>
 
     ${adminNote ? `
     <!-- NOTATKA OD NAS -->
@@ -263,7 +289,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Błąd wysyłki maila' }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, designUrl, designBackUrl })
+    return NextResponse.json({ success: true, designUrl, designBackUrl, designOriginalUrl, designBackOriginalUrl })
 
   } catch (err) {
     console.error('API error:', err)
