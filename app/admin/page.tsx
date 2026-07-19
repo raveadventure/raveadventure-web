@@ -70,6 +70,9 @@ function ClientMaterials({ order }: { order: Order }) {
   const isCustomFront = theme === 'custom'
   const notesBack = (order as any).card_text || (order as any).notes_back || ''
   const notesFront = (order as any).notes || ''
+  const cardType = (order as any).card_type || 'pvc'
+  const nfcEnabled = !!(order as any).nfc_enabled
+  const nfcPrice = (order as any).nfc_price || 0
 
   const THEME_LABELS: Record<string, string> = {
     techno_rave: 'Techno / Rave',
@@ -93,6 +96,19 @@ function ClientMaterials({ order }: { order: Order }) {
       <div style={{ marginBottom: '12px', padding: '10px 14px', background: isCustomFront ? 'rgba(245,158,11,0.06)' : 'rgba(180,77,255,0.06)', border: `1px solid ${isCustomFront ? 'rgba(245,158,11,0.25)' : 'rgba(180,77,255,0.2)'}`, borderRadius: '8px' }}>
         <p style={{ margin: '0 0 2px', fontSize: '10px', color: isCustomFront ? '#f59e0b' : '#b44dff', letterSpacing: '2px', fontWeight: 700 }}>
           STYL KARTY: {THEME_LABELS[theme] || theme.toUpperCase()}
+        </p>
+
+        <p style={{ margin: '6px 0 0', fontSize: '12px', color: 'rgba(240,238,255,0.7)', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <span>
+            Typ karty: <strong style={{ color: '#f0eeff' }}>{cardType === 'laminated' ? 'Wizytówka (100 szt.)' : 'PVC'}</strong>
+          </span>
+          {nfcEnabled ? (
+            <span style={{ color: '#00e5a0', fontWeight: 700 }}>
+              📲 NFC/RFID — do zaprogramowania{nfcPrice ? ` (+${nfcPrice} zł)` : ''}
+            </span>
+          ) : (
+            <span style={{ color: 'rgba(240,238,255,0.3)' }}>bez NFC</span>
+          )}
         </p>
 
         {isCustomFront && (
@@ -425,7 +441,12 @@ export default function AdminPage() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ margin: '0 0 2px', fontWeight: 600, fontSize: '14px', color: '#f0eeff', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                         {order.name}
-                        <span style={{ fontSize: '11px', fontWeight: 400, color: 'rgba(240,238,255,0.3)', fontFamily: 'monospace' }}>#{order.id.slice(0, 8)}</span>
+                        <span style={{ fontSize: '11px', fontWeight: 400, color: 'rgba(240,238,255,0.3)', fontFamily: 'monospace' }}>
+                          #{order.id.slice(0, 8)} ({(order as any).card_type === 'laminated' ? 'Wizytówki' : 'PVC'})
+                        </span>
+                        {(order as any).nfc_enabled && (
+                          <span style={{ fontSize: '11px', fontWeight: 700, color: '#00e5a0', fontFamily: 'monospace' }}>(NFC)</span>
+                        )}
                         <LangBadge lang={order.lang} size="small" />
                       </p>
                       <p style={{ margin: 0, fontSize: '12px', color: 'rgba(240,238,255,0.4)' }}>
