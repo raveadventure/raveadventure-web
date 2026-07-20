@@ -44,7 +44,7 @@ export default function Home() {
   const [backOption, setBackOption] = useState('logo')
   const [quantity, setQuantity] = useState(1)
   const [form, setForm] = useState({
-    name: '', email: '', phone: '', address: '',
+    name: '', email: '', emailConfirm: '', phone: '', address: '',
     notesBack: '', customDesc: '', notes: '',
     cardYear: '2025', cardRarity: 'RARE', cardName: '', attr1Label: '', attr1Value: '', cardSkill: '', attr2Label: '', attr2Value: '', cardDesc: '',
   })
@@ -116,8 +116,18 @@ export default function Home() {
     if (file && file.type.startsWith('image/')) handlePhoto(file)
   }
 
+  const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
+
   const handleSubmit = async () => {
     if (!form.name || !form.email || !form.address) { setError(t.order.step5.errRequired); return }
+    if (!isValidEmail(form.email)) {
+      setError(lang === 'pl' ? 'Podaj prawidłowy adres email (musi zawierać znak @ i domenę).' : 'Please enter a valid email address (must include @ and a domain).')
+      return
+    }
+    if (form.email.trim().toLowerCase() !== form.emailConfirm.trim().toLowerCase()) {
+      setError(lang === 'pl' ? 'Podane adresy email nie są takie same — sprawdź oba pola.' : 'The email addresses do not match — please check both fields.')
+      return
+    }
     if (!agreed) { setError(t.order.step5.errAgree); return }
     setSending(true); setError(null)
     try {
@@ -210,7 +220,7 @@ export default function Home() {
             <span>{cardObj.label} × {quantity}</span>
             <strong>{totalPrice} zł</strong>
           </div>
-          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',phone:'',address:'',notesBack:'',customDesc:'',notes:'',cardYear:'2025',cardRarity:'RARE',cardName:'',attr1Label:'',attr1Value:'',cardSkill:'',attr2Label:'',attr2Value:'',cardDesc:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setQuantity(1); setNfcEnabled(false); setAgreed(false); setDiscountCode(''); setDiscountApplied(false); setDiscountPct(0); setDiscountMsg(null) }}>
+          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',emailConfirm:'',phone:'',address:'',notesBack:'',customDesc:'',notes:'',cardYear:'2025',cardRarity:'RARE',cardName:'',attr1Label:'',attr1Value:'',cardSkill:'',attr2Label:'',attr2Value:'',cardDesc:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setQuantity(1); setNfcEnabled(false); setAgreed(false); setDiscountCode(''); setDiscountApplied(false); setDiscountPct(0); setDiscountMsg(null) }}>
             {t.sent.newOrder}
           </button>
         </div>
@@ -702,6 +712,25 @@ export default function Home() {
               <div className={styles.fieldGrid}>
                 <div className={styles.field}><label className={styles.label}>{t.order.step5.nameLabel}</label><input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder={t.order.step5.namePlaceholder} /></div>
                 <div className={styles.field}><label className={styles.label}>{t.order.step5.emailLabel}</label><input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder={t.order.step5.emailPlaceholder} /></div>
+                <div className={styles.field}>
+                  <label className={styles.label}>{lang === 'pl' ? 'Powtórz adres email' : 'Confirm email address'}</label>
+                  <input
+                    type="email"
+                    value={form.emailConfirm}
+                    onChange={e => setForm({ ...form, emailConfirm: e.target.value })}
+                    onPaste={e => e.preventDefault()}
+                    placeholder={lang === 'pl' ? 'Wpisz ponownie swój email' : 'Type your email again'}
+                    style={{
+                      borderColor: form.emailConfirm && form.email.trim().toLowerCase() !== form.emailConfirm.trim().toLowerCase()
+                        ? 'var(--error)' : undefined,
+                    }}
+                  />
+                  {form.emailConfirm && form.email.trim().toLowerCase() !== form.emailConfirm.trim().toLowerCase() && (
+                    <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--error)' }}>
+                      {lang === 'pl' ? 'Adresy email nie są identyczne' : "Email addresses don't match"}
+                    </p>
+                  )}
+                </div>
                 <div className={styles.field}><label className={styles.label}>{t.order.step5.phoneLabel}</label><input type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder={t.order.step5.phonePlaceholder} /></div>
                 <div className={`${styles.field} ${styles.fieldFull}`}><label className={styles.label}>{t.order.step5.addressLabel}</label><input value={form.address} onChange={e => setForm({...form, address: e.target.value})} placeholder={t.order.step5.addressPlaceholder} /></div>
               </div>
