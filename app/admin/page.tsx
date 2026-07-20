@@ -591,7 +591,7 @@ export default function AdminPage() {
             )}
 
             {/* MATERIAŁY KLIENTA */}
-            <ClientMaterials order={selected} />
+            <ClientMaterials key={selected.id} order={selected} />
 
             {/* WYSŁANY PROJEKT */}
             {selected.design_url && (
@@ -600,7 +600,7 @@ export default function AdminPage() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                   <div>
                     <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#b44dff', letterSpacing: '1px' }}>PRZÓD (podgląd)</p>
-                    <LazyImage src={selected.design_url} alt="Przód" style={{ width: '100%', aspectRatio: '0.7', borderRadius: '8px', border: '1px solid rgba(180,77,255,0.3)' }} label="Kliknij, aby wczytać" />
+                    <LazyImage key={`${selected.id}-design-front`} src={selected.design_url} alt="Przód" style={{ width: '100%', aspectRatio: '0.7', borderRadius: '8px', border: '1px solid rgba(180,77,255,0.3)' }} label="Kliknij, aby wczytać" />
                     <a href={selected.design_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '11px', color: '#b44dff', textDecoration: 'none', marginTop: '4px', textAlign: 'center' }}>podgląd w nowej karcie →</a>
                     {selected.design_original_url && (
                       <a href={selected.design_original_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '11px', color: '#00e5a0', textDecoration: 'none', marginTop: '2px', textAlign: 'center' }}>⬇ oryginał (pełna rozdzielczość) →</a>
@@ -609,7 +609,7 @@ export default function AdminPage() {
                   {selected.design_back_url ? (
                     <div>
                       <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#00f0ff', letterSpacing: '1px' }}>TYŁ (podgląd)</p>
-                      <LazyImage src={selected.design_back_url} alt="Tył" style={{ width: '100%', aspectRatio: '0.7', borderRadius: '8px', border: '1px solid rgba(0,240,255,0.3)' }} label="Kliknij, aby wczytać" />
+                      <LazyImage key={`${selected.id}-design-back`} src={selected.design_back_url} alt="Tył" style={{ width: '100%', aspectRatio: '0.7', borderRadius: '8px', border: '1px solid rgba(0,240,255,0.3)' }} label="Kliknij, aby wczytać" />
                       <a href={selected.design_back_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '11px', color: '#00f0ff', textDecoration: 'none', marginTop: '4px', textAlign: 'center' }}>podgląd w nowej karcie →</a>
                       {selected.design_back_original_url && (
                         <a href={selected.design_back_original_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '11px', color: '#00e5a0', textDecoration: 'none', marginTop: '2px', textAlign: 'center' }}>⬇ oryginał (pełna rozdzielczość) →</a>
