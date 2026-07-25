@@ -117,7 +117,7 @@ export default function Home() {
   const [discountPct, setDiscountPct] = useState(0)
   const [discountMsg, setDiscountMsg] = useState<string | null>(null)
 
-  const DISCOUNT_CODES: Record<string, number> = { 'RAVE10': 10, 'SIERRA20': 20, 'AWAKENINGS': 15, 'FRIENDS50': 50, 'COFFEERAVE': 20 }
+  const DISCOUNT_CODES: Record<string, number> = { 'RAVE10': 10, 'SIERRA20': 20, 'AWAKENINGS': 15, 'FRIENDS50': 50, 'LSF2026': 25 }
 
   const applyDiscount = () => {
     const code = discountCode.trim().toUpperCase()
@@ -348,15 +348,15 @@ export default function Home() {
       >
         <div>
           <span style={{ fontSize: '13px', fontWeight: 600, color: '#f0eeff' }}>
-            {lang === 'pl' ? '☕ Z okazji Coffee Rave „Wstań i Tańcz" — 20% zniżki na wszystkie karty!' : '☕ To celebrate Coffee Rave "Wstań i Tańcz" — 20% off all cards!'}
+            {lang === 'pl' ? '☀️ Podczas trwania Łódź Summer Festival — 25% zniżki na wszystkie karty!' : '☀️ During Łódź Summer Festival — 25% off all cards!'}
           </span>
         </div>
         <p style={{ margin: '3px 0 0', fontSize: '11px', color: 'rgba(240,238,255,0.5)' }}>
           {lang === 'pl' ? 'Użyj kodu' : 'Use code'}
           <span style={{ fontFamily: 'var(--font-display)', fontSize: '12px', fontWeight: 700, color: '#b44dff', letterSpacing: '1px', margin: '0 6px', textDecoration: 'underline' }}>
-            COFFEERAVE
+            LSF2026
           </span>
-          · {lang === 'pl' ? 'ważny do 26.07.2026' : 'valid until July 26, 2026'}
+          · {lang === 'pl' ? 'kod ważny przy zamówieniu do 27.07.2026' : 'code valid for orders until July 27, 2026'}
         </p>
       </a>
 
