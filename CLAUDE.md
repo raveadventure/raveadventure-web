@@ -153,9 +153,8 @@ unitPrice = cena_typu_karty + cena_opcji_tyłu
   - Wizytówka (100 szt.): 50 zł
 
 hasDiscount (ilość ≥ 3) → -50% na (unitPrice × ilość)  [baseTotal]
-kod rabatowy → dodatkowy % od baseTotal (kody: RAVE10, SIERRA20, AWAKENINGS,
-  FRIENDS50, LSF2026 — ten ostatni czasowy (25%, promocja Łódź Summer Festival),
-  ważny do 27.07.2026, do usunięcia po dacie)
+kod rabatowy → dodatkowy % od baseTotal (jedyny aktywny kod: LSF2026 — 25%,
+  czasowy, promocja Łódź Summer Festival, ważny do 27.07.2026, do usunięcia po dacie)
 
 NFC/RFID (tylko dla karty PVC, opcjonalny dodatek):
   - ≤3 sztuki: +15 zł/kartę

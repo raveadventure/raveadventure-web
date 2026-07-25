@@ -117,7 +117,7 @@ export default function Home() {
   const [discountPct, setDiscountPct] = useState(0)
   const [discountMsg, setDiscountMsg] = useState<string | null>(null)
 
-  const DISCOUNT_CODES: Record<string, number> = { 'RAVE10': 10, 'SIERRA20': 20, 'AWAKENINGS': 15, 'FRIENDS50': 50, 'LSF2026': 25 }
+  const DISCOUNT_CODES: Record<string, number> = { 'LSF2026': 25 }
 
   const applyDiscount = () => {
     const code = discountCode.trim().toUpperCase()
