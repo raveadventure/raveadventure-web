@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { sendEmail } from '../../../lib/devEmail'
+import { isSupabasePlaceholder, updateOrderByToken } from '../../../lib/devOrdersStore'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,25 +13,29 @@ export async function POST(req: NextRequest) {
     const { token, notes } = await req.json()
     if (!token) return NextResponse.json({ error: 'Brak tokenu' }, { status: 400 })
 
-    const { data: order, error } = await supabase
-      .from('orders')
-      .update({ status: 'in_project', review_notes: notes })
-      .eq('review_token', token)
-      .select('*')
-      .single()
+    let order: any
+    if (isSupabasePlaceholder()) {
+      order = updateOrderByToken(token, { status: 'in_project', review_notes: notes })
+    } else {
+      const { data, error } = await supabase
+        .from('orders')
+        .update({ status: 'in_project', review_notes: notes })
+        .eq('review_token', token)
+        .select('*')
+        .single()
+      order = error ? null : data
+    }
 
-    if (error || !order) return NextResponse.json({ error: 'Nie znaleziono zamówienia' }, { status: 404 })
+    if (!order) return NextResponse.json({ error: 'Nie znaleziono zamówienia' }, { status: 404 })
 
     // Powiadom admina z uwagami
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.RESEND_API_KEY}` },
-      body: JSON.stringify({
-        from: 'RaveAdventure <zamowienia@raveadventure.pl>',
-        to: ['michal.koch96@gmail.com'],
-        reply_to: order.email,
-        subject: `🔄 Projekt odrzucony — ${order.name} — potrzebne poprawki`,
-        html: `<div style="font-family:sans-serif;background:#0a0a14;color:#f0eeff;padding:32px;border-radius:12px;">
+    await sendEmail({
+      from: 'RaveAdventure <zamowienia@raveadventure.pl>',
+      to: ['michal.koch96@gmail.com'],
+      reply_to: order.email,
+      orderId: order.id,
+      subject: `🔄 Projekt odrzucony — ${order.name} — potrzebne poprawki`,
+      html: `<div style="font-family:sans-serif;background:#0a0a14;color:#f0eeff;padding:32px;border-radius:12px;">
           <h2 style="color:#ff4d6d;">🔄 Klient ma uwagi do projektu</h2>
           <p><strong>Klient:</strong> ${order.name}</p>
           <p><strong>Email:</strong> <a href="mailto:${order.email}" style="color:#00f0ff;">${order.email}</a></p>
@@ -40,7 +46,6 @@ export async function POST(req: NextRequest) {
           </div>
           <p style="color:rgba(240,238,255,0.5);margin-top:20px;">Status zmieniony na: <strong style="color:#3b82f6;">W projekcie</strong></p>
         </div>`,
-      }),
     })
 
     return NextResponse.json({ success: true })

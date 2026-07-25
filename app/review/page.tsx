@@ -6,6 +6,7 @@ function ReviewContent() {
   const params = useSearchParams()
   const token = params.get('token')
   const action = params.get('action')
+  const option = params.get('option')
 
   const [step, setStep] = useState<'loading' | 'approve' | 'reject' | 'success-approve' | 'success-reject' | 'error'>(
     action === 'approve' ? 'approve' : action === 'reject' ? 'reject' : 'error'
@@ -23,7 +24,7 @@ function ReviewContent() {
       const res = await fetch('/api/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token, option }),
       })
       if (res.ok) setStep('success-approve')
       else setStep('error')
@@ -65,6 +66,9 @@ function ReviewContent() {
   if (step === 'success-approve') return box(<>
     <div style={{ width: '64px', height: '64px', background: '#ec4899', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', margin: '0 auto 20px' }}>💳</div>
     <h2 style={{ color: '#ec4899', fontSize: '22px', margin: '0 0 12px' }}>Projekt zatwierdzony!</h2>
+    {option && (
+      <p style={{ color: '#00e5a0', fontSize: '14px', fontWeight: 700, margin: '0 0 12px' }}>Wybrany wariant: {option}</p>
+    )}
     <p style={{ color: 'rgba(240,238,255,0.6)', fontSize: '15px', lineHeight: '1.7', margin: '0 0 24px' }}>
       Świetnie! Jeszcze tylko jeden krok — dokonaj płatności zgodnie z danymi które otrzymałeś/aś w mailu z projektem. Po zaksięgowaniu wpłaty od razu przekazujemy kartę do produkcji.
     </p>

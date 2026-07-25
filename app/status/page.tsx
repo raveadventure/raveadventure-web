@@ -2,6 +2,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
+import { isSupabasePlaceholder, mockGetOrder } from '../../lib/ordersLocalMock'
 
 const STATUSES = [
   { id: 'new',        labelPl: 'Zamówienie przyjęte',  labelEn: 'Order received',        descPl: 'Twoje zamówienie zostało zarejestrowane w systemie.', descEn: 'Your order has been registered in our system.', color: '#f59e0b', icon: '📋' },
@@ -49,16 +50,18 @@ function StatusContent() {
 
   useEffect(() => {
     if (!token) { setNotFound(true); setLoading(false); return }
-    supabase
-      .from('orders')
-      .select('id,created_at,approved_at,shipped_at,status,name,theme,card_type,quantity,total_price')
-      .eq('id', token)
-      .single()
-      .then(({ data, error }) => {
-        if (error || !data) setNotFound(true)
-        else setOrder(data)
-        setLoading(false)
-      })
+    const query = isSupabasePlaceholder()
+      ? mockGetOrder(token)
+      : supabase
+          .from('orders')
+          .select('id,created_at,approved_at,shipped_at,status,name,theme,card_type,quantity,total_price')
+          .eq('id', token)
+          .single()
+    query.then(({ data, error }: { data: any; error: any }) => {
+      if (error || !data) setNotFound(true)
+      else setOrder(data)
+      setLoading(false)
+    })
   }, [token])
 
   const s = { fontFamily: "'Space Grotesk', sans-serif", color: '#f0eeff' }
@@ -66,15 +69,23 @@ function StatusContent() {
   const wrap = (children: React.ReactNode) => (
     <div style={{ minHeight: '100vh', background: '#080810', ...s }}>
       <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+      <style dangerouslySetInnerHTML={{ __html: `
+        .statusEyebrow { font-size: 11px; letter-spacing: 2px; white-space: nowrap; }
+        .statusRow { flex-wrap: nowrap; }
+        @media (max-width: 480px) {
+          .statusEyebrow { font-size: 9px; letter-spacing: 0.5px; }
+          .statusRow { font-size: 12px !important; }
+        }
+      ` }} />
       <nav style={{ background: '#0e0e1a', borderBottom: '1px solid rgba(180,77,255,0.2)', padding: '16px 5vw', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <a href="/" style={{ fontFamily: 'Space Mono', fontSize: '18px', fontWeight: 700, color: '#f0eeff', textDecoration: 'none' }}>
           Rave<span style={{ color: '#b44dff' }}>Adventure</span>
         </a>
-        <a href="/#order" style={{ fontSize: '13px', color: '#b44dff', textDecoration: 'none', border: '1px solid rgba(180,77,255,0.3)', padding: '6px 14px', borderRadius: '6px' }}>
+        <a href="/#order" style={{ fontSize: '13px', color: '#b44dff', textDecoration: 'none', border: '1px solid rgba(180,77,255,0.3)', padding: '6px 14px', borderRadius: '6px', whiteSpace: 'nowrap' }}>
           Zamów kartę · Order
         </a>
       </nav>
-      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '40px 5vw 80px' }}>
+      <div style={{ maxWidth: '760px', margin: '0 auto', padding: '40px 5vw 80px' }}>
         {children}
       </div>
     </div>
@@ -112,7 +123,7 @@ function StatusContent() {
   const shippedSince = order.shipped_at ? timeSince(order.shipped_at) : null
 
   return wrap(<>
-    <p style={{ fontFamily: 'Space Mono', fontSize: '11px', color: '#b44dff', letterSpacing: '2px', margin: '0 0 12px' }}>// status zamówienia · order status</p>
+    <p className="statusEyebrow" style={{ fontFamily: 'Space Mono', color: '#b44dff', margin: '0 0 12px' }}>// status zamówienia · order status</p>
     <h1 style={{ fontFamily: 'Space Mono', fontSize: '24px', fontWeight: 700, margin: '0 0 4px' }}>
       Hej, {order.name.split(' ')[0]}! <span style={{ color: 'rgba(240,238,255,0.4)', fontSize: '18px' }}>· Hi, {order.name.split(' ')[0]}!</span>
     </h1>
@@ -132,7 +143,7 @@ function StatusContent() {
 
     {/* OŚ CZASU STATUSÓW */}
     <div style={{ background: '#0e0e1a', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-      <p style={{ fontFamily: 'Space Mono', fontSize: '10px', color: 'rgba(240,238,255,0.4)', letterSpacing: '2px', margin: '0 0 16px' }}>// postęp zamówienia · order progress</p>
+      <p className="statusEyebrow" style={{ fontFamily: 'Space Mono', color: 'rgba(240,238,255,0.4)', margin: '0 0 16px' }}>// postęp zamówienia · order progress</p>
       {STATUSES.map((s, i) => {
         const isDone = i <= currentIdx
         const isCurrent = i === currentIdx
@@ -164,26 +175,26 @@ function StatusContent() {
 
     {/* CZAS REALIZACJI */}
     <div style={{ background: '#0e0e1a', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-      <p style={{ fontFamily: 'Space Mono', fontSize: '10px', color: 'rgba(240,238,255,0.4)', letterSpacing: '2px', margin: '0 0 14px' }}>// czas realizacji · timeline</p>
+      <p className="statusEyebrow" style={{ fontFamily: 'Space Mono', color: 'rgba(240,238,255,0.4)', margin: '0 0 14px' }}>// czas realizacji · timeline</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+        <div className="statusRow" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
           <span style={{ color: 'rgba(240,238,255,0.5)' }}>Zamówienie złożone <span style={{ color: 'rgba(240,238,255,0.3)', fontSize: '12px' }}>· Order placed</span></span>
           <span style={{ color: '#f0eeff' }}>{createdSince.pl}</span>
         </div>
         {approvedSince && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+          <div className="statusRow" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
             <span style={{ color: 'rgba(240,238,255,0.5)' }}>Projekt zaakceptowany <span style={{ color: 'rgba(240,238,255,0.3)', fontSize: '12px' }}>· Design approved</span></span>
             <span style={{ color: '#00e5a0' }}>{approvedSince.pl}</span>
           </div>
         )}
         {shippedSince && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+          <div className="statusRow" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
             <span style={{ color: 'rgba(240,238,255,0.5)' }}>Karta wysłana <span style={{ color: 'rgba(240,238,255,0.3)', fontSize: '12px' }}>· Card shipped</span></span>
             <span style={{ color: '#10b981' }}>{shippedSince.pl}</span>
           </div>
         )}
         {approvedSince && !shippedSince && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+          <div className="statusRow" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
             <span style={{ color: 'rgba(240,238,255,0.5)' }}>Czas od akceptacji <span style={{ color: 'rgba(240,238,255,0.3)', fontSize: '12px' }}>· Time since approval</span></span>
             <span style={{ color: '#f97316' }}>{approvedSince.pl}</span>
           </div>
@@ -193,14 +204,14 @@ function StatusContent() {
 
     {/* SZCZEGÓŁY */}
     <div style={{ background: '#0e0e1a', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-      <p style={{ fontFamily: 'Space Mono', fontSize: '10px', color: 'rgba(240,238,255,0.4)', letterSpacing: '2px', margin: '0 0 14px' }}>// szczegóły zamówienia · order details</p>
+      <p className="statusEyebrow" style={{ fontFamily: 'Space Mono', color: 'rgba(240,238,255,0.4)', margin: '0 0 14px' }}>// szczegóły zamówienia · order details</p>
       {[
         { labelPl: 'Typ karty', labelEn: 'Card type', value: TYPES[order.card_type]?.pl || order.card_type, valueEn: TYPES[order.card_type]?.en || order.card_type },
         { labelPl: 'Motyw', labelEn: 'Theme', value: THEMES[order.theme]?.pl || order.theme, valueEn: THEMES[order.theme]?.en || order.theme },
         { labelPl: 'Ilość', labelEn: 'Quantity', value: `${order.quantity} szt.`, valueEn: `${order.quantity} pcs.` },
         { labelPl: 'Do zapłaty', labelEn: 'Total due', value: `${order.total_price} zł`, valueEn: `${order.total_price} zł` },
       ].map((row, i) => (
-        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '13px' }}>
+        <div key={i} className="statusRow" style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '13px' }}>
           <span style={{ color: 'rgba(240,238,255,0.5)' }}>{row.labelPl} <span style={{ color: 'rgba(240,238,255,0.3)', fontSize: '12px' }}>· {row.labelEn}</span></span>
           <span style={{ color: '#f0eeff', fontWeight: 500, textAlign: 'right' }}>
             {row.value}

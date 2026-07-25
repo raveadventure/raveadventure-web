@@ -1,0 +1,40 @@
+# dependencies
+/node_modules
+
+# next.js build output
+/.next/
+/out/
+
+# production build
+/build
+
+# env files
+.env
+.env*.local
+
+# lokalny podgląd maili (patrz lib/devEmail.ts)
+/.dev-emails/
+
+# lokalny mock tabeli orders (patrz lib/ordersLocalMock.ts / app/api/dev-orders) — zawiera zdjęcia
+# jako base64, potrafi urosnąć do kilkunastu MB, nigdy nie commitować
+/.dev-orders/
+/public/dev-order-photos/
+
+# lokalne zdjęcia kart do portfolio (mock na czas redesignu, patrz lib/portfolioLocalMock.ts)
+/public/portfolio-local/
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# os
+.DS_Store
+Thumbs.db

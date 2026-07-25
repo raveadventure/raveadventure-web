@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sendEmail } from '../../../lib/devEmail'
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const { name, email, theme, address, phone, cardText, notes, orderId, totalPrice, cardType, nfcEnabled, nfcPrice, lang: langRaw } = body
     const lang: 'pl' | 'en' = langRaw === 'en' ? 'en' : 'pl'
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://raveadventure.pl'
 
     const themeLabels: Record<string, { pl: string; en: string }> = {
       techno_rave: { pl: 'Techno / Rave', en: 'Techno / Rave' },
@@ -262,7 +264,7 @@ export async function POST(req: NextRequest) {
           <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(180,77,255,0.06);border:1px solid rgba(180,77,255,0.2);border-radius:10px;padding:16px 20px;margin-bottom:16px;">
             <tr><td style="text-align:center;">
               <p style="margin:0 0 12px;font-size:13px;color:rgba(240,238,255,0.6);">${L.statusPrompt}</p>
-              <a href="https://raveadventure.pl/status?token=${orderId}" style="display:inline-block;background:#b44dff;color:#0a0014;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;">
+              <a href="${baseUrl}/status?token=${orderId}" style="display:inline-block;background:#b44dff;color:#0a0014;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;">
                 ${L.statusBtn}
               </a>
               <p style="margin:10px 0 0;font-size:11px;color:rgba(240,238,255,0.3);">${L.statusNote}</p>
@@ -301,31 +303,23 @@ export async function POST(req: NextRequest) {
 </html>`
 
     // ── WYSYŁKA PRZEZ RESEND ─────────────────────────────────────
-    const resendApiKey = process.env.RESEND_API_KEY
-
     const adminSubjectPrefix = lang === 'en' ? '🇬🇧 ' : ''
-    const adminRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${resendApiKey}` },
-      body: JSON.stringify({
-        from: 'RaveAdventure <zamowienia@raveadventure.pl>',
-        to: ['michal.koch96@gmail.com'],
-        reply_to: email,
-        subject: `${adminSubjectPrefix}🎴 Nowe zamówienie — ${name} (${themeLabel})`,
-        html: adminEmailHtml,
-      }),
+    const adminRes = await sendEmail({
+      from: 'RaveAdventure <zamowienia@raveadventure.pl>',
+      to: ['michal.koch96@gmail.com'],
+      reply_to: email,
+      subject: `${adminSubjectPrefix}🎴 Nowe zamówienie — ${name} (${themeLabel})`,
+      html: adminEmailHtml,
+      orderId,
     })
 
-    const clientRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${resendApiKey}` },
-      body: JSON.stringify({
-        from: 'RaveAdventure <zamowienia@raveadventure.pl>',
-        to: [email],
-        reply_to: 'kontakt@raveadventure.pl',
-        subject: L.subject,
-        html: clientEmailHtml,
-      }),
+    const clientRes = await sendEmail({
+      from: 'RaveAdventure <zamowienia@raveadventure.pl>',
+      to: [email],
+      reply_to: 'kontakt@raveadventure.pl',
+      subject: L.subject,
+      orderId,
+      html: clientEmailHtml,
     })
 
     const adminData = await adminRes.json()

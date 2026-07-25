@@ -1,12 +1,72 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { isSupabasePlaceholder, mockInsertOrder, mockUpdateOrder } from '../lib/ordersLocalMock'
 import styles from './page.module.css'
 import PortfolioCarousel from '../components/PortfolioCarousel'
 import HeroCardAnimation from '../components/HeroCardAnimation'
+import LogoEqualizer from '../components/LogoEqualizer'
 import { T, CARD_TYPES_I18N, FRONT_THEMES_I18N, BACK_OPTIONS_I18N, Lang } from '../lib/translations'
 
 type Step = 1 | 2 | 3 | 4 | 5
+
+// Kolorystyka ramek karty — nazwy są już marketingowe/neutralne językowo, więc nie idą przez
+// lib/translations.tsx (w odróżnieniu od reszty tekstów UI). Wymaga kolumny `frame_color` w
+// Supabase (text) — patrz przypomnienie w PR/komentarzu przy insertach niżej.
+const FRAME_COLORS: { id: string; name: string; hex: string }[] = [
+  { id: 'neon_orange', name: 'Neon Orange', hex: '#ff8a1f' },
+  { id: 'dark_orange', name: 'Dark Orange', hex: '#b35900' },
+  { id: 'neon_blue', name: 'Neon Blue', hex: '#22aaff' },
+  { id: 'dark_blue', name: 'Dark Blue', hex: '#1b5e94' },
+  { id: 'neon_purple', name: 'Neon Purple', hex: '#b44dff' },
+  { id: 'dark_purple', name: 'Dark Purple', hex: '#6b2fa3' },
+  { id: 'yellow_neon_blue_sky', name: 'Yellow Neon + Blue Sky', hex: '#ffd60a' },
+  { id: 'dark_green', name: 'Dark Green', hex: '#1f7a3d' },
+  { id: 'neon_green', name: 'Neon Green', hex: '#39ff6a' },
+  { id: 'dark_red', name: 'Dark Red', hex: '#8f1f1f' },
+  { id: 'neon_red', name: 'Neon Red', hex: '#ff2b4d' },
+]
+
+// Bazowe grafiki podglądu karty per motyw (public/) — techno/festival/adventure dzielą
+// identyczny układ pól (tylko kolor ramki się różni), custom ma własny, eksperymentalny układ.
+const CARD_PREVIEW_BG: Record<string, string> = {
+  techno_rave: '/card_techno.png',
+  festival: '/card_festival.png',
+  adventure: '/card_adventure.png',
+  custom: '/card_custom_1.png',
+}
+// Warianty z efektem holo — sam układ pól identyczny jak w wersji bazowej (te same wymiary PNG).
+const CARD_PREVIEW_BG_HOLO: Record<string, string> = {
+  techno_rave: '/card_techno_holo.png',
+  festival: '/card_festival_holo.png',
+  adventure: '/card_adventure_holo.png',
+  custom: '/card_custom_1_holo.png',
+}
+// Powtarzalny znak wodny nakładany na podgląd karty — utrudnienie dla prostego "screenshot + AI",
+// nie realna ochrona (patrz wyjaśnienie przy wdrożeniu tej funkcji).
+const PREVIEW_WATERMARK_BG = `url("data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' width='260' height='140'><text x='-20' y='85' transform='rotate(-28 130 70)' font-family='Arial, sans-serif' font-size='24' font-weight='800' fill='rgba(255,255,255,0.32)' stroke='rgba(0,0,0,0.25)' stroke-width='0.5' letter-spacing='1'>RAVEADVENTURE • PODGLĄD</text></svg>`
+)}")`
+
+function PreviewSlot({ top, left, width, align = 'center', fontSize = '10px', color = '#f0eeff', weight = 700, value }: {
+  top: string; left: string; width: string; align?: 'left' | 'center' | 'right'; fontSize?: string; color?: string; weight?: number; value: string
+}) {
+  // left/top to najpierw ŚRODEK slotu (transform -50%/-50%), a width to pełna szerokość pola tekstowego
+  // na oryginalnej grafice — tło rozciąga się na całą tę szerokość, żeby zawsze w pełni zasłonić
+  // placeholder wypalony w PNG, niezależnie od długości wpisanego tekstu.
+  return (
+    <div style={{
+      position: 'absolute', top, left, width, transform: 'translate(-50%, -50%)',
+      display: 'flex', justifyContent: align === 'left' ? 'flex-start' : align === 'right' ? 'flex-end' : 'center',
+    }}>
+      <span style={{
+        display: 'block', width: '100%', boxSizing: 'border-box', background: '#0a0a12',
+        borderRadius: '4px', padding: '2px 5px', fontFamily: 'var(--font-display)', fontSize, color, fontWeight: weight,
+        textAlign: align, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+      }}>{value}</span>
+    </div>
+  )
+}
 
 export default function Home() {
   const [lang, setLang] = useState<Lang>('pl')
@@ -28,25 +88,21 @@ export default function Home() {
     return c
   })
   const FRONT_THEMES = FRONT_THEMES_I18N[lang]
-  const BACK_OPTIONS = BACK_OPTIONS_I18N[lang].map(b => {
-    if (b.id === 'logo') return {
-      ...b,
-      label: lang === 'pl' ? 'RaveAdventure Logo lub Pusta biała karta' : 'RaveAdventure Logo or Blank White Card',
-    }
-    return b
-  })
+  const BACK_OPTIONS = BACK_OPTIONS_I18N[lang]
 
   const [step, setStep] = useState<Step>(1)
   const [cardType, setCardType] = useState('pvc')
   const [nfcEnabled, setNfcEnabled] = useState(false)
   const [showPaymentInfo, setShowPaymentInfo] = useState(false)
   const [frontTheme, setFrontTheme] = useState('techno_rave')
+  const [frameColor, setFrameColor] = useState('neon_purple')
+  const [holoEffect, setHoloEffect] = useState(false)
   const [backOption, setBackOption] = useState('logo')
   const [quantity, setQuantity] = useState(1)
   const [form, setForm] = useState({
     name: '', email: '', emailConfirm: '', phone: '', address: '',
     notesBack: '', customDesc: '', notes: '',
-    cardYear: '2025', cardRarity: 'RARE', cardName: '', attr1Label: '', attr1Value: '', cardSkill: '', attr2Label: '', attr2Value: '', cardDesc: '',
+    cardYear: '', cardRarity: '', cardName: '', attr1Label: '', attr1Value: '', cardSkill: '', attr2Label: '', attr2Value: '', cardDesc: '', cardBottomText: '',
   })
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
@@ -131,7 +187,7 @@ export default function Home() {
     if (!agreed) { setError(t.order.step5.errAgree); return }
     setSending(true); setError(null)
     try {
-      const { data: orderData, error: insertError } = await supabase.from('orders').insert([{
+      const orderFields = {
         theme: frontTheme, card_type: cardType, back_option: backOption, quantity,
         nfc_enabled: nfcActive, nfc_price: nfcTotal,
         unit_price: unitPrice, total_price: totalPrice, has_discount: hasDiscount,
@@ -140,34 +196,73 @@ export default function Home() {
         card_year: form.cardYear, card_rarity: form.cardRarity, card_name_custom: form.cardName,
         attr1_label: form.attr1Label, attr1_value: form.attr1Value, card_skill: form.cardSkill,
         attr2_label: form.attr2Label, attr2_value: form.attr2Value, card_desc: form.cardDesc,
+        card_bottom_text: form.cardBottomText, frame_color: frameColor, holo_effect: holoEffect,
         discount_code: discountApplied ? discountCode.trim().toUpperCase() : null, discount_pct: discountPct,
         photo_url: null, status: 'new', lang,
-      }]).select('id').single()
+      }
+      const localMock = isSupabasePlaceholder()
+      const { data: orderData, error: insertError } = localMock
+        ? await mockInsertOrder(orderFields)
+        : await supabase.from('orders').insert([orderFields]).select('id').single()
 
       if (insertError) throw new Error(insertError.message)
 
       if (photo && orderData?.id) {
-        const ext = (photo.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
-        const safeExt = ['jpg','jpeg','png','gif','webp','heic'].includes(ext) ? ext : 'jpg'
-        const fileName = `${orderData.id}-front.${safeExt}`
-        const { error: uploadError } = await supabase.storage.from('order-photos').upload(fileName, photo, { upsert: true })
-        if (uploadError) { console.error('Photo upload error:', uploadError.message) }
-        else {
-          const { data: urlData } = supabase.storage.from('order-photos').getPublicUrl(fileName)
-          const { error: updateError } = await supabase.from('orders').update({ photo_url: urlData.publicUrl }).eq('id', orderData.id)
+        if (localMock) {
+          // Brak prawdziwego Storage lokalnie — zdjęcie zamieniamy na data URL i zapisujemy wprost w mocku.
+          const dataUrl: string = await new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(reader.result as string)
+            reader.onerror = reject
+            reader.readAsDataURL(photo)
+          })
+          const { error: updateError } = await mockUpdateOrder(orderData.id, { photo_url: dataUrl })
           if (updateError) console.error('Photo URL update error:', updateError.message)
+        } else {
+          const ext = (photo.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
+          const safeExt = ['jpg','jpeg','png','gif','webp','heic'].includes(ext) ? ext : 'jpg'
+          const fileName = `${orderData.id}-front.${safeExt}`
+          const { error: uploadError } = await supabase.storage.from('order-photos').upload(fileName, photo, { upsert: true })
+          if (uploadError) { console.error('Photo upload error:', uploadError.message) }
+          else {
+            const { data: urlData } = supabase.storage.from('order-photos').getPublicUrl(fileName)
+            const { error: updateError } = await supabase.from('orders').update({ photo_url: urlData.publicUrl }).eq('id', orderData.id)
+            if (updateError) console.error('Photo URL update error:', updateError.message)
+          }
         }
       }
 
       if (refFileFront && orderData?.id) {
-        const ext = (refFileFront.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
-        const safeExt = ['jpg','jpeg','png','gif','webp','pdf'].includes(ext) ? ext : 'jpg'
-        await supabase.storage.from('order-photos').upload(`${orderData.id}-custom.${safeExt}`, refFileFront, { upsert: true })
+        if (localMock) {
+          // Brak prawdziwego Storage lokalnie — grafikę referencyjną zamieniamy na data URL i zapisujemy wprost w mocku
+          // (pole ref_front_url istnieje tylko w lokalnym JSON-owym mocku, produkcja i tak korzysta z listowania Storage).
+          const dataUrl: string = await new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(reader.result as string)
+            reader.onerror = reject
+            reader.readAsDataURL(refFileFront)
+          })
+          await mockUpdateOrder(orderData.id, { ref_front_url: dataUrl })
+        } else {
+          const ext = (refFileFront.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
+          const safeExt = ['jpg','jpeg','png','gif','webp','pdf'].includes(ext) ? ext : 'jpg'
+          await supabase.storage.from('order-photos').upload(`${orderData.id}-custom.${safeExt}`, refFileFront, { upsert: true })
+        }
       }
       if (refFileBack && orderData?.id) {
-        const ext = (refFileBack.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
-        const safeExt = ['jpg','jpeg','png','gif','webp','pdf'].includes(ext) ? ext : 'jpg'
-        await supabase.storage.from('order-photos').upload(`${orderData.id}-ref-back.${safeExt}`, refFileBack, { upsert: true })
+        if (localMock) {
+          const dataUrl: string = await new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(reader.result as string)
+            reader.onerror = reject
+            reader.readAsDataURL(refFileBack)
+          })
+          await mockUpdateOrder(orderData.id, { ref_back_url: dataUrl })
+        } else {
+          const ext = (refFileBack.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
+          const safeExt = ['jpg','jpeg','png','gif','webp','pdf'].includes(ext) ? ext : 'jpg'
+          await supabase.storage.from('order-photos').upload(`${orderData.id}-ref-back.${safeExt}`, refFileBack, { upsert: true })
+        }
       }
 
       await fetch('/api/send-order', {
@@ -178,7 +273,7 @@ export default function Home() {
           nfcEnabled: nfcActive, nfcPrice: nfcTotal,
           cardYear: form.cardYear, cardRarity: form.cardRarity, cardName: form.cardName,
           attr1Label: form.attr1Label, attr1Value: form.attr1Value, cardSkill: form.cardSkill,
-          attr2Label: form.attr2Label, attr2Value: form.attr2Value, cardDesc: form.cardDesc, notesBack: form.notesBack,
+          attr2Label: form.attr2Label, attr2Value: form.attr2Value, cardDesc: form.cardDesc, cardBottomText: form.cardBottomText, frameColor, holoEffect, notesBack: form.notesBack,
           lang,
         }),
       })
@@ -220,7 +315,7 @@ export default function Home() {
             <span>{cardObj.label} × {quantity}</span>
             <strong>{totalPrice} zł</strong>
           </div>
-          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',emailConfirm:'',phone:'',address:'',notesBack:'',customDesc:'',notes:'',cardYear:'2025',cardRarity:'RARE',cardName:'',attr1Label:'',attr1Value:'',cardSkill:'',attr2Label:'',attr2Value:'',cardDesc:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setQuantity(1); setNfcEnabled(false); setAgreed(false); setDiscountCode(''); setDiscountApplied(false); setDiscountPct(0); setDiscountMsg(null) }}>
+          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',emailConfirm:'',phone:'',address:'',notesBack:'',customDesc:'',notes:'',cardYear:'',cardRarity:'',cardName:'',attr1Label:'',attr1Value:'',cardSkill:'',attr2Label:'',attr2Value:'',cardDesc:'',cardBottomText:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setQuantity(1); setNfcEnabled(false); setHoloEffect(false); setFrameColor('neon_purple'); setAgreed(false); setDiscountCode(''); setDiscountApplied(false); setDiscountPct(0); setDiscountMsg(null) }}>
             {t.sent.newOrder}
           </button>
         </div>
@@ -297,8 +392,10 @@ export default function Home() {
         </span>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '32px 5vw 0' }}>
-        <img src="/logo_kwadrat.png" alt="RaveAdventure — The best memories from your adventure deserve a card." style={{ maxWidth: '100%', width: '720px', height: 'auto', display: 'block' }} />
+      <div className={styles.brandWrap}>
+        <h2 className={`${styles.brandName} ${styles.shimmer}`}>Rave Adventure</h2>
+        <LogoEqualizer />
+        <p className={`${styles.brandTagline} ${styles.shimmer}`}>The best memories from your adventure deserve a card</p>
       </div>
 
       <PortfolioCarousel lang={lang} />
@@ -549,6 +646,116 @@ export default function Home() {
                   </div>
                 ))}
               </div>
+
+              <div style={{ marginTop: '16px' }}>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>{t.order.step2.frameColorEyebrow}</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                  {FRAME_COLORS.map(c => (
+                    <div key={c.id}
+                      onClick={() => setFrameColor(c.id)} role="button" tabIndex={0}
+                      onKeyDown={e => e.key === 'Enter' && setFrameColor(c.id)} aria-pressed={frameColor === c.id}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 12px 7px 8px',
+                        border: `1.5px solid ${frameColor === c.id ? c.hex : 'var(--border)'}`,
+                        borderRadius: '999px', cursor: 'pointer',
+                        background: frameColor === c.id ? `${c.hex}22` : 'var(--surface2)',
+                        transition: 'all .15s',
+                      }}>
+                      <span style={{
+                        width: '20px', height: '20px', borderRadius: '50%', background: c.hex, flexShrink: 0,
+                        boxShadow: `0 0 8px ${c.hex}aa`,
+                        border: frameColor === c.id ? '2px solid #fff' : '2px solid rgba(255,255,255,0.15)',
+                      }} />
+                      <span style={{ fontSize: '12px', color: 'var(--text)', whiteSpace: 'nowrap' }}>{c.name}</span>
+                    </div>
+                  ))}
+                </div>
+                <div
+                  onClick={() => setHoloEffect(v => !v)} role="button" tabIndex={0}
+                  onKeyDown={e => e.key === 'Enter' && setHoloEffect(v => !v)}
+                  aria-pressed={holoEffect}
+                  style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'var(--surface2)', border: `1px solid ${holoEffect ? 'var(--neon)' : 'var(--border)'}`, borderRadius: 'var(--radius-lg)', padding: '14px', marginTop: '10px', cursor: 'pointer' }}
+                >
+                  <div style={{ width: '20px', height: '20px', borderRadius: '4px', border: `2px solid ${holoEffect ? 'var(--neon)' : 'var(--border)'}`, background: holoEffect ? 'var(--neon)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>
+                    {holoEffect && <span style={{ color: '#0a0014', fontSize: '13px', fontWeight: 700 }}>✓</span>}
+                  </div>
+                  <div>
+                    <p style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
+                      ✨ {lang === 'pl' ? 'Efekt holograficzny' : 'Holographic effect'}
+                    </p>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>
+                      {lang === 'pl' ? 'Ramka karty z połyskującym, holo wykończeniem' : "Card frame with a shimmering, holo finish"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '16px' }}>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>
+                  {lang === 'pl' ? '// podgląd karty' : '// card preview'}
+                </p>
+                <div
+                  onContextMenu={e => e.preventDefault()}
+                  style={{
+                    position: 'relative', width: '100%',
+                    maxWidth: frontTheme === 'custom' ? '360px' : '260px',
+                    aspectRatio: frontTheme === 'custom' ? '1011 / 638' : '638 / 1011',
+                    margin: '0 auto', borderRadius: '14px', overflow: 'hidden',
+                    backgroundImage: `url(${(holoEffect ? CARD_PREVIEW_BG_HOLO[frontTheme] : CARD_PREVIEW_BG[frontTheme]) || CARD_PREVIEW_BG.techno_rave})`,
+                    backgroundSize: 'cover', backgroundPosition: 'center',
+                    userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none',
+                  } as React.CSSProperties}>
+                  {photoPreview && (
+                    <img src={photoPreview} alt="" draggable={false} onContextMenu={e => e.preventDefault()} style={{
+                      position: 'absolute', objectFit: 'cover',
+                      ...(frontTheme === 'custom'
+                        ? { left: '14.4%', top: '21.6%', width: '79%', height: '48.3%' }
+                        : { left: '5.96%', top: '10.5%', width: '87.9%', height: '60.2%' }),
+                    }} />
+                  )}
+                  {frontTheme === 'custom' ? (
+                    <>
+                      <PreviewSlot top="6%" left="78%" width="12%" align="center" fontSize="10px" weight={800} value={form.cardYear || 'LN'} />
+                      {form.attr1Label && <PreviewSlot top="14.9%" left="70%" width="17%" align="center" fontSize="7px" color={FRONT_THEMES.find(th => th.id === frontTheme)?.accent} value={form.attr1Label} />}
+                      {form.attr1Value && <PreviewSlot top="14.9%" left="90%" width="19%" align="center" fontSize="7px" color={FRONT_THEMES.find(th => th.id === frontTheme)?.accent} value={form.attr1Value} />}
+                      {form.attr2Label && <PreviewSlot top="71.8%" left="47%" width="17%" align="center" fontSize="7px" color={FRONT_THEMES.find(th => th.id === frontTheme)?.accent} value={form.attr2Label} />}
+                      {form.cardName && <PreviewSlot top="86.7%" left="82%" width="22%" align="center" fontSize="9px" weight={800} value={form.cardName} />}
+                    </>
+                  ) : (
+                    <>
+                      <PreviewSlot top="7.4%" left="18.4%" width="20%" align="center" fontSize="13px" weight={800} value={form.cardYear || 'LN'} />
+                      <PreviewSlot top="7.4%" left="82%" width="22%" align="center" fontSize="13px" weight={800} value={form.cardRarity || 'PN'} />
+                      {form.cardName && <PreviewSlot top="75.2%" left="50%" width="87%" align="center" fontSize="12px" weight={800} value={form.cardName} />}
+                      {form.attr1Label && <PreviewSlot top="82.8%" left="29.8%" width="44%" align="left" fontSize="9px" color={FRONT_THEMES.find(th => th.id === frontTheme)?.accent} value={form.attr1Label} />}
+                      {form.attr1Value && <PreviewSlot top="82.8%" left="74.8%" width="36%" align="right" fontSize="9px" color={FRONT_THEMES.find(th => th.id === frontTheme)?.accent} value={form.attr1Value} />}
+                      {form.cardSkill && <PreviewSlot top="88%" left="50%" width="89%" align="left" fontSize="9px" value={form.cardSkill} />}
+                      {form.attr2Label && <PreviewSlot top="93.5%" left="29.8%" width="44%" align="left" fontSize="9px" color={FRONT_THEMES.find(th => th.id === frontTheme)?.accent} value={form.attr2Label} />}
+                      {form.attr2Value && <PreviewSlot top="93.5%" left="74.8%" width="36%" align="right" fontSize="9px" color={FRONT_THEMES.find(th => th.id === frontTheme)?.accent} value={form.attr2Value} />}
+                      {form.cardBottomText && <PreviewSlot top="98.2%" left="50%" width="90%" align="center" fontSize="7px" weight={500} color="#c9c6da" value={form.cardBottomText} />}
+                    </>
+                  )}
+                  <div style={{
+                    position: 'absolute', inset: 0, backgroundImage: PREVIEW_WATERMARK_BG,
+                    backgroundRepeat: 'repeat', backgroundSize: '150px 81px', pointerEvents: 'none',
+                  }} />
+                </div>
+              </div>
+
+              <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '20px', marginTop: '12px' }}>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 16px' }}>{t.order.step2.attrsEyebrow}</p>
+                <div className={styles.fieldGrid}>
+                  <div className={styles.field}><label className={styles.label}>{t.order.step2.yearLabel}</label><input value={form.cardYear} onChange={e => setForm({...form, cardYear: e.target.value})} placeholder={t.order.step2.yearPlaceholder} /></div>
+                  <div className={styles.field}><label className={styles.label}>{t.order.step2.rarityLabel}</label><input value={form.cardRarity} onChange={e => setForm({...form, cardRarity: e.target.value})} placeholder={t.order.step2.rarityPlaceholder} /></div>
+                  <div className={`${styles.field} ${styles.fieldFull}`}><label className={styles.label}>{t.order.step2.nameLabel}</label><input value={form.cardName} onChange={e => setForm({...form, cardName: e.target.value})} placeholder={t.order.step2.namePlaceholder} /></div>
+                  <div className={styles.field}><label className={styles.label}>{t.order.step2.attr1LabelLabel}</label><input value={form.attr1Label} onChange={e => setForm({...form, attr1Label: e.target.value})} placeholder={t.order.step2.attr1LabelPlaceholder} /></div>
+                  <div className={styles.field}><label className={styles.label}>{t.order.step2.attr1ValueLabel}</label><input value={form.attr1Value} onChange={e => setForm({...form, attr1Value: e.target.value})} placeholder={t.order.step2.attr1ValuePlaceholder} /></div>
+                  <div className={`${styles.field} ${styles.fieldFull}`}><label className={styles.label}>{t.order.step2.skillLabel}</label><input value={form.cardSkill} onChange={e => setForm({...form, cardSkill: e.target.value})} placeholder={t.order.step2.skillPlaceholder} /></div>
+                  <div className={styles.field}><label className={styles.label}>{t.order.step2.attr2LabelLabel}</label><input value={form.attr2Label} onChange={e => setForm({...form, attr2Label: e.target.value})} placeholder={t.order.step2.attr2LabelPlaceholder} /></div>
+                  <div className={styles.field}><label className={styles.label}>{t.order.step2.attr2ValueLabel}</label><input value={form.attr2Value} onChange={e => setForm({...form, attr2Value: e.target.value})} placeholder={t.order.step2.attr2ValuePlaceholder} /></div>
+                  <div className={`${styles.field} ${styles.fieldFull}`}><label className={styles.label}>{t.order.step2.bottomTextLabel}</label><input value={form.cardBottomText} onChange={e => setForm({...form, cardBottomText: e.target.value})} placeholder={t.order.step2.bottomTextPlaceholder} /></div>
+                </div>
+              </div>
+
               <div style={{ marginTop: '12px' }}>
                 <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>{t.order.step2.photoEyebrow}</p>
                 {!photo ? (
@@ -571,20 +778,6 @@ export default function Home() {
                 <div className={styles.field} style={{ marginTop: '10px' }}>
                   <label className={styles.label}>{t.order.step2.photoCommentLabel} <span className={styles.optional}>{t.order.step2.optional}</span></label>
                   <textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} placeholder={t.order.step2.photoCommentPlaceholder} />
-                </div>
-              </div>
-
-              <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '20px', marginTop: '12px' }}>
-                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 16px' }}>{t.order.step2.attrsEyebrow}</p>
-                <div className={styles.fieldGrid}>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.yearLabel}</label><input value={form.cardYear} onChange={e => setForm({...form, cardYear: e.target.value})} placeholder={t.order.step2.yearPlaceholder} /></div>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.rarityLabel}</label><input value={form.cardRarity} onChange={e => setForm({...form, cardRarity: e.target.value})} placeholder={t.order.step2.rarityPlaceholder} /></div>
-                  <div className={`${styles.field} ${styles.fieldFull}`}><label className={styles.label}>{t.order.step2.nameLabel}</label><input value={form.cardName} onChange={e => setForm({...form, cardName: e.target.value})} placeholder={t.order.step2.namePlaceholder} /></div>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.attr1LabelLabel}</label><input value={form.attr1Label} onChange={e => setForm({...form, attr1Label: e.target.value})} placeholder={t.order.step2.attr1LabelPlaceholder} /></div>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.attr1ValueLabel}</label><input value={form.attr1Value} onChange={e => setForm({...form, attr1Value: e.target.value})} placeholder={t.order.step2.attr1ValuePlaceholder} /></div>
-                  <div className={`${styles.field} ${styles.fieldFull}`}><label className={styles.label}>{t.order.step2.skillLabel}</label><input value={form.cardSkill} onChange={e => setForm({...form, cardSkill: e.target.value})} placeholder={t.order.step2.skillPlaceholder} /></div>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.attr2LabelLabel}</label><input value={form.attr2Label} onChange={e => setForm({...form, attr2Label: e.target.value})} placeholder={t.order.step2.attr2LabelPlaceholder} /></div>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.attr2ValueLabel}</label><input value={form.attr2Value} onChange={e => setForm({...form, attr2Value: e.target.value})} placeholder={t.order.step2.attr2ValuePlaceholder} /></div>
                 </div>
               </div>
 
@@ -613,9 +806,10 @@ export default function Home() {
             <div className={styles.formStep}>
               <p className={styles.formStepTitle}>{t.order.step3.title}</p>
               <div className={styles.backGrid}>
-                {BACK_OPTIONS.map(b => (
+                {BACK_OPTIONS.map((b, i) => (
                   <div key={b.id}
                     className={`${styles.backCard} ${backOption === b.id ? styles.backCardSelected : ''}`}
+                    style={i === BACK_OPTIONS.length - 1 ? { gridColumn: '1 / -1' } : undefined}
                     onClick={() => setBackOption(b.id)} role="button" tabIndex={0}
                     onKeyDown={e => e.key === 'Enter' && setBackOption(b.id)} aria-pressed={backOption === b.id}>
                     <div className={styles.backCardTop}>
@@ -631,7 +825,14 @@ export default function Home() {
               {backOption === 'logo' && (
                 <div className={styles.field} style={{ marginTop: '12px' }}>
                   <label className={styles.label}>{lang === 'pl' ? 'Komentarz' : 'Comment'} <span className={styles.optional}>{t.order.step2.optional}</span></label>
-                  <textarea value={form.notesBack} onChange={e => setForm({...form, notesBack: e.target.value})} placeholder={lang === 'pl' ? 'Napisz, czy chcesz logo RaveAdventure czy pustą białą kartę — albo dodaj inną uwagę' : "Let us know if you'd like the RaveAdventure logo or a blank white card — or add any other note"} />
+                  <textarea value={form.notesBack} onChange={e => setForm({...form, notesBack: e.target.value})} placeholder={lang === 'pl' ? 'Dodatkowa uwaga do logo (opcjonalnie)' : 'Any extra note about the logo (optional)'} />
+                </div>
+              )}
+
+              {backOption === 'blank' && (
+                <div className={styles.field} style={{ marginTop: '12px' }}>
+                  <label className={styles.label}>{lang === 'pl' ? 'Komentarz' : 'Comment'} <span className={styles.optional}>{t.order.step2.optional}</span></label>
+                  <textarea value={form.notesBack} onChange={e => setForm({...form, notesBack: e.target.value})} placeholder={lang === 'pl' ? 'np. zostawcie karty zupełnie czyste, zbieramy podpisy ekipy...' : 'e.g. keep it completely blank, we\'re collecting signatures from the crew...'} />
                 </div>
               )}
 
@@ -689,6 +890,8 @@ export default function Home() {
               <div className={styles.priceSummary}>
                 <p className={styles.summaryRow}><span>{t.order.step4.cardTypeLabel}</span><strong>{cardObj.label}</strong></p>
                 <p className={styles.summaryRow}><span>{t.order.step4.themeLabel}</span><strong>{FRONT_THEMES.find(th=>th.id===frontTheme)?.label}</strong></p>
+                <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Kolor ramki' : 'Frame color'}</span><strong style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '12px', height: '12px', borderRadius: '50%', background: FRAME_COLORS.find(c=>c.id===frameColor)?.hex, flexShrink: 0 }} />{FRAME_COLORS.find(c=>c.id===frameColor)?.name}</strong></p>
+                {holoEffect && <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Efekt holograficzny' : 'Holographic effect'}</span><strong>✨ {lang === 'pl' ? 'Tak' : 'Yes'}</strong></p>}
                 <p className={styles.summaryRow}><span>{t.order.step4.backLabel}</span><strong>{backObj.label}</strong></p>
                 <p className={styles.summaryRow}><span>{t.order.step4.unitPriceLabel}</span><strong>{unitPrice} zł</strong></p>
                 <p className={styles.summaryRow}><span>{t.order.step4.qtyLabel}</span><strong>× {quantity}</strong></p>

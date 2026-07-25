@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
+import { isSupabasePlaceholder, PORTFOLIO_LOCAL_MOCK } from '../lib/portfolioLocalMock'
 
 type Item = { id: string; name: string; card_url: string; theme: string }
 
@@ -16,6 +17,11 @@ export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' 
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
+    if (isSupabasePlaceholder()) {
+      setItems(PORTFOLIO_LOCAL_MOCK)
+      return
+    }
+
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     if (!url || !key) return

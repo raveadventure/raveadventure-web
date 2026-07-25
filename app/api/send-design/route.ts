@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
+import { sendEmail } from '../../../lib/devEmail'
+import { isSupabasePlaceholder, updateOrderById } from '../../../lib/devOrdersStore'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,7 +17,7 @@ const BANK_RECIPIENT = '[MICHAŁ KOCH]'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { orderId, designUrl, designBackUrl, designOriginalUrl, designBackOriginalUrl, note } = body
+    const { orderId, designUrl, designUrl2, designBackUrl, designOriginalUrl, designOriginalUrl2, designBackOriginalUrl, note } = body
     const adminNote = note || ''
 
     if (!orderId || !designUrl) {
@@ -29,22 +31,32 @@ export async function POST(req: NextRequest) {
     const token = crypto.randomBytes(32).toString('hex')
 
     // 2. Zapisz design_url, token i zmień status — pobierz też lang zamówienia
-    const { data: order, error: updateError } = await supabase
-      .from('orders')
-      .update({
-        design_url: designUrl,
-        design_back_url: designBackUrl || null,
-        design_original_url: designOriginalUrl || null,
-        design_back_original_url: designBackOriginalUrl || null,
-        review_token: token,
-        status: 'approval',
-      })
-      .eq('id', orderId)
-      .select('*')
-      .single()
-
-    if (updateError || !order) {
-      return NextResponse.json({ error: 'Błąd zapisu: ' + updateError?.message }, { status: 500 })
+    const updates = {
+      design_url: designUrl,
+      design_url_2: designUrl2 || null,
+      design_back_url: designBackUrl || null,
+      design_original_url: designOriginalUrl || null,
+      design_original_url_2: designOriginalUrl2 || null,
+      design_back_original_url: designBackOriginalUrl || null,
+      review_token: token,
+      status: 'approval',
+      approved_design_option: null,
+    }
+    let order: any
+    if (isSupabasePlaceholder()) {
+      order = updateOrderById(orderId, updates)
+      if (!order) return NextResponse.json({ error: 'Nie znaleziono zamówienia' }, { status: 404 })
+    } else {
+      const { data, error: updateError } = await supabase
+        .from('orders')
+        .update(updates)
+        .eq('id', orderId)
+        .select('*')
+        .single()
+      if (updateError || !data) {
+        return NextResponse.json({ error: 'Błąd zapisu: ' + updateError?.message }, { status: 500 })
+      }
+      order = data
     }
 
     const lang: 'pl' | 'en' = order.lang === 'en' ? 'en' : 'pl'
@@ -63,7 +75,10 @@ export async function POST(req: NextRequest) {
         cardTypeLaminated: 'Wizytówka (100 szt.)',
         nfcActiveText: '📲 z programowaniem NFC/RFID',
         approveBtn: '✓ Zatwierdzam projekt',
+        approveVariantBtn: '✓ Zatwierdzam ten wariant',
         rejectBtn: '✗ Mam uwagi',
+        variantLabel: (n: number) => `WARIANT ${n}`,
+        twoVariantsIntro: 'Przygotowaliśmy dwa warianty projektu — wybierz ten, który bardziej Ci się podoba, klikając przycisk pod nim:',
         infoTitle: 'Co się stanie po kliknięciu?',
         infoApprove: 'Zatwierdzam',
         infoApproveDesc: 'projekt czeka na Twoją płatność — po jej zaksięgowaniu przekazujemy kartę do druku i wysyłamy w ciągu 3–5 dni roboczych.',
@@ -94,7 +109,10 @@ export async function POST(req: NextRequest) {
         cardTypeLaminated: 'Business Card (100 pcs)',
         nfcActiveText: '📲 with NFC/RFID programming',
         approveBtn: '✓ Approve design',
+        approveVariantBtn: '✓ Approve this option',
         rejectBtn: '✗ I have feedback',
+        variantLabel: (n: number) => `OPTION ${n}`,
+        twoVariantsIntro: "We've prepared two design options — pick the one you like better by clicking the button underneath it:",
         infoTitle: 'What happens after you click?',
         infoApprove: 'Approve',
         infoApproveDesc: "the design goes to payment — once we receive it, we'll print and ship your card within 3–5 business days.",
@@ -124,6 +142,8 @@ export async function POST(req: NextRequest) {
     // 4. Wyślij email do klienta
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://raveadventure.pl'
     const approveUrl = `${baseUrl}/review?token=${token}&action=approve`
+    const approveUrl1 = `${baseUrl}/review?token=${token}&action=approve&option=1`
+    const approveUrl2 = `${baseUrl}/review?token=${token}&action=approve&option=2`
     const rejectUrl = `${baseUrl}/review?token=${token}&action=reject`
 
     const emailHtml = `
@@ -163,6 +183,51 @@ export async function POST(req: NextRequest) {
     </table>
     ` : ''}
 
+    ${designUrl2 ? `
+    <!-- DWA WARIANTY DO WYBORU -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
+      <tr><td>
+        <p style="margin:0;font-size:14px;color:rgba(240,238,255,0.7);line-height:1.6;">${L.twoVariantsIntro}</p>
+      </td></tr>
+    </table>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
+      <tr><td style="background:#16162a;border-radius:12px;padding:16px;text-align:center;">
+        <p style="margin:0 0 12px;font-size:11px;color:#b44dff;letter-spacing:2px;font-family:monospace;">${L.variantLabel(1)}</p>
+        <img src="${designUrl}" alt="Design option 1" style="max-width:100%;border-radius:8px;border:1px solid rgba(180,77,255,0.3);margin-bottom:14px;" />
+        <a href="${approveUrl1}" style="display:block;background:#00e5a0;color:#0a0014;padding:14px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;text-align:center;">
+          ${L.approveVariantBtn}
+        </a>
+      </td></tr>
+    </table>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+      <tr><td style="background:#16162a;border-radius:12px;padding:16px;text-align:center;">
+        <p style="margin:0 0 12px;font-size:11px;color:#b44dff;letter-spacing:2px;font-family:monospace;">${L.variantLabel(2)}</p>
+        <img src="${designUrl2}" alt="Design option 2" style="max-width:100%;border-radius:8px;border:1px solid rgba(180,77,255,0.3);margin-bottom:14px;" />
+        <a href="${approveUrl2}" style="display:block;background:#00e5a0;color:#0a0014;padding:14px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;text-align:center;">
+          ${L.approveVariantBtn}
+        </a>
+      </td></tr>
+    </table>
+
+    ${designBackUrl ? `
+    <!-- PODGLĄD TYŁU KARTY -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
+      <tr><td style="background:#16162a;border-radius:12px;padding:16px;text-align:center;">
+        <p style="margin:0 0 12px;font-size:11px;color:#00f0ff;letter-spacing:2px;font-family:monospace;">${L.backEyebrow}</p>
+        <img src="${designBackUrl}" alt="Card back" style="max-width:100%;border-radius:8px;border:1px solid rgba(0,240,255,0.3);" />
+      </td></tr>
+    </table>
+    ` : ''}
+
+    <!-- ODRZUĆ (wspólny dla obu wariantów) -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+      <tr><td align="center">
+        <a href="${rejectUrl}" style="display:block;background:transparent;color:#ff4d6d;padding:15px;border-radius:10px;font-size:16px;font-weight:700;text-decoration:none;text-align:center;border:2px solid #ff4d6d;">
+          ${L.rejectBtn}
+        </a>
+      </td></tr>
+    </table>
+    ` : `
     <!-- PODGLĄD GRAFIKI -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
       <tr><td style="background:#16162a;border-radius:12px;padding:16px;text-align:center;">
@@ -196,6 +261,7 @@ export async function POST(req: NextRequest) {
         </td>
       </tr>
     </table>
+    `}
 
     <!-- INFO -->
     <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(0,240,255,0.05);border:1px solid rgba(0,240,255,0.2);border-radius:10px;padding:16px 20px;margin-bottom:16px;">
@@ -271,16 +337,13 @@ export async function POST(req: NextRequest) {
 </body>
 </html>`
 
-    const emailRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.RESEND_API_KEY}` },
-      body: JSON.stringify({
-        from: 'RaveAdventure <zamowienia@raveadventure.pl>',
-        to: [order.email],
-        reply_to: 'kontakt@raveadventure.pl',
-        subject: L.subject,
-        html: emailHtml,
-      }),
+    const emailRes = await sendEmail({
+      from: 'RaveAdventure <zamowienia@raveadventure.pl>',
+      to: [order.email],
+      reply_to: 'kontakt@raveadventure.pl',
+      subject: L.subject,
+      html: emailHtml,
+      orderId,
     })
 
     if (!emailRes.ok) {
@@ -289,7 +352,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Błąd wysyłki maila' }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, designUrl, designBackUrl, designOriginalUrl, designBackOriginalUrl })
+    return NextResponse.json({ success: true, designUrl, designUrl2, designBackUrl, designOriginalUrl, designOriginalUrl2, designBackOriginalUrl })
 
   } catch (err) {
     console.error('API error:', err)

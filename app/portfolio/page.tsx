@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { isSupabasePlaceholder, PORTFOLIO_LOCAL_MOCK } from '../../lib/portfolioLocalMock'
 import styles from './portfolio.module.css'
 
 const THEMES = [
@@ -20,14 +21,58 @@ type PortfolioItem = {
   card_url: string
 }
 
+type ViewMode = 'large' | 'compact'
+
+function IconZoom() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <circle cx="11" cy="11" r="7" />
+      <path d="M21 21l-4.3-4.3" />
+    </svg>
+  )
+}
+function IconFlip() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 2.5a9 9 0 1 1-6.6 2.9" />
+      <path d="M17 2.5V7h-4.5" />
+    </svg>
+  )
+}
+function IconGridLarge() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="3" width="8" height="8" rx="1.5" />
+      <rect x="13" y="3" width="8" height="8" rx="1.5" />
+      <rect x="3" y="13" width="8" height="8" rx="1.5" />
+      <rect x="13" y="13" width="8" height="8" rx="1.5" />
+    </svg>
+  )
+}
+function IconGridSmall() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      {[3, 10, 17].map(x => [3, 10, 17].map(y => (
+        <rect key={`${x}-${y}`} x={x} y={y} width="4" height="4" rx="1" />
+      )))}
+    </svg>
+  )
+}
+
 export default function PortfolioPage() {
   const [items, setItems] = useState<PortfolioItem[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const [viewMode, setViewMode] = useState<ViewMode>('large')
   const [lightbox, setLightbox] = useState<{ item: PortfolioItem; view: 'original' | 'card' } | null>(null)
 
   useEffect(() => {
     const fetchPortfolio = async () => {
+      if (isSupabasePlaceholder()) {
+        setItems(PORTFOLIO_LOCAL_MOCK)
+        setLoading(false)
+        return
+      }
       const { data } = await supabase
         .from('portfolio')
         .select('*')
@@ -51,6 +96,23 @@ export default function PortfolioPage() {
     if (group.length > 0) acc[t.id] = { label: t.label, items: group }
     return acc
   }, {} as Record<string, { label: string; items: PortfolioItem[] }>)
+
+  const renderGrid = (list: PortfolioItem[]) => viewMode === 'compact' ? (
+    <div className={styles.compactGrid}>
+      {list.map(item => (
+        <div key={item.id} className={styles.compactThumb} onClick={() => setLightbox({ item, view: 'card' })}>
+          <img src={item.card_url} alt={item.name} loading="lazy" />
+          <span className={styles.compactName}>{item.name}</span>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div className={styles.grid}>
+      {list.map(item => (
+        <CardPair key={item.id} item={item} onOpen={setLightbox} />
+      ))}
+    </div>
+  )
 
   return (
     <div className={styles.page}>
@@ -85,6 +147,29 @@ export default function PortfolioPage() {
         ))}
       </div>
 
+      {/* GĘSTOŚĆ SIATKI */}
+      <div className={styles.densityRow}>
+        <span className={styles.densityLabel}>// widok</span>
+        <div className={styles.densityToggle}>
+          <button
+            className={`${styles.densityBtn} ${viewMode === 'large' ? styles.densityActive : ''}`}
+            onClick={() => setViewMode('large')}
+            aria-label="Duże karty"
+            title="Duże karty"
+          >
+            <IconGridLarge />
+          </button>
+          <button
+            className={`${styles.densityBtn} ${viewMode === 'compact' ? styles.densityActive : ''}`}
+            onClick={() => setViewMode('compact')}
+            aria-label="Małe miniatury"
+            title="Małe miniatury"
+          >
+            <IconGridSmall />
+          </button>
+        </div>
+      </div>
+
       {/* GALERIA */}
       <div className={styles.content}>
         {loading ? (
@@ -95,20 +180,10 @@ export default function PortfolioPage() {
           Object.values(grouped).map(group => (
             <div key={group.label} className={styles.group}>
               <h2 className={styles.groupTitle}>{group.label}</h2>
-              <div className={styles.grid}>
-                {group.items.map(item => (
-                  <CardPair key={item.id} item={item} onOpen={setLightbox} />
-                ))}
-              </div>
+              {renderGrid(group.items)}
             </div>
           ))
-        ) : (
-          <div className={styles.grid}>
-            {filtered.map(item => (
-              <CardPair key={item.id} item={item} onOpen={setLightbox} />
-            ))}
-          </div>
-        )}
+        ) : renderGrid(filtered)}
       </div>
 
       {/* CTA */}
@@ -121,21 +196,21 @@ export default function PortfolioPage() {
       {lightbox && (
         <div className={styles.lightboxOverlay} onClick={() => setLightbox(null)}>
           <div className={styles.lightboxContent} onClick={e => e.stopPropagation()}>
-            <button className={styles.lightboxClose} onClick={() => setLightbox(null)}>✕</button>
+            <button className={styles.lightboxClose} onClick={() => setLightbox(null)} aria-label="Zamknij">✕</button>
             <div className={styles.lightboxTabs}>
               {lightbox.item.original_url && (
                 <button
                   className={`${styles.lightboxTab} ${lightbox.view === 'original' ? styles.lightboxTabActive : ''}`}
                   onClick={() => setLightbox({ ...lightbox, view: 'original' })}
                 >
-                  Oryginał
+                  📷 Oryginał
                 </button>
               )}
               <button
                 className={`${styles.lightboxTab} ${lightbox.view === 'card' ? styles.lightboxTabActive : ''}`}
                 onClick={() => setLightbox({ ...lightbox, view: 'card' })}
               >
-                Karta
+                🎴 Karta
               </button>
             </div>
             <img
@@ -155,6 +230,7 @@ export default function PortfolioPage() {
 function CardPair({ item, onOpen }: { item: PortfolioItem; onOpen: (v: { item: PortfolioItem; view: 'original' | 'card' }) => void }) {
   const [showOriginal, setShowOriginal] = useState(false)
   const [flipping, setFlipping] = useState(false)
+  const [spin, setSpin] = useState(false)
 
   // Preload oryginału żeby pierwszy flip był płynny
   useEffect(() => {
@@ -165,21 +241,24 @@ function CardPair({ item, onOpen }: { item: PortfolioItem; onOpen: (v: { item: P
   }, [item.original_url])
 
   const handleFlip = () => {
-    if (flipping) return
+    if (flipping || !item.original_url) return
     setFlipping(true)
+    setSpin(true)
     setTimeout(() => {
       setShowOriginal(s => !s)
       setFlipping(false)
     }, 200)
+    setTimeout(() => setSpin(false), 350)
   }
 
   return (
     <div className={styles.cardPairWrap}>
       <div className={styles.cardPair} style={{ perspective: '1000px' }}>
+        {/* Cały obszar karty — kliknięcie odwraca (łatwy, duży cel dotyku) */}
         <div
-          onClick={() => onOpen({ item, view: showOriginal ? 'original' : 'card' })}
+          onClick={handleFlip}
           style={{
-            cursor: 'zoom-in',
+            cursor: item.original_url ? 'pointer' : 'default',
             position: 'absolute',
             inset: 0,
             transformStyle: 'preserve-3d',
@@ -195,13 +274,25 @@ function CardPair({ item, onOpen }: { item: PortfolioItem; onOpen: (v: { item: P
           <div className={styles.thumbLabel}>{showOriginal ? 'Oryginał' : 'Karta'}</div>
         </div>
 
+        {/* Lupka — powiększenie/lightbox */}
+        <button
+          className={`${styles.cardIconBtn} ${styles.zoomBtn}`}
+          onClick={(e) => { e.stopPropagation(); onOpen({ item, view: showOriginal ? 'original' : 'card' }) }}
+          aria-label="Powiększ"
+          title="Powiększ"
+        >
+          <IconZoom />
+        </button>
+
+        {/* Odwróć — duży, ergonomiczny przycisk-ikona */}
         {item.original_url && (
           <button
-            className={styles.toggleBtn}
-            onClick={handleFlip}
-            aria-label="Przełącz widok"
+            className={`${styles.cardIconBtn} ${styles.flipBtn} ${spin ? styles.flipBtnSpin : ''}`}
+            onClick={(e) => { e.stopPropagation(); handleFlip() }}
+            aria-label="Przełącz widok karta / oryginał"
+            title="Przełącz widok"
           >
-            {showOriginal ? '← Karta' : 'Pokaż oryginał →'}
+            <IconFlip />
           </button>
         )}
       </div>
@@ -209,9 +300,6 @@ function CardPair({ item, onOpen }: { item: PortfolioItem; onOpen: (v: { item: P
       <div className={styles.cardInfo}>
         <p className={styles.cardName}>{item.name}</p>
         {item.description && <p className={styles.cardDesc}>{item.description}</p>}
-        <button className={styles.cardZoom} onClick={() => onOpen({ item, view: showOriginal ? 'original' : 'card' })}>
-          Powiększ →
-        </button>
       </div>
     </div>
   )
