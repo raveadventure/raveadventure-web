@@ -192,23 +192,25 @@ export async function POST(req: NextRequest) {
 <html lang="${L.htmlLang}">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#0a0a14;font-family:'Helvetica Neue',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a14;padding:40px 20px;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a14;padding:32px 12px;">
     <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+      <table width="640" cellpadding="0" cellspacing="0" style="max-width:640px;width:100%;">
 
         <!-- HEADER -->
-        <tr><td style="background:#13132a;border-radius:12px 12px 0 0;padding:28px 32px;border-bottom:2px solid #b44dff;text-align:center;">
+        <tr><td style="background:#13132a;border-radius:12px 12px 0 0;padding:28px 24px;border-bottom:2px solid #b44dff;text-align:center;">
           <h1 style="margin:0;font-size:28px;color:#f0eeff;font-weight:700;">Rave<span style="color:#b44dff;">Adventure</span></h1>
           <p style="margin:8px 0 0;font-size:13px;color:rgba(240,238,255,0.5);">${L.brandSub}</p>
         </td></tr>
 
         <!-- BODY -->
-        <tr><td style="background:#0e0e1a;padding:32px;">
+        <tr><td style="background:#0e0e1a;padding:28px 24px;">
 
           <!-- POTWIERDZENIE -->
           <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
             <tr><td align="center">
-              <div style="width:64px;height:64px;background:#00e5a0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#0a0014;line-height:64px;text-align:center;">✓</div>
+              <table cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr>
+                <td width="64" height="64" align="center" valign="middle" style="width:64px;height:64px;background:#00e5a0;border-radius:50%;font-size:28px;font-weight:700;color:#0a0014;">✓</td>
+              </tr></table>
               <h2 style="margin:16px 0 8px;font-size:22px;color:#f0eeff;">${L.confirmed}</h2>
               <p style="margin:0;font-size:15px;color:rgba(240,238,255,0.6);line-height:1.6;">${L.greeting(name.split(' ')[0])}</p>
             </td></tr>
@@ -248,8 +250,12 @@ export async function POST(req: NextRequest) {
               <table width="100%" cellpadding="0" cellspacing="0">
                 ${L.steps.map(s => `
                 <tr><td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
-                  <table cellpadding="0" cellspacing="0"><tr>
-                    <td style="width:36px;height:36px;background:rgba(180,77,255,0.15);border-radius:50%;text-align:center;vertical-align:middle;font-family:monospace;font-size:11px;color:#b44dff;font-weight:700;">${s.n}</td>
+                  <table cellpadding="0" cellspacing="0" width="100%"><tr>
+                    <td width="36" style="width:36px;">
+                      <table width="36" height="36" cellpadding="0" cellspacing="0" style="width:36px;height:36px;background:rgba(180,77,255,0.15);border-radius:50%;"><tr>
+                        <td width="36" height="36" align="center" valign="middle" style="width:36px;height:36px;font-family:monospace;font-size:11px;color:#b44dff;font-weight:700;">${s.n}</td>
+                      </tr></table>
+                    </td>
                     <td style="padding-left:14px;">
                       <p style="margin:0;font-size:13px;font-weight:600;color:#f0eeff;">${s.t}</p>
                       <p style="margin:3px 0 0;font-size:12px;color:rgba(240,238,255,0.5);">${s.d}</p>

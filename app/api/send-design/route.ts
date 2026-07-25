@@ -151,18 +151,18 @@ export async function POST(req: NextRequest) {
 <html lang="${L.htmlLang}">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#0a0a14;font-family:'Helvetica Neue',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a14;padding:40px 20px;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a14;padding:32px 12px;">
 <tr><td align="center">
-<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+<table width="640" cellpadding="0" cellspacing="0" style="max-width:640px;width:100%;">
 
   <!-- HEADER -->
-  <tr><td style="background:#13132a;border-radius:12px 12px 0 0;padding:28px 32px;border-bottom:2px solid #b44dff;text-align:center;">
+  <tr><td style="background:#13132a;border-radius:12px 12px 0 0;padding:28px 24px;border-bottom:2px solid #b44dff;text-align:center;">
     <h1 style="margin:0;font-size:26px;color:#f0eeff;font-weight:700;">Rave<span style="color:#b44dff;">Adventure</span></h1>
     <p style="margin:8px 0 0;font-size:13px;color:rgba(240,238,255,0.5);">${L.brandSub}</p>
   </td></tr>
 
   <!-- BODY -->
-  <tr><td style="background:#0e0e1a;padding:32px;">
+  <tr><td style="background:#0e0e1a;padding:28px 24px;">
     <p style="font-size:16px;color:#f0eeff;margin:0 0 8px;">${L.hey(order.name.split(' ')[0])}</p>
     <p style="font-size:15px;color:rgba(240,238,255,0.7);margin:0 0 14px;line-height:1.7;">${L.intro}</p>
 
