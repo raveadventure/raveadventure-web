@@ -184,6 +184,17 @@ design_url_2, design_original_url_2, approved_design_option,
 delivery_method, paczkomat_id
 ```
 
+### Tabela `page_views` (licznik odwiedzin strony głównej)
+
+```sql
+CREATE TABLE page_views (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at timestamptz DEFAULT now()
+);
+```
+
+Jeden wiersz na odwiedziny strony głównej (`app/page.tsx`, `POST /api/track-visit` przy montowaniu komponentu) — łączna liczba to `select count(*)`, wstawianie wierszy zamiast inkrementacji jednego licznika unika race condition przy równoczesnych wejściach. Panel admina (`GET /api/track-visit`) pokazuje wynik w nagłówku, obok liczby zamówień. Lokalnie (placeholder Supabase) licznik trzyma prostą liczbę w `.dev-page-views/count.json` zamiast prawdziwej tabeli.
+
 ### Dostawa do paczkomatu InPost (w budowie — Poziom 1 gotowy, Poziom 2 zaplanowany)
 
 Krok 5 formularza ma przełącznik „Adres wysyłki" / „Paczkomat InPost" (`delivery_method`). Przy paczkomacie:

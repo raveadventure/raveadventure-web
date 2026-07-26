@@ -295,6 +295,7 @@ function ClientMaterials({ order }: { order: Order }) {
 export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [visitCount, setVisitCount] = useState<number | null>(null)
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Order | null>(null)
@@ -383,6 +384,9 @@ export default function AdminPage() {
   }
 
   useEffect(() => { fetchOrders() }, [])
+  useEffect(() => {
+    fetch('/api/track-visit').then(r => r.json()).then(d => setVisitCount(d.count)).catch(() => {})
+  }, [])
 
   const updateStatus = async (id: string, status: string) => {
     setUpdating(id)
@@ -620,6 +624,10 @@ export default function AdminPage() {
           <span style={{ fontSize: '11px', color: '#b44dff', fontFamily: 'Space Mono', letterSpacing: '2px' }}>// admin</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '13px', color: 'rgba(240,238,255,0.4)' }} title="Odwiedziny strony głównej (od uruchomienia licznika)">
+            👁 {visitCount === null ? '—' : visitCount.toLocaleString('pl-PL')} odwiedzin
+          </span>
+          <span style={{ color: 'rgba(255,255,255,0.15)' }}>·</span>
           <span style={{ fontSize: '13px', color: 'rgba(240,238,255,0.4)' }}>{orders.length} zamówień</span>
           <div style={{ position: 'relative' }}>
             <input

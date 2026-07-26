@@ -23,6 +23,10 @@
 # lokalne zdjęcia kart do portfolio (mock na czas redesignu, patrz lib/portfolioLocalMock.ts)
 /public/portfolio-local/
 
+# lokalny licznik odwiedzin (patrz app/api/track-visit) — realne dane liczy prawdziwa tabela
+# page_views w Supabase, to tylko do testów lokalnych
+/.dev-page-views/
+
 # vercel
 .vercel
 

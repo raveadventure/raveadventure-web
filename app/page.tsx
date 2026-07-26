@@ -151,6 +151,11 @@ export default function Home() {
     return () => observer.disconnect()
   }, [])
 
+  // Prosty licznik odwiedzin — jedno zdarzenie na wejście na stronę, do wglądu w panelu admina.
+  useEffect(() => {
+    fetch('/api/track-visit', { method: 'POST' }).catch(() => {})
+  }, [])
+
   const cardObj = CARD_TYPES.find(c => c.id === cardType)!
   const backObj = BACK_OPTIONS.find(b => b.id === backOption)!
   const SHIPPING_COST = 15
