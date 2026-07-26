@@ -4,7 +4,7 @@ import { sendEmail } from '../../../lib/devEmail'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { name, email, theme, address, phone, cardText, notes, orderId, totalPrice, cardType, nfcEnabled, nfcPrice, lang: langRaw } = body
+    const { name, email, theme, address, phone, cardText, notes, orderId, totalPrice, cardType, nfcEnabled, nfcPrice, deliveryMethod, lang: langRaw } = body
     const lang: 'pl' | 'en' = langRaw === 'en' ? 'en' : 'pl'
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://raveadventure.pl'
 
@@ -88,6 +88,9 @@ export async function POST(req: NextRequest) {
     const nfcBadgeAdmin = nfcEnabled
       ? `<span style="background:rgba(0,229,160,0.15);color:#00e5a0;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:700;margin-left:6px;">📲 NFC${nfcPrice ? ` (+${nfcPrice} zł)` : ''}</span>`
       : ''
+    const deliveryBadge = deliveryMethod === 'paczkomat'
+      ? `<span style="background:rgba(180,77,255,0.15);color:#b44dff;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:700;margin-left:6px;">📦 Paczkomat</span>`
+      : ''
 
     const adminEmailHtml = `
 <!DOCTYPE html>
@@ -124,7 +127,7 @@ export async function POST(req: NextRequest) {
             <tr>
               <td style="padding:12px 20px;font-size:13px;color:rgba(240,238,255,0.5);border-bottom:1px solid rgba(255,255,255,0.05);">Typ karty</td>
               <td style="padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.05);">
-                <span style="background:rgba(180,77,255,0.15);color:#b44dff;padding:3px 10px;border-radius:4px;font-size:13px;font-weight:600;">${cardTypeLabel}</span>${nfcBadgeAdmin}
+                <span style="background:rgba(180,77,255,0.15);color:#b44dff;padding:3px 10px;border-radius:4px;font-size:13px;font-weight:600;">${cardTypeLabel}</span>${nfcBadgeAdmin}${deliveryBadge}
               </td>
             </tr>
             <tr>

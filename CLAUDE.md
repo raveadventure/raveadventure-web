@@ -178,8 +178,23 @@ attr1_label, attr1_value, card_skill, attr2_label, attr2_value, card_desc,
 discount_code, discount_pct, approved_at, shipped_at,
 design_back_url, notes_back, paid, lang,
 nfc_enabled, nfc_price,
-design_original_url, design_back_original_url
+design_original_url, design_back_original_url,
+card_bottom_text, frame_color, holo_effect,
+design_url_2, design_original_url_2, approved_design_option,
+delivery_method, paczkomat_id
 ```
+
+### Dostawa do paczkomatu InPost (w budowie — Poziom 1 gotowy, Poziom 2 zaplanowany)
+
+Krok 5 formularza ma przełącznik „Adres wysyłki" / „Paczkomat InPost" (`delivery_method`). Przy paczkomacie:
+- `paczkomat_id` — kod/nazwa wybranego paczkomatu (do użycia w API InPost przy generowaniu etykiety, Poziom 2)
+- `address` — czytelny tekst do wyświetlenia (adres paczkomatu lub zwykły adres — reużywane wszędzie, gdzie kod już czyta `order.address`, więc panel admina/maile nie wymagały zmian)
+
+**Michał nie ma zarejestrowanej działalności → nie może wygenerować `NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN`** (Geowidget wymaga danych firmowych/faktury na `manager.paczkomaty.pl`). Komponent `components/InpostGeowidget.tsx` (oficjalna mapka Geowidget v5) zostaje w kodzie na wypadek gdyby to się kiedyś zmieniło, ale **w praktyce token prawdopodobnie nigdy nie zostanie ustawiony** — traktować `components/InpostAutocomplete.tsx` jako docelowe, stałe rozwiązanie, nie tymczasowy fallback.
+
+Wybór paczkomatu domyślnie idzie przez `components/InpostAutocomplete.tsx` — podpowiedzi na żywo (miasto/ulica/kod) z darmowego, publicznego API InPost (`api-pl-points.easypack24.net`, bez żadnego konta/tokenu, zweryfikowane działa). To API blokuje żądania bezpośrednio z przeglądarki (CORS) — stąd serwerowy proxy `app/api/inpost-search/route.ts`. Pod polem jest link do oficjalnej wyszukiwarki InPost dla klientów, którzy wolą znaleźć paczkomat na mapie. Wybrany punkt: `paczkomat_id` = sam kod (np. `SSA01M`), `address` = `"{kod} — {ulica}, {miasto}"` (kod już zawarty w adresie — panel admina nie dubluje kodu w nawiasie, sprawdza `address.includes(paczkomat_id)`).
+
+**Poziom 2 (prawdopodobnie nieaktualne)**: integracja z API InPost ShipX do automatycznego generowania etykiet wymagałaby tego samego konta biznesowego co Geowidget — odpada z tego samego powodu. Nadawanie paczek zostaje ręczne przez aplikację InPost Mobile (nie wymaga firmy).
 
 ### Konwencje nazw plików w Storage (bucket `order-photos`)
 

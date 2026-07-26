@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase'
 import { isSupabasePlaceholder, mockInsertOrder, mockUpdateOrder } from '../lib/ordersLocalMock'
 import styles from './page.module.css'
 import PortfolioCarousel from '../components/PortfolioCarousel'
+import InpostGeowidget from '../components/InpostGeowidget'
+import InpostAutocomplete from '../components/InpostAutocomplete'
 import HeroCardAnimation from '../components/HeroCardAnimation'
 import LogoEqualizer from '../components/LogoEqualizer'
 import { T, CARD_TYPES_I18N, FRONT_THEMES_I18N, BACK_OPTIONS_I18N, Lang } from '../lib/translations'
@@ -98,6 +100,11 @@ export default function Home() {
   const [frameColor, setFrameColor] = useState('neon_purple')
   const [holoEffect, setHoloEffect] = useState(false)
   const [backOption, setBackOption] = useState('logo')
+  const [deliveryMethod, setDeliveryMethod] = useState<'address' | 'paczkomat'>('address')
+  const [paczkomatId, setPaczkomatId] = useState('')
+  // Osobna flaga potwierdzenia — inaczej "wybrany paczkomat" pokazywał się już po wpisaniu
+  // pierwszej litery w polu tekstowym (form.address i paczkomatId były prawdziwe po 1 znaku).
+  const [paczkomatConfirmed, setPaczkomatConfirmed] = useState(false)
   const [quantity, setQuantity] = useState(1)
   const [form, setForm] = useState({
     name: '', email: '', emailConfirm: '', phone: '', address: '',
@@ -161,6 +168,7 @@ export default function Home() {
 
   const handlePhoto = (file: File) => {
     setPhoto(file)
+    setError(null)
     const reader = new FileReader()
     reader.onload = e => setPhotoPreview(e.target?.result as string)
     reader.readAsDataURL(file)
@@ -175,7 +183,9 @@ export default function Home() {
   const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
 
   const handleSubmit = async () => {
+    if (!photo) { setError(t.order.step5.errPhotoRequired); setStep(2); return }
     if (!form.name || !form.email || !form.address) { setError(t.order.step5.errRequired); return }
+    if (deliveryMethod === 'paczkomat' && !form.phone.trim()) { setError(t.order.step5.errPhoneRequired); return }
     if (!isValidEmail(form.email)) {
       setError(lang === 'pl' ? 'Podaj prawidłowy adres email (musi zawierać znak @ i domenę).' : 'Please enter a valid email address (must include @ and a domain).')
       return
@@ -199,6 +209,7 @@ export default function Home() {
         card_bottom_text: form.cardBottomText, frame_color: frameColor, holo_effect: holoEffect,
         discount_code: discountApplied ? discountCode.trim().toUpperCase() : null, discount_pct: discountPct,
         photo_url: null, status: 'new', lang,
+        delivery_method: deliveryMethod, paczkomat_id: deliveryMethod === 'paczkomat' ? paczkomatId : null,
       }
       const localMock = isSupabasePlaceholder()
       const { data: orderData, error: insertError } = localMock
@@ -268,7 +279,7 @@ export default function Home() {
       await fetch('/api/send-order', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: form.name, email: form.email, phone: form.phone, address: form.address, cardText: form.notesBack, notes: form.notes,
+          name: form.name, email: form.email, phone: form.phone, address: form.address, deliveryMethod, paczkomatId, cardText: form.notesBack, notes: form.notes,
           theme: frontTheme, orderId: orderData?.id, cardType, backOption, quantity, unitPrice, totalPrice, hasDiscount, savedAmount,
           nfcEnabled: nfcActive, nfcPrice: nfcTotal,
           cardYear: form.cardYear, cardRarity: form.cardRarity, cardName: form.cardName,
@@ -315,7 +326,7 @@ export default function Home() {
             <span>{cardObj.label} × {quantity}</span>
             <strong>{totalPrice} zł</strong>
           </div>
-          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',emailConfirm:'',phone:'',address:'',notesBack:'',customDesc:'',notes:'',cardYear:'',cardRarity:'',cardName:'',attr1Label:'',attr1Value:'',cardSkill:'',attr2Label:'',attr2Value:'',cardDesc:'',cardBottomText:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setQuantity(1); setNfcEnabled(false); setHoloEffect(false); setFrameColor('neon_purple'); setAgreed(false); setDiscountCode(''); setDiscountApplied(false); setDiscountPct(0); setDiscountMsg(null) }}>
+          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',emailConfirm:'',phone:'',address:'',notesBack:'',customDesc:'',notes:'',cardYear:'',cardRarity:'',cardName:'',attr1Label:'',attr1Value:'',cardSkill:'',attr2Label:'',attr2Value:'',cardDesc:'',cardBottomText:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setQuantity(1); setNfcEnabled(false); setHoloEffect(false); setFrameColor('neon_purple'); setDeliveryMethod('address'); setPaczkomatId(''); setPaczkomatConfirmed(false); setAgreed(false); setDiscountCode(''); setDiscountApplied(false); setDiscountPct(0); setDiscountMsg(null) }}>
             {t.sent.newOrder}
           </button>
         </div>
@@ -465,11 +476,11 @@ export default function Home() {
 
       <section className={styles.section}>
         <p className={styles.sectionEye}>{t.howItWorks.eyebrow}</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '24px' }}>
           {t.howItWorks.steps.map(s => (
-            <div key={s.n} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px 12px' }}>
-              <span style={{ fontFamily: 'var(--font-display)', fontSize: '10px', color: 'var(--text-faint)', letterSpacing: '1px' }}>{s.n}</span>
-              <p style={{ margin: '3px 0 2px', fontSize: '12px', fontWeight: 600, color: 'var(--text)' }}>{s.t}</p>
+            <div key={s.n} className={styles.infoBlock}>
+              <span style={{ fontFamily: 'var(--font-hero)', fontSize: '11px', fontWeight: 700, color: 'var(--neon)', letterSpacing: '1px' }}>{s.n}</span>
+              <p style={{ margin: '5px 0 2px', fontSize: '12px', fontWeight: 600, color: 'var(--text)' }}>{s.t}</p>
               <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.5' }}>{s.d}</p>
             </div>
           ))}
@@ -478,7 +489,7 @@ export default function Home() {
         <p className={styles.sectionEye}>{t.options.eyebrow}</p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
           {t.options.cards.map((o, i) => (
-            <div key={i} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 14px' }}>
+            <div key={i} className={styles.infoBlock} style={{ borderRadius: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                 <span style={{ fontSize: '16px' }}>{o.icon}</span>
                 <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{o.title}</p>
@@ -486,12 +497,12 @@ export default function Home() {
               <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{o.desc}</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                 {o.tags.map(tag => (
-                  <span key={tag} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>{tag}</span>
+                  <span key={tag} className={styles.tagPill}>{tag}</span>
                 ))}
               </div>
             </div>
           ))}
-          <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px 14px' }}>
+          <div className={styles.infoBlock} style={{ borderRadius: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
               <span style={{ fontSize: '16px' }}>📲</span>
               <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
@@ -505,13 +516,13 @@ export default function Home() {
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
               {['NFC', 'RFID', '+15 zł'].map(tag => (
-                <span key={tag} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>{tag}</span>
+                <span key={tag} className={styles.tagPill}>{tag}</span>
               ))}
             </div>
           </div>
         </div>
 
-        <div style={{ marginTop: '10px', padding: '10px 14px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '10px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+        <div className={styles.infoBlock} style={{ marginTop: '10px', borderRadius: '10px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
           <span style={{ fontSize: '14px', flexShrink: 0 }}>⚙</span>
           <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{t.options.attrNote}</p>
         </div>
@@ -578,19 +589,14 @@ export default function Home() {
                     onClick={() => setCardType(c.id)} role="button" tabIndex={0}
                     onKeyDown={e => e.key === 'Enter' && setCardType(c.id)} aria-pressed={cardType === c.id}>
                     <div className={styles.themeAccentBar} />
-                    <div className={styles.cardTypeHeader}>
-                      <p className={styles.themeLabel}>{c.label}</p>
-                      <span className={styles.cardTypePrice}>{c.price} zł</span>
-                    </div>
-                    <p className={styles.cardTypeDims}>{c.dims}</p>
+                    <p className={styles.cardTypeName}>{c.label}</p>
+                    <span className={styles.cardTypeDims}>{c.dims}</span>
+                    <p className={styles.cardTypePriceRow}><span className={styles.cardTypePrice}>{c.price} zł</span></p>
+                    <p className={styles.cardTypeDealRow}><span className={styles.cardTypeDeal}>🔥 {t.hero.badge1}</span></p>
                     <p className={styles.themeDesc}>{c.desc}</p>
                     {cardType === c.id && <span className={styles.themeCheck}>✓</span>}
                   </div>
                 ))}
-              </div>
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', margin: '12px 0 4px' }}>
-                <span className={styles.badge}>{t.hero.badge1}</span>
-                <span className={styles.badge}>{t.hero.badge2}</span>
               </div>
               {cardType === 'laminated' && (
                 <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '16px', marginTop: '12px' }}>
@@ -611,10 +617,13 @@ export default function Home() {
                     {nfcEnabled && <span style={{ color: '#0a0014', fontSize: '13px', fontWeight: 700 }}>✓</span>}
                   </div>
                   <div>
-                    <p style={{ margin: '0 0 4px', fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
-                      📲 {lang === 'pl' ? 'Dodaj programowanie NFC/RFID' : 'Add NFC/RFID programming'}
-                      <span style={{ marginLeft: '8px', fontSize: '12px', fontWeight: 700, color: 'var(--neon)' }}>
-                        +{quantity > 3 ? NFC_PRICE_BULK : NFC_PRICE_STANDARD} zł{lang === 'pl' ? '/kartę' : '/card'}
+                    <p style={{ margin: '0 0 6px', fontSize: '13px', fontWeight: 600, color: 'var(--text)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                      <span>📲 {lang === 'pl' ? 'Dodaj programowanie NFC/RFID' : 'Add NFC/RFID programming'}</span>
+                      <span className={styles.priceTagSm}>
+                        +{NFC_PRICE_STANDARD} zł{lang === 'pl' ? '/kartę' : '/card'}
+                      </span>
+                      <span className={styles.priceTagSmSuccess}>
+                        🔥 {NFC_PRICE_BULK} zł{lang === 'pl' ? ' przy 3+ szt.' : ' at 3+ cards'}
                       </span>
                     </p>
                     <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
@@ -639,7 +648,6 @@ export default function Home() {
                     style={{ '--accent': th.accent } as React.CSSProperties}
                     onClick={() => setFrontTheme(th.id)} role="button" tabIndex={0}
                     onKeyDown={e => e.key === 'Enter' && setFrontTheme(th.id)} aria-pressed={frontTheme === th.id}>
-                    <div className={styles.themeAccentBar} />
                     <p className={styles.themeLabel}>{th.label}</p>
                     <p className={styles.themeDesc}>{th.desc}</p>
                     {frontTheme === th.id && <span className={styles.themeCheck}>✓</span>}
@@ -654,17 +662,15 @@ export default function Home() {
                     <div key={c.id}
                       onClick={() => setFrameColor(c.id)} role="button" tabIndex={0}
                       onKeyDown={e => e.key === 'Enter' && setFrameColor(c.id)} aria-pressed={frameColor === c.id}
+                      className={styles.swatchPill}
                       style={{
-                        display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 12px 7px 8px',
-                        border: `1.5px solid ${frameColor === c.id ? c.hex : 'var(--border)'}`,
-                        borderRadius: '999px', cursor: 'pointer',
-                        background: frameColor === c.id ? `${c.hex}22` : 'var(--surface2)',
-                        transition: 'all .15s',
+                        borderColor: frameColor === c.id ? c.hex : undefined,
+                        background: frameColor === c.id ? `${c.hex}22` : undefined,
                       }}>
-                      <span style={{
-                        width: '20px', height: '20px', borderRadius: '50%', background: c.hex, flexShrink: 0,
+                      <span className={styles.swatchDot} style={{
+                        background: c.hex,
                         boxShadow: `0 0 8px ${c.hex}aa`,
-                        border: frameColor === c.id ? '2px solid #fff' : '2px solid rgba(255,255,255,0.15)',
+                        borderColor: frameColor === c.id ? '#fff' : undefined,
                       }} />
                       <span style={{ fontSize: '12px', color: 'var(--text)', whiteSpace: 'nowrap' }}>{c.name}</span>
                     </div>
@@ -739,6 +745,22 @@ export default function Home() {
                     backgroundRepeat: 'repeat', backgroundSize: '150px 81px', pointerEvents: 'none',
                   }} />
                 </div>
+                {frontTheme === 'custom' && (
+                  <div style={{ marginTop: '12px', background: 'rgba(245,158,11,0.1)', border: '1.5px solid rgba(245,158,11,0.4)', borderRadius: 'var(--radius-lg)', padding: '14px 18px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: '18px', flexShrink: 0 }}>⚠️</span>
+                    <p style={{ margin: 0, fontSize: '12px', color: '#f59e0b', lineHeight: '1.6' }}>
+                      {lang === 'pl' ? (
+                        <>
+                          <strong>To tylko przykład układu specjalnej karty</strong> — niestandardowy layout, sam pomysł na to, jak to może wyglądać. Twoja karta custom będzie inna, atrybuty niekoniecznie się pokryją. Dokładne wytyczne (co, gdzie, w jakim stylu) opisz w <strong>uwagach do zdjęcia / karty</strong> poniżej i dołącz opcjonalnie <strong>grafikę referencyjną</strong>.
+                        </>
+                      ) : (
+                        <>
+                          <strong>This is just an example layout for a special card</strong> — a custom design, just one idea of what it could look like. Your custom card will be different, and the attributes may not match at all. Describe exact guidelines (what, where, what style) in the <strong>photo/card notes</strong> below, and optionally attach a <strong>reference image</strong>.
+                        </>
+                      )}
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '20px', marginTop: '12px' }}>
@@ -757,9 +779,9 @@ export default function Home() {
               </div>
 
               <div style={{ marginTop: '12px' }}>
-                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>{t.order.step2.photoEyebrow}</p>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>{t.order.step2.photoEyebrow} *</p>
                 {!photo ? (
-                  <div className={styles.dropZone} onClick={() => fileRef.current?.click()} onDragOver={e => e.preventDefault()} onDrop={handleDrop} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && fileRef.current?.click()}>
+                  <div className={styles.dropZone} style={error === t.order.step5.errPhotoRequired ? { borderColor: 'var(--error)' } : undefined} onClick={() => fileRef.current?.click()} onDragOver={e => e.preventDefault()} onDrop={handleDrop} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && fileRef.current?.click()}>
                     <span className={styles.dropIcon}>↑</span>
                     <p className={styles.dropTitle}>{t.order.step2.dropTitle}</p>
                     <p className={styles.dropSub}>{t.order.step2.dropSub}</p>
@@ -773,6 +795,9 @@ export default function Home() {
                     </div>
                     <button className={styles.fileRemove} onClick={() => { setPhoto(null); setPhotoPreview(null) }}>✕</button>
                   </div>
+                )}
+                {error === t.order.step5.errPhotoRequired && (
+                  <p className={styles.errorMsg} style={{ marginTop: '8px' }}>{error}</p>
                 )}
                 <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handlePhoto(e.target.files[0]) }} />
                 <div className={styles.field} style={{ marginTop: '10px' }}>
@@ -912,11 +937,14 @@ export default function Home() {
           {step === 5 && (
             <div className={styles.formStep}>
               <p className={styles.formStepTitle}>{t.order.step5.title}</p>
+              <p style={{ margin: '-6px 0 14px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                {lang === 'pl' ? '* pola wymagane' : '* required fields'}
+              </p>
               <div className={styles.fieldGrid}>
                 <div className={styles.field}><label className={styles.label}>{t.order.step5.nameLabel}</label><input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder={t.order.step5.namePlaceholder} /></div>
                 <div className={styles.field}><label className={styles.label}>{t.order.step5.emailLabel}</label><input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder={t.order.step5.emailPlaceholder} /></div>
                 <div className={styles.field}>
-                  <label className={styles.label}>{lang === 'pl' ? 'Powtórz adres email' : 'Confirm email address'}</label>
+                  <label className={styles.label}>{lang === 'pl' ? 'Powtórz adres email *' : 'Confirm email address *'}</label>
                   <input
                     type="email"
                     value={form.emailConfirm}
@@ -934,8 +962,65 @@ export default function Home() {
                     </p>
                   )}
                 </div>
-                <div className={styles.field}><label className={styles.label}>{t.order.step5.phoneLabel}</label><input type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder={t.order.step5.phonePlaceholder} /></div>
-                <div className={`${styles.field} ${styles.fieldFull}`}><label className={styles.label}>{t.order.step5.addressLabel}</label><input value={form.address} onChange={e => setForm({...form, address: e.target.value})} placeholder={t.order.step5.addressPlaceholder} /></div>
+                <div className={styles.field}>
+                  <label className={styles.label}>{t.order.step5.phoneLabel}{deliveryMethod === 'paczkomat' ? ' *' : ''}</label>
+                  <input type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder={t.order.step5.phonePlaceholder} />
+                  {deliveryMethod === 'paczkomat' && (
+                    <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--text-faint)' }}>
+                      {lang === 'pl' ? 'InPost wysyła SMS-em kod odbioru paczki.' : 'InPost sends the pickup code by SMS.'}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ marginTop: '8px' }}>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>{t.order.step5.deliveryEyebrow}</p>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
+                  {(['address', 'paczkomat'] as const).map(m => (
+                    <div key={m}
+                      onClick={() => setDeliveryMethod(m)} role="button" tabIndex={0}
+                      onKeyDown={e => e.key === 'Enter' && setDeliveryMethod(m)} aria-pressed={deliveryMethod === m}
+                      className={`${styles.toggleBtn} ${deliveryMethod === m ? styles.toggleBtnActive : ''}`}>
+                      {m === 'address' ? `📍 ${t.order.step5.deliveryAddressOption}` : `📦 ${t.order.step5.deliveryParcelOption}`}
+                    </div>
+                  ))}
+                </div>
+
+                {deliveryMethod === 'address' ? (
+                  <div className={styles.field}>
+                    <label className={styles.label}>{t.order.step5.addressLabel}</label>
+                    <input value={form.address} onChange={e => setForm({...form, address: e.target.value})} placeholder={t.order.step5.addressPlaceholder} />
+                  </div>
+                ) : (
+                  <div className={styles.field}>
+                    {paczkomatConfirmed && form.address ? (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', background: 'var(--surface2)', border: '1px solid var(--neon)', borderRadius: 'var(--radius-lg)', padding: '12px 14px' }}>
+                        <div>
+                          <p style={{ margin: '0 0 2px', fontSize: '11px', color: 'var(--text-muted)' }}>{t.order.step5.paczkomatSelected}</p>
+                          <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>📦 {form.address}</p>
+                        </div>
+                        <button type="button" className={styles.btnSecondary} style={{ width: 'auto', padding: '8px 14px', fontSize: '12px', flexShrink: 0 }}
+                          onClick={() => { setPaczkomatConfirmed(false); setPaczkomatId(''); setForm({...form, address: ''}) }}>
+                          {t.order.step5.paczkomatChange}
+                        </button>
+                      </div>
+                    ) : process.env.NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN ? (
+                      <>
+                        <label className={styles.label}>{t.order.step5.paczkomatPickLabel}</label>
+                        <InpostGeowidget lang={lang} onSelect={p => { setPaczkomatId(p.id); setForm({...form, address: p.address}); setPaczkomatConfirmed(true) }} />
+                      </>
+                    ) : (
+                      <>
+                        <label className={styles.label}>{t.order.step5.paczkomatManualLabel}</label>
+                        <InpostAutocomplete lang={lang} onSelect={p => { setPaczkomatId(p.id); setForm({...form, address: p.address}); setPaczkomatConfirmed(true) }} />
+                        <a href="https://inpost.pl/znajdz-paczkomat" target="_blank" rel="noopener noreferrer"
+                          style={{ display: 'inline-block', marginTop: '8px', fontSize: '12px', color: 'var(--neon2)', textDecoration: 'none' }}>
+                          {t.order.step5.paczkomatMapLink}
+                        </a>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '16px', marginTop: '8px' }}>

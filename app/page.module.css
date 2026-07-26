@@ -6,18 +6,20 @@
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   display: flex; justify-content: space-between; align-items: center;
   padding: 16px 5vw;
-  background: rgba(8, 8, 16, 0.85);
-  backdrop-filter: blur(12px);
+  background: rgba(8, 8, 16, 0.72);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 rgba(180,77,255,0.08);
 }
-.logo { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); }
+.logo { font-family: var(--font-hero); font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
 .logo span { color: var(--neon); }
 .navCta {
-  font-size: 13px; font-weight: 500; padding: 8px 18px;
-  border: 1px solid var(--neon); border-radius: 6px; color: var(--neon);
-  transition: background 0.2s;
+  font-size: 13px; font-weight: 600; padding: 9px 20px;
+  border: 1px solid var(--neon); border-radius: 8px; color: var(--neon);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
 }
-.navCta:hover { background: var(--neon-dim); }
+.navCta:hover { background: var(--neon-dim); box-shadow: var(--glow-neon); transform: translateY(-1px); }
+.navCta:active { transform: translateY(0); }
 
 /* ── HERO ── */
 .hero {
@@ -38,7 +40,7 @@
 }
 .heroContent { position: relative; z-index: 1; max-width: 680px; width: 100%; }
 .eyebrow { font-family: var(--font-display); font-size: 12px; color: var(--neon); letter-spacing: 2px; margin-bottom: 16px; }
-.heroTitle { font-family: var(--font-display); font-size: clamp(32px, 4vw, 52px); line-height: 1.1; font-weight: 700; margin-bottom: 20px; color: var(--text); }
+.heroTitle { font-family: var(--font-hero); font-size: clamp(32px, 4vw, 54px); line-height: 1.12; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 20px; color: var(--text); }
 .neon { color: var(--neon); }
 .heroSub { font-size: 17px; color: var(--text-muted); line-height: 1.7; margin-bottom: 24px; max-width: 560px; margin-left: auto; margin-right: auto; }
 .heroBadges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; justify-content: center; }
@@ -48,60 +50,65 @@
   color: var(--text-muted); background: var(--surface);
 }
 .btnHero {
-  display: inline-block; padding: 14px 32px;
-  background: var(--neon); color: #0a0014;
-  font-size: 15px; font-weight: 700; border-radius: 8px;
-  transition: opacity 0.2s, transform 0.15s;
+  display: inline-block; padding: 15px 34px;
+  background: linear-gradient(135deg, var(--neon), #9433e0);
+  color: #0a0014;
+  font-size: 15px; font-weight: 700; border-radius: 10px;
+  transition: box-shadow 0.25s, transform 0.15s;
   font-family: var(--font-body);
+  box-shadow: 0 4px 20px -4px rgba(180,77,255,0.5);
 }
-.btnHero:hover { opacity: 0.85; transform: translateY(-1px); }
-
-.heroCard { position: relative; z-index: 1; display: flex; justify-content: center; align-items: center; }
-.previewCard {
-  width: 320px; aspect-ratio: 1.586;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 20px 24px;
-  display: flex; flex-direction: column; justify-content: space-between;
-  position: relative; overflow: hidden;
-  box-shadow: 0 0 40px color-mix(in srgb, var(--accent) 25%, transparent),
-              0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
-}
-.previewCard::before {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent 60%);
-}
-.previewThemeLabel { font-family: var(--font-display); font-size: 11px; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; position: relative; z-index: 1; }
-.previewScan { font-family: var(--font-display); font-size: 13px; color: var(--text-faint); letter-spacing: 4px; position: relative; z-index: 1; align-self: flex-end; }
-.previewName { font-family: var(--font-display); font-size: 13px; color: var(--text-muted); letter-spacing: 2px; position: relative; z-index: 1; }
+.btnHero:hover { box-shadow: 0 6px 28px -4px rgba(180,77,255,0.75), var(--glow-neon); transform: translateY(-2px); }
+.btnHero:active { transform: translateY(0); }
 
 /* ── SECTIONS ── */
 .section { padding: 36px 5vw; max-width: 1100px; margin: 0 auto; }
 .sectionEye { font-family: var(--font-display); font-size: 12px; color: var(--neon); letter-spacing: 2px; margin-bottom: 12px; }
-.sectionTitle { font-family: var(--font-display); font-size: clamp(24px, 3vw, 36px); font-weight: 700; margin-bottom: 40px; }
+.sectionTitle { font-family: var(--font-hero); font-size: clamp(24px, 3vw, 36px); font-weight: 700; letter-spacing: -0.3px; margin-bottom: 40px; }
+
+/* ── INFO BLOCK — kafelek ogólnego użytku (kroki, opcje, uwagi), zastępuje powtarzane
+   inline style={{background:'var(--surface2)'...}} rozsiane po page.tsx ── */
+.infoBlock { composes: glassPanel from global; border-radius: 10px; padding: 12px 14px; }
+.infoBlock:hover::before, .infoBlock:hover::after { opacity: 1; }
+.tagPill { font-size: 10px; padding: 3px 10px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-muted); }
 
 /* ── THEMES ── */
-.themesGrid, .themesGridSm {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px;
+/* Zawsze 2×2 — symetrycznie niezależnie od szerokości, bez wpadania w układ 3+1 */
+.themesGrid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px;
 }
 .themeCard {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
-  padding: 20px; cursor: pointer; position: relative;
-  transition: border-color 0.2s, transform 0.15s;
+  composes: glassPanel from global;
+  border-radius: var(--radius-lg);
+  padding: 22px 20px; cursor: pointer; position: relative;
+  transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
   overflow: hidden;
+  /* Wewnętrzna ramka w kolorze motywu (zamiast krótkiej kreski) — zawsze lekko widoczna,
+     mocniejsza na hover/zaznaczeniu. Narożniki HUD też przejmują kolor motywu (poniżej). */
+  box-shadow: var(--glass-shadow), inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
 }
-.themeCard:hover { border-color: color-mix(in srgb, var(--accent) 50%, transparent); transform: translateY(-2px); }
-.themeSelected { border-color: var(--accent) !important; background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
-.themeAccentBar { height: 3px; border-radius: 2px; background: var(--accent); margin-bottom: 14px; width: 32px; }
-.themeLabel { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.themeCard::before, .themeCard::after { border-color: var(--accent); opacity: 0.55; }
+.themeCard:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent); transform: translateY(-3px);
+  box-shadow: var(--glass-shadow), inset 0 0 0 1.5px var(--accent), 0 0 24px -8px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.themeSelected {
+  border-color: var(--accent) !important;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 14%, transparent), color-mix(in srgb, var(--accent) 4%, transparent));
+  box-shadow: var(--glass-shadow), inset 0 0 0 1.5px var(--accent), 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.themeSelected::before, .themeSelected::after { opacity: 1; border-color: var(--accent); }
+.themeAccentBar { height: 3px; border-radius: 2px; background: var(--accent); margin-bottom: 14px; width: 32px; box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent); }
+.themeLabel { font-family: var(--font-hero); font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; letter-spacing: -0.1px; padding-right: 26px; line-height: 1.25; }
 .themeDesc { font-size: 12px; color: var(--text-muted); }
-.themeCheck { position: absolute; top: 14px; right: 14px; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #0a0014; font-weight: 700; }
+.themeCard .themeDesc { font-size: 13px; line-height: 1.5; }
+.themeCheck { position: absolute; top: 14px; right: 14px; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #0a0014; font-weight: 700; box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 60%, transparent); }
 
 /* ── HOW IT WORKS ── */
 .stepsGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
-.stepCard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px 24px; }
-.stepNum { font-family: var(--font-display); font-size: 28px; color: var(--neon); display: block; margin-bottom: 12px; }
+.stepCard { composes: glassPanel from global; border-radius: var(--radius-lg); padding: 28px 24px; transition: transform 0.2s, box-shadow 0.2s; }
+.stepCard:hover { transform: translateY(-3px); box-shadow: var(--glass-shadow), var(--glow-neon); }
+.stepNum { font-family: var(--font-hero); font-size: 28px; color: var(--neon); display: block; margin-bottom: 12px; }
 .stepTitle { font-weight: 700; font-size: 16px; margin-bottom: 8px; }
 .stepDesc { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
 
@@ -114,10 +121,10 @@
   width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border);
   background: var(--surface); display: flex; align-items: center; justify-content: center;
   font-size: 13px; font-weight: 700; color: var(--text-muted); z-index: 1; flex-shrink: 0;
-  margin-right: 52px;
+  margin-right: 52px; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
-.stepDotActive { border-color: var(--neon); color: var(--neon); background: var(--neon-dim); }
-.stepDotDone { border-color: var(--success); color: #0a0014; background: var(--success); }
+.stepDotActive { border-color: var(--neon); color: var(--neon); background: var(--neon-dim); box-shadow: var(--glow-neon); }
+.stepDotDone { border-color: var(--success); color: #0a0014; background: var(--success); box-shadow: 0 0 16px rgba(0,229,160,0.4); }
 .stepLine {
   position: absolute; top: 50%; left: 16px; height: 1px;
   background: var(--neon); transition: width 0.4s; transform: translateY(-50%); z-index: 0;
@@ -126,9 +133,10 @@
 .stepLabels { display: flex; gap: 0; margin-bottom: 28px; width: 200px; justify-content: space-between; }
 .stepLabels span { font-size: 11px; color: var(--text-faint); font-family: var(--font-display); }
 
-.formBox { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; max-width: 680px; margin: 0 auto; }
+.formBox { composes: glassPanel from global; border-radius: var(--radius-lg); padding: 32px; max-width: 680px; margin: 0 auto; }
+.formBox::before, .formBox::after { opacity: 0.9; }
 .formStep { display: flex; flex-direction: column; gap: 20px; }
-.formStepTitle { font-family: var(--font-display); font-size: 14px; color: var(--neon); letter-spacing: 1px; }
+.formStepTitle { font-family: var(--font-hero); font-size: 15px; font-weight: 700; color: var(--neon); letter-spacing: 0.2px; }
 
 .fieldGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .field { display: flex; flex-direction: column; gap: 6px; }
@@ -138,18 +146,21 @@
 
 .formButtons { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
 .btnPrimary {
-  padding: 12px 28px; background: var(--neon); color: #0a0014;
-  font-size: 14px; font-weight: 700; border-radius: 8px;
-  transition: opacity 0.2s, transform 0.15s;
+  padding: 12px 28px; background: linear-gradient(135deg, var(--neon), #9433e0); color: #0a0014;
+  font-size: 14px; font-weight: 700; border-radius: 9px;
+  transition: box-shadow 0.2s, transform 0.15s, opacity 0.2s;
+  box-shadow: 0 3px 14px -4px rgba(180,77,255,0.5);
 }
-.btnPrimary:hover:not(:disabled) { opacity: 0.85; transform: translateY(-1px); }
-.btnPrimary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btnPrimary:hover:not(:disabled) { box-shadow: 0 5px 20px -4px rgba(180,77,255,0.7); transform: translateY(-1px); }
+.btnPrimary:active:not(:disabled) { transform: translateY(0); }
+.btnPrimary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 .btnSecondary {
-  padding: 12px 24px; background: transparent;
+  padding: 12px 24px; background: var(--surface2);
   border: 1px solid var(--border); color: var(--text-muted);
-  font-size: 14px; border-radius: 8px; transition: border-color 0.2s;
+  font-size: 14px; font-weight: 500; border-radius: 9px; transition: border-color 0.2s, color 0.2s, transform 0.15s;
 }
-.btnSecondary:hover { border-color: var(--neon); color: var(--text); }
+.btnSecondary:hover { border-color: var(--neon); color: var(--text); transform: translateY(-1px); }
+.btnSecondary:active { transform: translateY(0); }
 
 .errorMsg { font-size: 13px; color: var(--error); padding: 10px 14px; border: 1px solid rgba(255,77,109,0.3); border-radius: 8px; background: rgba(255,77,109,0.06); }
 
@@ -157,10 +168,10 @@
 .dropZone {
   border: 1.5px dashed var(--border); border-radius: var(--radius-lg);
   padding: 40px 20px; text-align: center; cursor: pointer;
-  transition: border-color 0.2s, background 0.2s; background: var(--surface2);
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; background: var(--surface2);
   display: flex; flex-direction: column; align-items: center; gap: 10px;
 }
-.dropZone:hover { border-color: var(--neon); background: var(--neon-dim); }
+.dropZone:hover { border-color: var(--neon); background: var(--neon-dim); box-shadow: var(--glow-neon); }
 .dropZoneFilled { border-color: var(--success); padding: 12px; }
 .dropIcon { font-size: 32px; color: var(--text-muted); }
 .dropTitle { font-size: 14px; font-weight: 500; color: var(--text); }
@@ -181,21 +192,20 @@
 
 /* ── SENT ── */
 .sentWrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.sentBox { text-align: center; max-width: 440px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 48px 36px; }
-.sentIcon { width: 64px; height: 64px; border-radius: 50%; background: var(--success); color: #0a0014; font-size: 28px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
-.sentBox h2 { font-family: var(--font-display); font-size: 24px; margin-bottom: 12px; }
+.sentBox { composes: glassPanel from global; text-align: center; max-width: 440px; border-radius: 20px; padding: 48px 36px; }
+.sentIcon { width: 64px; height: 64px; border-radius: 50%; background: var(--success); color: #0a0014; font-size: 28px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 0 24px rgba(0,229,160,0.4); }
+.sentBox h2 { font-family: var(--font-hero); font-size: 24px; margin-bottom: 12px; }
 .sentBox p { font-size: 15px; color: var(--text-muted); margin-bottom: 28px; line-height: 1.7; }
 
 /* ── FOOTER ── */
 .footer { border-top: 1px solid var(--border); padding: 40px 5vw; text-align: center; }
-.footerLogo { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--neon); margin-bottom: 6px; }
+.footerLogo { font-family: var(--font-hero); font-size: 20px; font-weight: 700; color: var(--neon); margin-bottom: 6px; }
 .footerSub { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; }
 .footerCopy { font-size: 12px; color: var(--text-faint); }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
   .hero { grid-template-columns: 1fr; padding-top: 90px; gap: 32px; }
-  .heroCard { display: none; }
   .fieldGrid { grid-template-columns: 1fr; }
   .formBox { padding: 20px; }
   .stepDot { margin-right: 36px; }
@@ -221,18 +231,48 @@
 .fileRemove:hover { background: rgba(255,77,109,0.1); }
 
 /* ── CARD TYPES ── */
-.cardTypesGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
-.cardTypeCard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; cursor: pointer; position: relative; transition: border-color 0.2s, transform 0.15s; overflow: hidden; }
-.cardTypeCard:hover { border-color: color-mix(in srgb, var(--accent) 50%, transparent); transform: translateY(-2px); }
-.cardTypeHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-.cardTypePrice { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--accent); }
-.cardTypeDims { font-size: 11px; color: var(--text-faint); font-family: var(--font-display); letter-spacing: 1px; margin-bottom: 8px; }
+.cardTypesGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 12px; }
+.cardTypeCard { composes: glassPanel from global; border-radius: var(--radius-lg); padding: 20px; cursor: pointer; position: relative; transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s; overflow: hidden; }
+.cardTypeCard:hover { border-color: color-mix(in srgb, var(--accent) 55%, transparent); transform: translateY(-3px); box-shadow: var(--glass-shadow), 0 0 24px -8px color-mix(in srgb, var(--accent) 60%, transparent); }
+.cardTypeCard .themeAccentBar { margin-left: auto; margin-right: auto; }
+.cardTypeName { font-family: var(--font-hero); font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -0.1px; text-align: center; }
+.cardTypeDims { display: block; font-size: 11px; color: var(--text-faint); font-family: var(--font-display); letter-spacing: 1px; text-align: center; margin-bottom: 10px; }
+.cardTypePriceRow { text-align: center; margin-bottom: 8px; }
+.cardTypePrice {
+  font-family: var(--font-hero); font-size: 15px; font-weight: 700; color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 999px; padding: 3px 14px; white-space: nowrap; display: inline-block;
+}
+.cardTypeDealRow { text-align: center; margin-bottom: 10px; }
+/* Mały fioletowy "pill" z ceną — sama stylistyka co .cardTypePrice (karta PVC/Wizytówka),
+   ale z kolorem marki na stałe (var(--neon)) zamiast --accent per-motyw, i mniejszy — do użycia
+   poza kontekstem kart typu (np. przy NFC). */
+.priceTagSm {
+  font-family: var(--font-hero); font-size: 12px; font-weight: 700; color: var(--neon);
+  background: var(--neon-dim); border: 1px solid color-mix(in srgb, var(--neon) 35%, transparent);
+  border-radius: 999px; padding: 2px 11px; white-space: nowrap; display: inline-flex; align-items: center;
+}
+/* Zielony wariant tego samego "pilla" (np. cena NFC 3+ szt.) — zero marginesu, żeby siedział
+   w jednej linii z .priceTagSm bez przesunięcia w pionie. */
+.priceTagSmSuccess {
+  font-family: var(--font-hero); font-size: 12px; font-weight: 700; color: var(--success);
+  background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.35);
+  border-radius: 999px; padding: 2px 11px; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;
+}
+.cardTypeDeal {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700; color: var(--success);
+  background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.3);
+  border-radius: 999px; padding: 4px 12px; margin-bottom: 10px;
+}
 
 /* ── BACK OPTIONS ── */
 .backGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
-.backCard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; cursor: pointer; position: relative; transition: border-color 0.2s, transform 0.15s; }
-.backCard:hover { border-color: rgba(180,77,255,0.4); transform: translateY(-2px); }
-.backCardSelected { border-color: var(--neon) !important; background: var(--neon-dim); }
+.backCard { composes: glassPanel from global; border-radius: var(--radius-lg); padding: 16px; cursor: pointer; position: relative; transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s; }
+.backCard:hover { border-color: rgba(180,77,255,0.45); transform: translateY(-3px); box-shadow: var(--glass-shadow), var(--glow-neon); }
+.backCardSelected { border-color: var(--neon) !important; background: linear-gradient(160deg, rgba(180,77,255,0.14), rgba(180,77,255,0.03)); }
+.backCardSelected::before, .backCardSelected::after { opacity: 1; }
 .backCardTop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .backCardLabel { font-size: 14px; font-weight: 600; color: var(--text); }
 .backCardPrice { font-size: 13px; font-weight: 700; color: var(--neon); }
@@ -240,9 +280,10 @@
 
 /* ── QUANTITY ── */
 .quantityWrap { display: flex; align-items: center; gap: 20px; justify-content: center; margin: 16px 0; }
-.qtyBtn { width: 44px; height: 44px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s; font-family: var(--font-body); }
-.qtyBtn:hover { border-color: var(--neon); color: var(--neon); }
-.qtyValue { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: var(--text); min-width: 60px; text-align: center; }
+.qtyBtn { width: 44px; height: 44px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s; font-family: var(--font-body); }
+.qtyBtn:hover { border-color: var(--neon); color: var(--neon); box-shadow: var(--glow-neon); }
+.qtyBtn:active { transform: scale(0.94); }
+.qtyValue { font-family: var(--font-hero); font-size: 36px; font-weight: 700; color: var(--text); min-width: 60px; text-align: center; }
 .discountBadge { background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.3); border-radius: 8px; padding: 10px 16px; font-size: 14px; color: var(--success); text-align: center; margin-bottom: 16px; }
 .discountHint { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: 8px; padding: 10px 16px; font-size: 13px; color: #f59e0b; text-align: center; margin-bottom: 16px; }
 
@@ -264,6 +305,25 @@
 .footerLink { font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color .15s; }
 .footerLink:hover { color: var(--neon); }
 .footerDot { color: var(--text-faint); font-size: 12px; }
+
+/* ── TOGGLE (np. sposób dostawy, wybór z 2+ opcji w formularzu) ── */
+.toggleBtn {
+  flex: 1; padding: 12px 14px; border-radius: var(--radius-lg); cursor: pointer; text-align: center;
+  border: 1.5px solid var(--border); background: var(--surface2);
+  font-size: 13px; font-weight: 600; color: var(--text);
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+.toggleBtn:hover { border-color: color-mix(in srgb, var(--neon) 50%, var(--border)); transform: translateY(-1px); }
+.toggleBtnActive { border-color: var(--neon) !important; background: var(--neon-dim) !important; box-shadow: var(--glow-neon); }
+
+/* ── SWATCH PILL (np. kolor ramki karty) ── */
+.swatchPill {
+  display: flex; align-items: center; gap: 8px; padding: 7px 12px 7px 8px;
+  border-radius: 999px; cursor: pointer; background: var(--surface2);
+  border: 1.5px solid var(--border); transition: all 0.15s;
+}
+.swatchPill:hover { transform: translateY(-1px); }
+.swatchDot { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.15); }
 
 /* ── BRAND SHIMMER (nazwa + hasło nad karuzelą portfolio) ── */
 .brandWrap { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 48px 5vw 8px; gap: 14px; }

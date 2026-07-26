@@ -912,6 +912,20 @@ export default function AdminPage() {
 
             {/* Kwota i płatność */}
             <div style={{ background: selected.paid ? 'rgba(0,229,160,0.08)' : 'rgba(245,158,11,0.06)', border: `1px solid ${selected.paid ? 'rgba(0,229,160,0.3)' : 'rgba(245,158,11,0.25)'}`, borderRadius: '10px', padding: '14px 16px' }}>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                <span style={{ fontSize: '12px', color: 'rgba(240,238,255,0.6)' }}>
+                  Ilość: <strong style={{ color: '#f0eeff' }}>× {(selected as any).quantity ?? '—'}</strong>
+                  {(selected as any).unit_price ? ` (${(selected as any).unit_price} zł/szt.)` : ''}
+                </span>
+                {(selected as any).has_discount && (
+                  <span style={{ fontSize: '12px', color: '#00e5a0' }}>🎉 Rabat ilościowy (-50%)</span>
+                )}
+                {(selected as any).discount_code && (
+                  <span style={{ fontSize: '12px', color: '#00e5a0' }}>
+                    🏷 Kod: <strong>{(selected as any).discount_code}</strong>{(selected as any).discount_pct ? ` (-${(selected as any).discount_pct}%)` : ''}
+                  </span>
+                )}
+              </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                 <div>
                   <p style={{ margin: '0 0 2px', fontSize: '11px', color: 'rgba(240,238,255,0.4)', letterSpacing: '1px' }}>DO ZAPŁATY</p>
@@ -941,7 +955,13 @@ export default function AdminPage() {
                 { label: 'Klient', value: selected.name },
                 { label: 'Email', value: selected.email, link: `mailto:${selected.email}` },
                 { label: 'Telefon', value: selected.phone || '—' },
-                { label: 'Adres', value: selected.address },
+                (selected as any).delivery_method === 'paczkomat'
+                  ? {
+                      label: '📦 Paczkomat',
+                      value: selected.address + ((selected as any).paczkomat_id && !selected.address?.includes((selected as any).paczkomat_id)
+                        ? ` (kod: ${(selected as any).paczkomat_id})` : ''),
+                    }
+                  : { label: 'Adres', value: selected.address },
               ].map((row, i) => (
                 <div key={i} style={{ display: 'flex', gap: '12px', padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <span style={{ fontSize: '12px', color: 'rgba(240,238,255,0.4)', minWidth: '55px', flexShrink: 0 }}>{row.label}</span>
@@ -957,8 +977,8 @@ export default function AdminPage() {
             <div style={{ background: '#16162a', borderRadius: '10px', overflow: 'hidden', marginTop: '8px' }}>
               <p style={{ margin: 0, padding: '10px 16px 6px', fontSize: '10px', color: '#b44dff', letterSpacing: '2px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>ATRYBUTY KARTY</p>
               {[
-                { label: '① Rok', value: (selected as any).card_year || '—' },
-                { label: '② Rzadkość', value: (selected as any).card_rarity || '—' },
+                { label: '① Lewy nagł. [LN]', value: (selected as any).card_year || '—' },
+                { label: '② Prawy nagł. [PN]', value: (selected as any).card_rarity || '—' },
                 { label: '③ Nazwa', value: (selected as any).card_name_custom || '—' },
                 { label: '④ Atrybut 1', value: [(selected as any).attr1_label, (selected as any).attr1_value].filter(Boolean).join(' — ') || '—' },
                 { label: '⑤ Umiejętność', value: (selected as any).card_skill || '—' },
@@ -968,7 +988,7 @@ export default function AdminPage() {
                 { label: '⑨ Efekt holo', value: (selected as any).holo_effect ? '✨ Tak' : 'Nie' },
               ].map((row: any, i) => (
                 <div key={i} style={{ display: 'flex', gap: '12px', padding: '8px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <span style={{ fontSize: '12px', color: 'rgba(240,238,255,0.4)', minWidth: '90px', flexShrink: 0 }}>{row.label}</span>
+                  <span style={{ fontSize: '12px', color: 'rgba(240,238,255,0.4)', minWidth: '108px', flexShrink: 0 }}>{row.label}</span>
                   <span style={{ fontSize: '13px', color: row.value === '—' ? 'rgba(240,238,255,0.2)' : '#f0eeff', wordBreak: 'break-word', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     {row.hex && <span style={{ width: '11px', height: '11px', borderRadius: '50%', background: row.hex, flexShrink: 0 }} />}
                     {row.value}
