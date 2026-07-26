@@ -481,7 +481,7 @@ export default function Home() {
 
       <section className={styles.section}>
         <p className={styles.sectionEye}>{t.howItWorks.eyebrow}</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px', marginBottom: '24px' }}>
           {t.howItWorks.steps.map(s => (
             <div key={s.n} className={styles.infoBlock}>
               <span style={{ fontFamily: 'var(--font-hero)', fontSize: '11px', fontWeight: 700, color: 'var(--neon)', letterSpacing: '1px' }}>{s.n}</span>
