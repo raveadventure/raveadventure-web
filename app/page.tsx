@@ -140,6 +140,8 @@ export default function Home() {
   const refFileBackRef = useRef<HTMLInputElement>(null)
   const navRef = useRef<HTMLElement>(null)
   const [navHeight, setNavHeight] = useState(64)
+  const progressRef = useRef<HTMLDivElement>(null)
+  const isFirstStepRender = useRef(true)
 
   useEffect(() => {
     if (!navRef.current) return
@@ -155,6 +157,16 @@ export default function Home() {
   useEffect(() => {
     fetch('/api/track-visit', { method: 'POST' }).catch(() => {})
   }, [])
+
+  // Po zmianie kroku formularza przewiń do paska postępu (nie zostawiaj klienta na dole
+  // poprzedniego kroku) — widzi od razu, który krok jest aktywny i wypełnia od góry w dół.
+  // Pomijamy pierwsze wyrenderowanie, żeby nie szarpać widoku zaraz po wejściu na stronę.
+  useEffect(() => {
+    if (isFirstStepRender.current) { isFirstStepRender.current = false; return }
+    if (!progressRef.current) return
+    const y = progressRef.current.getBoundingClientRect().top + window.scrollY - navHeight - 16
+    window.scrollTo({ top: y, behavior: 'smooth' })
+  }, [step])
 
   const cardObj = CARD_TYPES.find(c => c.id === cardType)!
   const backObj = BACK_OPTIONS.find(b => b.id === backOption)!
@@ -568,11 +580,11 @@ export default function Home() {
           </p>
         </div>
 
-        <div className={styles.progressWrap}>
+        <div className={styles.progressWrap} ref={progressRef}>
           {t.order.steps.map((s, i) => {
             const n = (i + 1) as Step
             return (
-              <div key={n} className={styles.progressItem}>
+              <div key={n} className={`${styles.progressItem} ${step === n ? styles.progressItemActive : ''}`}>
                 <div className={`${styles.stepDot} ${step === n ? styles.stepDotActive : ''} ${step > n ? styles.stepDotDone : ''}`}>
                   {step > n ? '✓' : n}
                 </div>

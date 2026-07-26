@@ -113,25 +113,17 @@
 .stepDesc { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
 
 /* ── ORDER FORM ── */
-.stepIndicator {
-  display: flex; align-items: center; gap: 0; margin-bottom: 8px;
-  position: relative; width: 200px;
-}
+/* Pasek postępu (5 kroków) — numer i opis połączone w jedną "pigułkę", zamiast osobnego kółka
+   nad tekstem (na wąskich telefonach opisy w starym układzie nachodziły na siebie). Rząd sam
+   się zawija (flex-wrap) zamiast ściskać wszystkie 5 w jedną, za wąską linię. */
 .stepDot {
-  width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border);
+  width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--border);
   background: var(--surface); display: flex; align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 700; color: var(--text-muted); z-index: 1; flex-shrink: 0;
-  margin-right: 52px; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  font-size: 11px; font-weight: 700; color: var(--text-muted); flex-shrink: 0;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
 .stepDotActive { border-color: var(--neon); color: var(--neon); background: var(--neon-dim); box-shadow: var(--glow-neon); }
 .stepDotDone { border-color: var(--success); color: #0a0014; background: var(--success); box-shadow: 0 0 16px rgba(0,229,160,0.4); }
-.stepLine {
-  position: absolute; top: 50%; left: 16px; height: 1px;
-  background: var(--neon); transition: width 0.4s; transform: translateY(-50%); z-index: 0;
-  max-width: 168px;
-}
-.stepLabels { display: flex; gap: 0; margin-bottom: 28px; width: 200px; justify-content: space-between; }
-.stepLabels span { font-size: 11px; color: var(--text-faint); font-family: var(--font-display); }
 
 .formBox { composes: glassPanel from global; border-radius: var(--radius-lg); padding: 32px; max-width: 680px; margin: 0 auto; }
 .formBox::before, .formBox::after { opacity: 0.9; }
@@ -296,9 +288,14 @@
 .sentSummary strong { color: var(--success); }
 
 /* ── PROGRESS ── */
-.progressWrap { display: flex; align-items: flex-start; gap: 0; margin-bottom: 28px; overflow-x: auto; padding-bottom: 4px; max-width: 680px; margin-left: auto; margin-right: auto; }
-.progressItem { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; min-width: 60px; }
-.progressLabel { font-size: 11px; color: var(--text-faint); font-family: var(--font-display); text-align: center; white-space: nowrap; }
+.progressWrap { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 28px; max-width: 680px; margin-left: auto; margin-right: auto; }
+.progressItem {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 14px 5px 5px; border-radius: 999px; flex: 0 0 auto;
+  background: var(--surface2); border: 1px solid var(--border); transition: border-color 0.2s, background 0.2s;
+}
+.progressItemActive { border-color: var(--neon) !important; background: var(--neon-dim); }
+.progressLabel { font-size: 12px; color: var(--text-muted); font-family: var(--font-display); white-space: nowrap; }
 
 /* ── FOOTER LINKS ── */
 .footerLinks { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
