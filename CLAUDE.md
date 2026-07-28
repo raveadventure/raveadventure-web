@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Język komunikacji
+
+Zawsze odpowiadaj po polsku w tej konwersacji (tekst do użytkownika, komentarze w podsumowaniach) — Michał komunikuje się po polsku. Kod, nazwy zmiennych/plików i commity mogą zostać po angielsku zgodnie z istniejącą konwencją w repo.
+
 ## Co to za projekt
 
 RaveAdventure to serwis, w którym klienci zamieniają zdjęcia z festiwali techno/rave w spersonalizowane, kolekcjonerskie karty (format karty bankomatowej, PVC lub wizytówki). Klient wgrywa zdjęcie → dostaje mail potwierdzający → właściciel (Michał) ręcznie tworzy grafikę w Pixlr → wysyła projekt do akceptacji → klient płaci (BLIK/przelew) → karta idzie do druku i wysyłki.

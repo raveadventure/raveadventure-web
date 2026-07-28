@@ -1,12 +1,14 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../../../lib/supabase'
+import { isSupabasePlaceholder, mockListPortfolio, mockInsertPortfolio, mockUpdatePortfolio, mockDeletePortfolio, mockUploadPortfolioFile } from '../../../lib/portfolioLocalMock'
 
 const THEMES = [
   { id: 'techno_rave', label: 'Techno / Rave' },
   { id: 'festival',    label: 'Festiwal' },
   { id: 'adventure',   label: 'Adventure' },
   { id: 'custom',      label: 'Custom' },
+  { id: 'fan_art',     label: '🎨 Fan Art (nie na sprzedaż)' },
 ]
 
 type Item = { id: string; name: string; theme: string; description: string; original_url: string | null; card_url: string; active: boolean; sort_order: number }
@@ -24,6 +26,12 @@ export default function AdminPortfolio() {
 
   const fetch = async () => {
     setLoading(true)
+    if (isSupabasePlaceholder()) {
+      const { data } = await mockListPortfolio()
+      setItems(data || [])
+      setLoading(false)
+      return
+    }
     const { data } = await supabase.from('portfolio').select('*').order('sort_order')
     if (data) setItems(data)
     setLoading(false)
@@ -36,25 +44,37 @@ export default function AdminPortfolio() {
     setSaving(true); setMsg(null)
     try {
       const id = crypto.randomUUID()
-      const cardExt = (cardFile.name.split('.').pop() || 'jpg').toLowerCase()
-      const { error: ce } = await supabase.storage.from('order-photos').upload(`portfolio/${id}-card.${cardExt}`, cardFile)
-      if (ce) throw ce
-      const { data: cardUrl } = supabase.storage.from('order-photos').getPublicUrl(`portfolio/${id}-card.${cardExt}`)
+      const maxOrder = items.length > 0 ? Math.max(...items.map(i => i.sort_order)) + 1 : 0
 
-      let origUrl = null
-      if (origFile) {
-        const origExt = (origFile.name.split('.').pop() || 'jpg').toLowerCase()
-        await supabase.storage.from('order-photos').upload(`portfolio/${id}-orig.${origExt}`, origFile)
-        const { data: ou } = supabase.storage.from('order-photos').getPublicUrl(`portfolio/${id}-orig.${origExt}`)
-        origUrl = ou.publicUrl
+      if (isSupabasePlaceholder()) {
+        const cardUrl = await mockUploadPortfolioFile(cardFile)
+        const origUrl = origFile ? await mockUploadPortfolioFile(origFile) : null
+        const { error } = await mockInsertPortfolio({
+          id, name: form.name, theme: form.theme, description: form.description,
+          card_url: cardUrl, original_url: origUrl, active: true, sort_order: maxOrder,
+        })
+        if (error) throw new Error(error.message)
+      } else {
+        const cardExt = (cardFile.name.split('.').pop() || 'jpg').toLowerCase()
+        const { error: ce } = await supabase.storage.from('order-photos').upload(`portfolio/${id}-card.${cardExt}`, cardFile)
+        if (ce) throw ce
+        const { data: cardUrl } = supabase.storage.from('order-photos').getPublicUrl(`portfolio/${id}-card.${cardExt}`)
+
+        let origUrl = null
+        if (origFile) {
+          const origExt = (origFile.name.split('.').pop() || 'jpg').toLowerCase()
+          await supabase.storage.from('order-photos').upload(`portfolio/${id}-orig.${origExt}`, origFile)
+          const { data: ou } = supabase.storage.from('order-photos').getPublicUrl(`portfolio/${id}-orig.${origExt}`)
+          origUrl = ou.publicUrl
+        }
+
+        const { error: ie } = await supabase.from('portfolio').insert([{
+          id, name: form.name, theme: form.theme, description: form.description,
+          card_url: cardUrl.publicUrl, original_url: origUrl, active: true, sort_order: maxOrder,
+        }])
+        if (ie) throw ie
       }
 
-      const maxOrder = items.length > 0 ? Math.max(...items.map(i => i.sort_order)) + 1 : 0
-      const { error: ie } = await supabase.from('portfolio').insert([{
-        id, name: form.name, theme: form.theme, description: form.description,
-        card_url: cardUrl.publicUrl, original_url: origUrl, active: true, sort_order: maxOrder,
-      }])
-      if (ie) throw ie
       setMsg({ type: 'ok', text: 'Karta dodana do portfolio!' })
       setForm({ name: '', theme: 'techno_rave', description: '' })
       setCardFile(null); setOrigFile(null)
@@ -66,13 +86,21 @@ export default function AdminPortfolio() {
   }
 
   const toggleActive = async (id: string, active: boolean) => {
-    await supabase.from('portfolio').update({ active: !active }).eq('id', id)
+    if (isSupabasePlaceholder()) {
+      await mockUpdatePortfolio(id, { active: !active })
+    } else {
+      await supabase.from('portfolio').update({ active: !active }).eq('id', id)
+    }
     setItems(prev => prev.map(i => i.id === id ? { ...i, active: !active } : i))
   }
 
   const deleteItem = async (id: string) => {
     if (!confirm('Usunąć tę kartę z portfolio?')) return
-    await supabase.from('portfolio').delete().eq('id', id)
+    if (isSupabasePlaceholder()) {
+      await mockDeletePortfolio(id)
+    } else {
+      await supabase.from('portfolio').delete().eq('id', id)
+    }
     setItems(prev => prev.filter(i => i.id !== id))
   }
 

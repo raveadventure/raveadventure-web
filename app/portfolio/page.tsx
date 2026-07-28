@@ -10,6 +10,7 @@ const THEMES = [
   { id: 'festival',  label: 'Festiwal' },
   { id: 'adventure', label: 'Adventure' },
   { id: 'custom',    label: 'Custom' },
+  { id: 'fan_art',   label: 'Fan Art' },
 ]
 
 type PortfolioItem = {
@@ -102,6 +103,7 @@ export default function PortfolioPage() {
       {list.map(item => (
         <div key={item.id} className={styles.compactThumb} onClick={() => setLightbox({ item, view: 'card' })}>
           <img src={item.card_url} alt={item.name} loading="lazy" />
+          {item.theme === 'fan_art' && <span className={styles.compactFanArtBadge}>Fan Art</span>}
           <span className={styles.compactName}>{item.name}</span>
         </div>
       ))}
@@ -172,6 +174,18 @@ export default function PortfolioPage() {
 
       {/* GALERIA */}
       <div className={styles.content}>
+        {filter === 'fan_art' && (
+          <div style={{
+            maxWidth: '680px', margin: '0 auto 24px',
+            background: 'rgba(245,158,11,0.1)', border: '1.5px solid rgba(245,158,11,0.4)',
+            borderRadius: '14px', padding: '14px 18px', display: 'flex', gap: '12px', alignItems: 'flex-start',
+          }}>
+            <span style={{ fontSize: '18px', flexShrink: 0 }}>🎨</span>
+            <p style={{ margin: 0, fontSize: '13px', color: '#f59e0b', lineHeight: '1.6' }}>
+              <strong>To karty fanowskie</strong>, stworzone i umieszczone za zgodą artysty — prezentujemy je z szacunku dla ich twórczości i społeczności. <strong>Nie są dostępne do zamówienia ani sprzedaży.</strong>
+            </p>
+          </div>
+        )}
         {loading ? (
           <div className={styles.loading}>Ładowanie portfolio...</div>
         ) : filtered.length === 0 ? (
@@ -273,6 +287,7 @@ function CardPair({ item, onOpen }: { item: PortfolioItem; onOpen: (v: { item: P
           />
           <div className={styles.thumbLabel}>{showOriginal ? 'Oryginał' : 'Karta'}</div>
         </div>
+        {item.theme === 'fan_art' && <span className={styles.fanArtBadge}>Fan Art · Not for sale</span>}
 
         {/* Lupka — powiększenie/lightbox */}
         <button

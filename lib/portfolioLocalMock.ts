@@ -19,6 +19,63 @@ export type PortfolioLocalItem = {
 
 const p = (file: string) => `/portfolio-local/${file}`
 
+export async function mockListPortfolio() {
+  try {
+    const res = await fetch('/api/dev-portfolio')
+    const data = await res.json()
+    return { data: res.ok ? data : [], error: res.ok ? null : { message: data?.error || 'List failed' } }
+  } catch (e: any) {
+    return { data: [], error: { message: e?.message || 'List failed' } }
+  }
+}
+
+export async function mockInsertPortfolio(fields: Record<string, any>) {
+  try {
+    const res = await fetch('/api/dev-portfolio', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fields),
+    })
+    const data = await res.json()
+    return { data: res.ok ? data : null, error: res.ok ? null : { message: data?.error || 'Insert failed' } }
+  } catch (e: any) {
+    return { data: null, error: { message: e?.message || 'Insert failed' } }
+  }
+}
+
+export async function mockUpdatePortfolio(id: string, updates: Record<string, any>) {
+  try {
+    const res = await fetch('/api/dev-portfolio', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...updates }),
+    })
+    const data = await res.json()
+    return { data: res.ok ? data : null, error: res.ok ? null : { message: data?.error || 'Update failed' } }
+  } catch (e: any) {
+    return { data: null, error: { message: e?.message || 'Update failed' } }
+  }
+}
+
+export async function mockDeletePortfolio(id: string) {
+  try {
+    const res = await fetch(`/api/dev-portfolio?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+    const data = await res.json().catch(() => ({}))
+    return { error: res.ok ? null : { message: data?.error || 'Delete failed' } }
+  } catch (e: any) {
+    return { error: { message: e?.message || 'Delete failed' } }
+  }
+}
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+export async function mockUploadPortfolioFile(file: File): Promise<string> {
+  return fileToDataUrl(file)
+}
+
 export const PORTFOLIO_LOCAL_MOCK: PortfolioLocalItem[] = [
   { id: 'a312dceb-afc7-43b9-a7cc-d1af2e483dcd', name: 'Rave Friends', theme: 'festival', description: 'Pamiątka z festiwalu Audioriver 2025', original_url: p('a312dceb-afc7-43b9-a7cc-d1af2e483dcd-orig.jpg'), card_url: p('a312dceb-afc7-43b9-a7cc-d1af2e483dcd-card.png') },
   { id: '839f3cc9-2adf-4e89-8751-17e695b870de', name: 'Travel Friends', theme: 'adventure', description: 'Wspomnienia z Tajlandii ', original_url: p('839f3cc9-2adf-4e89-8751-17e695b870de-orig.jpg'), card_url: p('839f3cc9-2adf-4e89-8751-17e695b870de-card.png') },

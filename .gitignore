@@ -23,6 +23,10 @@
 # lokalne zdjęcia kart do portfolio (mock na czas redesignu, patrz lib/portfolioLocalMock.ts)
 /public/portfolio-local/
 
+# lokalny mock tabeli portfolio dla panelu admina (patrz lib/devPortfolioStore.ts /
+# app/api/dev-portfolio) — zawiera zdjęcia jako base64, potrafi urosnąć, nigdy nie commitować
+/.dev-portfolio/
+
 # lokalny licznik odwiedzin (patrz app/api/track-visit) — realne dane liczy prawdziwa tabela
 # page_views w Supabase, to tylko do testów lokalnych
 /.dev-page-views/
