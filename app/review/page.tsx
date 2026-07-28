@@ -100,7 +100,14 @@ function ReviewContent() {
   const backNav = (
     <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
       <button
-        onClick={() => window.history.back()}
+        onClick={() => {
+          // Jeśli link otworzył się bez historii (typowe dla przeglądarek "w aplikacji"
+          // mailowej), history.back() nic nie zrobi — wtedy po chwili próbujemy zamknąć
+          // kartę, żeby wrócić do maila leżącego pod spodem. Jeśli back() zadziała, strona
+          // się przeładuje i ten timeout nigdy się nie wykona.
+          window.history.back()
+          setTimeout(() => window.close(), 300)
+        }}
         style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', color: '#f0eeff', padding: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
       >
         ← Wróć do maila
