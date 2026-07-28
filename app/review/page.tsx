@@ -13,10 +13,24 @@ function ReviewContent() {
   )
   const [notes, setNotes] = useState('')
   const [sending, setSending] = useState(false)
+  const [designInfo, setDesignInfo] = useState<{
+    design_url: string | null
+    design_url_2: string | null
+    design_back_url: string | null
+    approved_design_option: number | null
+  } | null>(null)
 
   useEffect(() => {
     if (action === 'approve' && token) handleApprove()
   }, [])
+
+  useEffect(() => {
+    if (!token) return
+    fetch(`/api/review-info?token=${encodeURIComponent(token)}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => data && setDesignInfo(data))
+      .catch(() => {})
+  }, [token])
 
   const handleApprove = async () => {
     setSending(true)
@@ -47,6 +61,42 @@ function ReviewContent() {
     setSending(false)
   }
 
+  const designPreview = (() => {
+    if (!designInfo) return null
+    const fronts = [designInfo.design_url, designInfo.design_url_2].filter(Boolean) as string[]
+    if (fronts.length === 0 && !designInfo.design_back_url) return null
+    return (
+      <div style={{ margin: '0 0 20px' }}>
+        <p style={{ fontSize: '11px', color: 'rgba(240,238,255,0.4)', fontFamily: 'monospace', letterSpacing: '1px', margin: '0 0 10px' }}>// podgląd projektu</p>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          {fronts.map((url, i) => (
+            <a key={url} href={url} target="_blank" rel="noopener noreferrer" style={{ position: 'relative', display: 'block' }}>
+              <img
+                src={url}
+                alt={`Wariant ${i + 1}`}
+                style={{
+                  width: '110px', height: 'auto', borderRadius: '8px', display: 'block',
+                  border: designInfo.approved_design_option === i + 1 ? '2px solid #00e5a0' : '1px solid rgba(180,77,255,0.3)',
+                }}
+              />
+              {fronts.length > 1 && (
+                <span style={{ position: 'absolute', top: '4px', left: '4px', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', background: 'rgba(8,8,16,0.75)', color: '#f0eeff' }}>
+                  {i + 1}
+                </span>
+              )}
+            </a>
+          ))}
+          {designInfo.design_back_url && (
+            <a href={designInfo.design_back_url} target="_blank" rel="noopener noreferrer">
+              <img src={designInfo.design_back_url} alt="Tył karty" style={{ width: '110px', height: 'auto', borderRadius: '8px', border: '1px solid rgba(0,240,255,0.3)', display: 'block' }} />
+            </a>
+          )}
+        </div>
+        <p style={{ fontSize: '11px', color: 'rgba(240,238,255,0.35)', margin: '8px 0 0' }}>Stuknij grafikę, żeby powiększyć</p>
+      </div>
+    )
+  })()
+
   const box = (children: React.ReactNode) => (
     <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: "'Space Grotesk', sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -66,6 +116,7 @@ function ReviewContent() {
   if (step === 'success-approve') return box(<>
     <div style={{ width: '64px', height: '64px', background: '#ec4899', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', margin: '0 auto 20px' }}>💳</div>
     <h2 style={{ color: '#ec4899', fontSize: '22px', margin: '0 0 12px' }}>Projekt zatwierdzony!</h2>
+    {designPreview}
     {option && (
       <p style={{ color: '#00e5a0', fontSize: '14px', fontWeight: 700, margin: '0 0 12px' }}>Wybrany wariant: {option}</p>
     )}
@@ -80,6 +131,7 @@ function ReviewContent() {
   if (step === 'success-reject') return box(<>
     <div style={{ width: '64px', height: '64px', background: '#ff4d6d', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', margin: '0 auto 20px' }}>✎</div>
     <h2 style={{ color: '#ff4d6d', fontSize: '22px', margin: '0 0 12px' }}>Uwagi wysłane!</h2>
+    {designPreview}
     <p style={{ color: 'rgba(240,238,255,0.6)', fontSize: '15px', lineHeight: '1.7', margin: 0 }}>
       Otrzymaliśmy Twoje uwagi. Przygotujemy poprawiony projekt i wyślemy go wkrótce.
     </p>
@@ -90,6 +142,7 @@ function ReviewContent() {
     <p style={{ color: 'rgba(240,238,255,0.5)', fontSize: '14px', margin: '0 0 20px', lineHeight: '1.6' }}>
       Opisz dokładnie jakie poprawki chcesz wprowadzić — kolor, tekst, układ, zdjęcie. Jeśli mieliśmy do Ciebie pytania, odpowiedz na nie tutaj.
     </p>
+    {designPreview}
     <p style={{ color: 'rgba(240,238,255,0.4)', fontSize: '12px', margin: '0 0 8px', fontFamily: 'monospace', letterSpacing: '1px' }}>// twoje uwagi i odpowiedzi na pytania</p>
     <textarea
       value={notes}

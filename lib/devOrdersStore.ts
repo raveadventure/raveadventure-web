@@ -43,6 +43,10 @@ export function updateOrderById(id: string, updates: Record<string, any>) {
   return orders[idx]
 }
 
+export function getOrderByToken(token: string) {
+  return readOrders().find(o => o.review_token === token) || null
+}
+
 export function updateOrderByToken(token: string, updates: Record<string, any>) {
   const orders = readOrders()
   const idx = orders.findIndex(o => o.review_token === token)
