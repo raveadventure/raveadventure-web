@@ -97,6 +97,23 @@ function ReviewContent() {
     )
   })()
 
+  const backNav = (
+    <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
+      <button
+        onClick={() => window.history.back()}
+        style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', color: '#f0eeff', padding: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+      >
+        ← Wróć do maila
+      </button>
+      <a
+        href="/"
+        style={{ flex: 1, background: 'rgba(180,77,255,0.12)', border: '1px solid rgba(180,77,255,0.3)', borderRadius: '10px', color: '#b44dff', padding: '12px', fontSize: '14px', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
+        Strona główna →
+      </a>
+    </div>
+  )
+
   const box = (children: React.ReactNode) => (
     <div style={{ minHeight: '100vh', background: '#080810', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: "'Space Grotesk', sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -126,6 +143,7 @@ function ReviewContent() {
     <p style={{ color: 'rgba(240,238,255,0.4)', fontSize: '13px', margin: 0 }}>
       Pytania? Napisz na <a href="mailto:kontakt@raveadventure.pl" style={{ color: '#b44dff' }}>kontakt@raveadventure.pl</a>
     </p>
+    {backNav}
   </>)
 
   if (step === 'success-reject') return box(<>
@@ -135,6 +153,7 @@ function ReviewContent() {
     <p style={{ color: 'rgba(240,238,255,0.6)', fontSize: '15px', lineHeight: '1.7', margin: 0 }}>
       Otrzymaliśmy Twoje uwagi. Przygotujemy poprawiony projekt i wyślemy go wkrótce.
     </p>
+    {backNav}
   </>)
 
   if (step === 'reject') return box(<>
