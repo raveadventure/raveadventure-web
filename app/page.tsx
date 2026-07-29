@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { isSupabasePlaceholder, mockInsertOrder, mockUpdateOrder } from '../lib/ordersLocalMock'
 import styles from './page.module.css'
 import PortfolioCarousel from '../components/PortfolioCarousel'
+import RealCardsSection from '../components/RealCardsSection'
 import InpostGeowidget from '../components/InpostGeowidget'
 import InpostAutocomplete from '../components/InpostAutocomplete'
 import HeroCardAnimation from '../components/HeroCardAnimation'
@@ -427,6 +428,7 @@ export default function Home() {
       </div>
 
       <PortfolioCarousel lang={lang} />
+      <RealCardsSection lang={lang} />
 
       <section className={styles.hero}>
         <div className={styles.heroGrid} aria-hidden="true" />

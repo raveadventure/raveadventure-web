@@ -31,6 +31,10 @@
 # page_views w Supabase, to tylko do testów lokalnych
 /.dev-page-views/
 
+# surowe oryginały zdjęć/wideo prawdziwych kart (setki MB, telefon 4K) — przetworzone,
+# skompresowane wersje bez EXIF/GPS leżą bezpośrednio w /public/real-cards/ i te idą do gita
+/public/real-cards/_originals/
+
 # vercel
 .vercel
 
