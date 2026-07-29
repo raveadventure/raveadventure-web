@@ -143,7 +143,7 @@ export default function Home() {
   const navRef = useRef<HTMLElement>(null)
   const [navHeight, setNavHeight] = useState(64)
   const progressRef = useRef<HTMLDivElement>(null)
-  const isFirstStepRender = useRef(true)
+  const prevStepRef = useRef(step)
 
   useEffect(() => {
     if (!navRef.current) return
@@ -162,13 +162,16 @@ export default function Home() {
 
   // Po zmianie kroku formularza przewiń do paska postępu (nie zostawiaj klienta na dole
   // poprzedniego kroku) — widzi od razu, który krok jest aktywny i wypełnia od góry w dół.
-  // Pomijamy pierwsze wyrenderowanie, żeby nie szarpać widoku zaraz po wejściu na stronę.
+  // Porównanie z poprzednią wartością (zamiast flagi "czy to pierwszy render") jest odporne
+  // na podwójne wywołanie efektów przez React Strict Mode w trybie dev — flaga konsumowana
+  // przy pierwszym z dwóch wywołań powodowała, że drugie i tak przewijało stronę od razu po wejściu.
   useEffect(() => {
-    if (isFirstStepRender.current) { isFirstStepRender.current = false; return }
+    if (prevStepRef.current === step) return
+    prevStepRef.current = step
     if (!progressRef.current) return
     const y = progressRef.current.getBoundingClientRect().top + window.scrollY - navHeight - 16
     window.scrollTo({ top: y, behavior: 'smooth' })
-  }, [step])
+  }, [step, navHeight])
 
   const cardObj = CARD_TYPES.find(c => c.id === cardType)!
   const backObj = BACK_OPTIONS.find(b => b.id === backOption)!
