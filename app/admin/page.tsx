@@ -17,6 +17,25 @@ const THEMES: Record<string, string> = {
   techno: 'Techno', rave: 'Rave', festival: 'Festival', travel: 'Adventure',
 }
 
+// ── ARCHIWIZACJA ZDJĘĆ ZAKOŃCZONYCH ZAMÓWIEŃ ──────────────────────────────
+// Gdy zamówienie trafia do statusu "done", przenosimy jego pliki w Storage do
+// folderu closed-orders/, żeby dało się je później zbiorczo ściągnąć na dysk
+// i skasować z Supabase (limit 5GB na Free Planie — patrz Lekcja #5 w CLAUDE.md).
+const STORAGE_BUCKET = 'order-photos'
+const ARCHIVE_PREFIX = 'closed-orders/'
+const ARCHIVABLE_URL_FIELDS = [
+  'photo_url', 'design_url', 'design_url_2', 'design_back_url',
+  'design_original_url', 'design_original_url_2', 'design_back_original_url',
+] as const
+
+function storagePathFromUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+  const marker = `/storage/v1/object/public/${STORAGE_BUCKET}/`
+  const idx = url.indexOf(marker)
+  if (idx === -1) return null
+  return url.slice(idx + marker.length)
+}
+
 // Ta sama lista co FRAME_COLORS w app/page.tsx (duplikacja świadoma — admin już trzyma własne,
 // niezależne słowniki etykiet, np. THEMES powyżej, więc to zgodne z ustaloną konwencją).
 const FRAME_COLORS: Record<string, { name: string; hex: string }> = {
@@ -374,6 +393,40 @@ export default function AdminPage() {
     setConfirmDelete(null)
   }
 
+  const archiveOrderFiles = async (order: Record<string, any>) => {
+    const updates: Record<string, string> = {}
+    for (const field of ARCHIVABLE_URL_FIELDS) {
+      const path = storagePathFromUrl(order[field])
+      if (!path || path.startsWith(ARCHIVE_PREFIX)) continue
+      const destPath = ARCHIVE_PREFIX + path
+      const { error: moveError } = await supabase.storage.from(STORAGE_BUCKET).move(path, destPath)
+      if (moveError) continue // plik już przeniesiony/nie istnieje — pomijamy, nie przerywamy reszty
+      const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(destPath)
+      updates[field] = data.publicUrl
+    }
+    return updates
+  }
+
+  const [archiving, setArchiving] = useState(false)
+  const archiveAllDone = async () => {
+    if (isSupabasePlaceholder() || archiving) return
+    setArchiving(true)
+    const doneOrders = orders.filter(o => o.status === 'done')
+    let archivedCount = 0
+    for (const order of doneOrders) {
+      const fileUpdates = await archiveOrderFiles(order)
+      if (Object.keys(fileUpdates).length > 0) {
+        const { error } = await supabase.from('orders').update(fileUpdates).eq('id', order.id)
+        if (!error) {
+          setOrders(prev => prev.map(o => o.id === order.id ? { ...o, ...fileUpdates } : o))
+          archivedCount++
+        }
+      }
+    }
+    setArchiving(false)
+    alert(`Zarchiwizowano pliki dla ${archivedCount} z ${doneOrders.length} zakończonych zamówień.`)
+  }
+
   const fetchOrders = async () => {
     setLoading(true)
     const { data, error } = isSupabasePlaceholder()
@@ -393,12 +446,16 @@ export default function AdminPage() {
     const updates: Record<string, unknown> = { status }
     if (status === 'production') updates.approved_at = new Date().toISOString()
     if (status === 'shipped') updates.shipped_at = new Date().toISOString()
+    if (status === 'done' && !isSupabasePlaceholder()) {
+      const order = orders.find(o => o.id === id)
+      if (order) Object.assign(updates, await archiveOrderFiles(order))
+    }
     const { error } = isSupabasePlaceholder()
       ? await mockUpdateOrder(id, updates)
       : await supabase.from('orders').update(updates).eq('id', id)
     if (!error) {
-      setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o))
-      if (selected?.id === id) setSelected(prev => prev ? { ...prev, status } : null)
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o))
+      if (selected?.id === id) setSelected(prev => prev ? { ...prev, ...updates } : null)
     }
     setUpdating(null)
   }
@@ -641,6 +698,16 @@ export default function AdminPage() {
             )}
           </div>
           <a href="/admin/portfolio" style={{ background: 'rgba(180,77,255,0.15)', border: '1px solid rgba(180,77,255,0.3)', color: '#b44dff', padding: '6px 14px', borderRadius: '6px', fontSize: '13px', textDecoration: 'none' }}>Portfolio</a>
+          {!isSupabasePlaceholder() && (
+            <button
+              onClick={archiveAllDone}
+              disabled={archiving}
+              title="Przenosi zdjęcia wszystkich zakończonych zamówień do folderu closed-orders/ w Storage"
+              style={{ background: 'rgba(107,114,128,0.15)', border: '1px solid rgba(107,114,128,0.4)', color: '#9ca3af', padding: '6px 14px', borderRadius: '6px', fontSize: '13px', cursor: archiving ? 'wait' : 'pointer', fontFamily: 'inherit' }}
+            >
+              {archiving ? 'Archiwizuję...' : '🗄 Zarchiwizuj zakończone'}
+            </button>
+          )}
           <button onClick={fetchOrders} style={{ background: 'rgba(180,77,255,0.15)', border: '1px solid rgba(180,77,255,0.3)', color: '#b44dff', padding: '6px 14px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>↻ Odśwież</button>
         </div>
       </nav>

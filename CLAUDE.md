@@ -220,7 +220,10 @@ Wybór paczkomatu domyślnie idzie przez `components/InpostAutocomplete.tsx` —
 designs/{id}-{timestamp}-original.ext — oryginał projektu (pełna rozdzielczość, NIE ładowany automatycznie nigdzie)
 designs/{id}-{timestamp}.jpg          — skompresowany podgląd projektu (trafia do maila i podglądu w adminie)
 designs/{id}-{timestamp}-back-original.ext / -back.jpg — analogicznie dla tyłu
+closed-orders/<oryginalna-ścieżka>     — archiwum: pliki zamówień ze statusem "done", patrz niżej
 ```
+
+**Archiwizacja zdjęć zakończonych zamówień** (`app/admin/page.tsx`, `archiveOrderFiles`/`archiveAllDone`): gdy zamówienie zmienia status na `done`, pliki powiązane z nim (`photo_url`, `design_url`, `design_url_2`, `design_back_url`, `design_original_url`, `design_original_url_2`, `design_back_original_url`) są automatycznie przenoszone (`supabase.storage.move()`) do folderu `closed-orders/`, a odpowiednie kolumny w `orders` aktualizowane na nowe publiczne URL-e — inaczej stare linki (mail, panel) prowadziłyby donikąd. Przycisk „🗄 Zarchiwizuj zakończone" w nagłówku panelu robi to samo zbiorczo dla już istniejących zamówień `done` (jednorazowa migracja, bezpieczna do wielokrotnego kliknięcia — pomija pliki już przeniesione). Cel: Michał może okresowo ściągnąć zawartość `closed-orders/` na dysk i skasować ją z Supabase, żeby zwolnić miejsce na Free Planie (5GB limit, patrz Lekcja #5 o Cached Egress). Działa tylko na prawdziwym Supabase — lokalnie (placeholder) przycisk się nie pokazuje.
 
 ## ⚠️ Lekcje wyciągnięte (nie powtarzać tych błędów)
 
