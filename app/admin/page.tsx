@@ -397,10 +397,17 @@ export default function AdminPage() {
     const updates: Record<string, string> = {}
     for (const field of ARCHIVABLE_URL_FIELDS) {
       const path = storagePathFromUrl(order[field])
-      if (!path || path.startsWith(ARCHIVE_PREFIX)) continue
+      if (!path) {
+        if (order[field]) console.warn(`[archive] ${order.id}: pole "${field}" nie pasuje do formatu URL Storage:`, order[field])
+        continue
+      }
+      if (path.startsWith(ARCHIVE_PREFIX)) continue
       const destPath = ARCHIVE_PREFIX + path
       const { error: moveError } = await supabase.storage.from(STORAGE_BUCKET).move(path, destPath)
-      if (moveError) continue // plik już przeniesiony/nie istnieje — pomijamy, nie przerywamy reszty
+      if (moveError) {
+        console.error(`[archive] ${order.id}: nie udało się przenieść "${field}" (${path} → ${destPath}):`, moveError)
+        continue
+      }
       const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(destPath)
       updates[field] = data.publicUrl
     }
@@ -413,18 +420,23 @@ export default function AdminPage() {
     setArchiving(true)
     const doneOrders = orders.filter(o => o.status === 'done')
     let archivedCount = 0
+    let filesMoved = 0
     for (const order of doneOrders) {
       const fileUpdates = await archiveOrderFiles(order)
+      filesMoved += Object.keys(fileUpdates).length
       if (Object.keys(fileUpdates).length > 0) {
         const { error } = await supabase.from('orders').update(fileUpdates).eq('id', order.id)
-        if (!error) {
+        if (error) {
+          console.error(`[archive] ${order.id}: przeniesiono pliki, ale nie udało się zaktualizować zamówienia:`, error)
+        } else {
           setOrders(prev => prev.map(o => o.id === order.id ? { ...o, ...fileUpdates } : o))
           archivedCount++
         }
       }
     }
+    console.log(`[archive] Gotowe: ${archivedCount}/${doneOrders.length} zamówień, ${filesMoved} plików przeniesionych. Szczegóły błędów (jeśli są) wyżej w konsoli.`)
     setArchiving(false)
-    alert(`Zarchiwizowano pliki dla ${archivedCount} z ${doneOrders.length} zakończonych zamówień.`)
+    alert(`Zarchiwizowano pliki dla ${archivedCount} z ${doneOrders.length} zakończonych zamówień (${filesMoved} plików łącznie).${filesMoved === 0 ? '\n\nNic nie przeniesiono — otwórz konsolę przeglądarki (F12 → Console) i sprawdź komunikaty [archive], to pokaże dokładną przyczynę.' : ''}`)
   }
 
   const fetchOrders = async () => {
