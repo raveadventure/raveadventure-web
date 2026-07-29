@@ -72,6 +72,27 @@
 .infoBlock:hover::before, .infoBlock:hover::after { opacity: 1; }
 .tagPill { font-size: 10px; padding: 3px 10px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-muted); }
 
+/* ── ROZWIJANE MODUŁY (tylko na mobile) — "Jak to działa" i "co możesz zamówić" są długie
+   i na telefonie robią stronę bardzo długą. Sterowane stanem Reacta (nie natywnym
+   <details>/[open] — w części przeglądarek zwinięta zawartość <details> chowa się przez
+   content-visibility, którego nie da się łatwo przebić samym display:block!important).
+   Na desktopie .mobileCollapseBody jest zawsze widoczne; dopiero @media (max-width: 768px)
+   chowa ją, chyba że doklejona jest klasa mobileCollapseBodyOpen. ── */
+.mobileCollapse { margin-bottom: 8px; }
+.mobileCollapseSummary {
+  width: 100%; background: none; border: none; padding: 0; margin: 0; text-align: left;
+  cursor: default; pointer-events: none; display: flex; align-items: center; gap: 8px; font: inherit;
+}
+.collapseIcon { display: none; }
+.mobileCollapseBody { display: block; }
+
+@media (max-width: 768px) {
+  .mobileCollapseSummary { cursor: pointer; pointer-events: auto; padding: 10px 0; }
+  .collapseIcon { display: inline-block; color: var(--neon); transition: transform .2s ease; margin-left: auto; }
+  .mobileCollapseBody { display: none; }
+  .mobileCollapseBodyOpen { display: block !important; }
+}
+
 /* ── THEMES ── */
 /* Zawsze 2×2 — symetrycznie niezależnie od szerokości, bez wpadania w układ 3+1 */
 .themesGrid {
