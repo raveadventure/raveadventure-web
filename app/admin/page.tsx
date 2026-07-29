@@ -33,7 +33,11 @@ function storagePathFromUrl(url: string | null | undefined): string | null {
   const marker = `/storage/v1/object/public/${STORAGE_BUCKET}/`
   const idx = url.indexOf(marker)
   if (idx === -1) return null
-  return url.slice(idx + marker.length)
+  const path = url.slice(idx + marker.length)
+  // ?v=... na końcu to tylko cache-busting doklejany przy wyświetlaniu (patrz admin/page.tsx
+  // przy zapisie design_url) — nie jest częścią prawdziwej ścieżki pliku w Storage.
+  const queryIdx = path.indexOf('?')
+  return queryIdx === -1 ? path : path.slice(0, queryIdx)
 }
 
 // Ta sama lista co FRAME_COLORS w app/page.tsx (duplikacja świadoma — admin już trzyma własne,
