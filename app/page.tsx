@@ -5,6 +5,7 @@ import { isSupabasePlaceholder, mockInsertOrder, mockUpdateOrder } from '../lib/
 import styles from './page.module.css'
 import PortfolioCarousel from '../components/PortfolioCarousel'
 import RealCardsSection from '../components/RealCardsSection'
+import AdShowcase from '../components/AdShowcase'
 import InpostGeowidget from '../components/InpostGeowidget'
 import InpostAutocomplete from '../components/InpostAutocomplete'
 import HeroCardAnimation from '../components/HeroCardAnimation'
@@ -427,6 +428,7 @@ export default function Home() {
         <p className={`${styles.brandTagline} ${styles.shimmer}`}>The best memories from your adventure deserve a card</p>
       </div>
 
+      <AdShowcase lang={lang} />
       <PortfolioCarousel lang={lang} />
       <RealCardsSection lang={lang} />
 
