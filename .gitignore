@@ -1,6 +1,12 @@
 # dependencies
 /node_modules
 
+# lokalne skille Claude Code (npx skills add ...) — narzędzia developerskie,
+# nie kod strony, personalne dla środowiska danej maszyny
+/.agents/
+/.claude/skills/
+/skills-lock.json
+
 # next.js build output
 /.next/
 /out/
