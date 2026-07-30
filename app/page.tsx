@@ -12,6 +12,10 @@ import HeroCardAnimation from '../components/HeroCardAnimation'
 import LogoEqualizer from '../components/LogoEqualizer'
 import { T, CARD_TYPES_I18N, FRONT_THEMES_I18N, BACK_OPTIONS_I18N, Lang } from '../lib/translations'
 
+// Baner promocyjny nad stroną — wyłączony między eventami. Włącz z powrotem (i zaktualizuj
+// tekst/kod/datę) gdy ruszy kolejna promocja powiązana z festiwalem.
+const SHOW_PROMO_BANNER = false
+
 type Step = 1 | 2 | 3 | 4 | 5
 
 // Kolorystyka ramek karty — nazwy są już marketingowe/neutralne językowo, więc nie idą przez
@@ -368,32 +372,34 @@ export default function Home() {
         </div>
       </nav>
 
-      <a
-        href="#order"
-        style={{
-          display: 'block',
-          marginTop: `${navHeight}px`,
-          background: 'linear-gradient(90deg, rgba(180,77,255,0.18), rgba(0,240,255,0.12))',
-          borderBottom: '1px solid rgba(180,77,255,0.3)',
-          padding: '10px 5vw',
-          textAlign: 'center',
-          textDecoration: 'none',
-          cursor: 'pointer',
-        }}
-      >
-        <div>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: '#f0eeff' }}>
-            {lang === 'pl' ? '☀️ Podczas trwania Łódź Summer Festival — 25% zniżki na wszystkie karty!' : '☀️ During Łódź Summer Festival — 25% off all cards!'}
-          </span>
-        </div>
-        <p style={{ margin: '3px 0 0', fontSize: '11px', color: 'rgba(240,238,255,0.5)' }}>
-          {lang === 'pl' ? 'Użyj kodu' : 'Use code'}
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: '12px', fontWeight: 700, color: '#b44dff', letterSpacing: '1px', margin: '0 6px', textDecoration: 'underline' }}>
-            LSF2026
-          </span>
-          · {lang === 'pl' ? 'kod ważny przy zamówieniu do 27.07.2026' : 'code valid for orders until July 27, 2026'}
-        </p>
-      </a>
+      {SHOW_PROMO_BANNER && (
+        <a
+          href="#order"
+          style={{
+            display: 'block',
+            marginTop: `${navHeight}px`,
+            background: 'linear-gradient(90deg, rgba(180,77,255,0.18), rgba(0,240,255,0.12))',
+            borderBottom: '1px solid rgba(180,77,255,0.3)',
+            padding: '10px 5vw',
+            textAlign: 'center',
+            textDecoration: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          <div>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: '#f0eeff' }}>
+              {lang === 'pl' ? '☀️ Podczas trwania Łódź Summer Festival — 25% zniżki na wszystkie karty!' : '☀️ During Łódź Summer Festival — 25% off all cards!'}
+            </span>
+          </div>
+          <p style={{ margin: '3px 0 0', fontSize: '11px', color: 'rgba(240,238,255,0.5)' }}>
+            {lang === 'pl' ? 'Użyj kodu' : 'Use code'}
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: '12px', fontWeight: 700, color: '#b44dff', letterSpacing: '1px', margin: '0 6px', textDecoration: 'underline' }}>
+              LSF2026
+            </span>
+            · {lang === 'pl' ? 'kod ważny przy zamówieniu do 27.07.2026' : 'code valid for orders until July 27, 2026'}
+          </p>
+        </a>
+      )}
 
       <div
         style={{
@@ -405,6 +411,7 @@ export default function Home() {
           background: 'linear-gradient(90deg, rgba(180,77,255,0.14), rgba(0,240,255,0.10))',
           borderBottom: '1px solid rgba(180,77,255,0.25)',
           padding: '10px 5vw',
+          marginTop: SHOW_PROMO_BANNER ? undefined : `${navHeight}px`,
         }}
       >
         <span style={{ fontSize: '13px', fontWeight: 600, color: '#f0eeff' }}>

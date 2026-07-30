@@ -82,7 +82,7 @@ export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' 
                 style={{
                   flexShrink: 0,
                   width: isCenter ? '180px' : dist === 1 ? '130px' : '90px',
-                  aspectRatio: '0.7',
+                  aspectRatio: '0.65',
                   borderRadius: '10px',
                   overflow: 'hidden',
                   opacity: isCenter ? 1 : dist === 1 ? 0.55 : 0.25,
