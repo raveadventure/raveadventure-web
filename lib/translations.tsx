@@ -45,7 +45,7 @@ export const BACK_OPTIONS_I18N = {
 
 // Wykończenie karty — dostępne tylko dla Karty PVC. Ceny "magnes"/"top_holder"/kombinacji
 // liczone są per sztuka OSOBNO od rabatu ilościowego -50% (jak NFC/RFID). "zestaw_promocyjny"
-// to wyjątek: 100 zł ZASTĘPUJE bazową cenę karty PVC (40 zł), zamiast być dodatkiem na wierzchu —
+// to wyjątek: jego cena ZASTĘPUJE bazową cenę karty PVC (40 zł), zamiast być dodatkiem na wierzchu —
 // patrz obliczenie unitPrice w app/page.tsx.
 export const CARD_FINISH_I18N = {
   pl: [
@@ -54,7 +54,7 @@ export const CARD_FINISH_I18N = {
     { id: 'top_holder', label: 'Top Holder', price: 20, desc: 'Karta w sztywnym plastikowym etui ochronnym — chroni przed zarysowaniem i zagięciem' },
     { id: 'top_holder_magnes', label: 'Top Holder + Magnes', price: 25, desc: 'Etui ochronne + magnes — karta w twardej osłonie, którą można powiesić na lodówce' },
     { id: 'top_holder_stojak', label: 'Top Holder + Stojak', price: 30, desc: 'Etui ochronne + mały stojak biurkowy — karta stoi pionowo na biurku czy półce' },
-    { id: 'zestaw_promocyjny', label: 'Zestaw Promocyjny', price: 100, desc: 'Dwie karty: jedna luzem + jedna w Top Holderze ze stojakiem, plus naklejka magnetyczna do ewentualnego użycia. Cena zestawu zastępuje cenę pojedynczej karty PVC.' },
+    { id: 'zestaw_promocyjny', label: 'Zestaw Promocyjny', price: 80, desc: 'Dwie karty: jedna luzem + jedna w Top Holderze ze stojakiem, plus naklejka magnetyczna do ewentualnego użycia. Cena zestawu zastępuje cenę pojedynczej karty PVC.' },
   ],
   en: [
     { id: 'standard', label: 'Standard', price: 0, desc: 'Just the PVC card, no extras' },
@@ -62,7 +62,7 @@ export const CARD_FINISH_I18N = {
     { id: 'top_holder', label: 'Top Holder', price: 20, desc: 'Card in a rigid plastic protective case — guards against scratches and bending' },
     { id: 'top_holder_magnes', label: 'Top Holder + Magnet', price: 25, desc: 'Protective case + magnet — a hard-cased card you can hang on the fridge' },
     { id: 'top_holder_stojak', label: 'Top Holder + Stand', price: 30, desc: 'Protective case + a small desk stand — displays the card upright on a desk or shelf' },
-    { id: 'zestaw_promocyjny', label: 'Promotional Set', price: 100, desc: 'Two cards: one loose + one in a Top Holder with a stand, plus a magnetic sticker for optional use. The set price replaces the price of a single PVC card.' },
+    { id: 'zestaw_promocyjny', label: 'Promotional Set', price: 80, desc: 'Two cards: one loose + one in a Top Holder with a stand, plus a magnetic sticker for optional use. The set price replaces the price of a single PVC card.' },
   ],
 }
 

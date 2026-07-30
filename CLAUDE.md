@@ -173,7 +173,7 @@ w lib/translations.tsx) — jedna z 6 opcji, wybór wykluczający się wzajemnie
   - top_holder: +20 zł/kartę
   - top_holder_magnes: +25 zł/kartę
   - top_holder_stojak: +30 zł/kartę
-  - zestaw_promocyjny: 100 zł/kpl. — WYJĄTEK: ta cena ZASTĘPUJE bazową cenę
+  - zestaw_promocyjny: 80 zł/kpl. — WYJĄTEK: ta cena ZASTĘPUJE bazową cenę
     karty PVC (40 zł) zamiast być dopłatą na wierzchu (płynie przez unitPrice
     i rabat ilościowy -50% jak zwykła cena karty). Zestaw = 2 karty (jedna
     luzem + jedna w Top Holderze ze stojakiem) + naklejka magnetyczna.
