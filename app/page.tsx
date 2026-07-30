@@ -585,9 +585,10 @@ export default function Home() {
                       : 'Want your card to do more than just look good? Program the built-in NFC chip — one tap of a phone instantly shares your Instagram, TikTok, or the WiFi password at your party. No typing, no searching — just a tap.'}
                   </p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                    {['NFC', 'RFID', '+15 zł'].map(tag => (
+                    {['NFC', 'RFID'].map(tag => (
                       <span key={tag} className={styles.tagPill}>{tag}</span>
                     ))}
+                    <span className={styles.priceTagSm}>+15 zł</span>
                   </div>
                 </div>
               </div>
@@ -720,7 +721,7 @@ export default function Home() {
                         onKeyDown={e => e.key === 'Enter' && setCardFinish(f.id)} aria-pressed={cardFinish === f.id}>
                         <div className={styles.backCardTop}>
                           <p className={styles.backCardLabel}>{f.label}</p>
-                          <span className={styles.backCardPrice}>
+                          <span className={`${styles.backCardPrice} ${f.id === 'standard' ? styles.backCardPriceFree : ''}`}>
                             {f.id === 'standard' ? (lang === 'pl' ? 'Gratis' : 'Free')
                               : f.id === 'zestaw_promocyjny' ? `${f.price} zł${lang === 'pl' ? '/kpl.' : '/set'}`
                               : `+${f.price} zł`}
@@ -938,7 +939,7 @@ export default function Home() {
                     onKeyDown={e => e.key === 'Enter' && setBackOption(b.id)} aria-pressed={backOption === b.id}>
                     <div className={styles.backCardTop}>
                       <p className={styles.backCardLabel}>{b.label}</p>
-                      <span className={styles.backCardPrice}>{b.price === 0 ? t.order.step3.freeLabel : `+${b.price} zł`}</span>
+                      <span className={`${styles.backCardPrice} ${b.price === 0 ? styles.backCardPriceFree : ''}`}>{b.price === 0 ? t.order.step3.freeLabel : `+${b.price} zł`}</span>
                     </div>
                     <p className={styles.backCardDesc}>{b.desc}</p>
                     {backOption === b.id && <span className={styles.themeCheck}>✓</span>}

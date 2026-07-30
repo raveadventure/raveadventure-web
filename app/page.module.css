@@ -313,7 +313,17 @@
 .backCardSelected::before, .backCardSelected::after { opacity: 1; }
 .backCardTop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .backCardLabel { font-size: 14px; font-weight: 600; color: var(--text); }
-.backCardPrice { font-size: 13px; font-weight: 700; color: var(--neon); }
+/* Ten sam "pill" co .cardTypePrice (Karta PVC/Wizytówka) — spójny styl dla każdej ceny na
+   stronie: fioletowy pill dla płatnych opcji, zielony dla Gratis/Free (jak reszta "dobrych
+   wieści" w tym designie — rabaty, oszczędności). */
+.backCardPrice {
+  font-family: var(--font-hero); font-size: 13px; font-weight: 700; color: var(--neon);
+  background: var(--neon-dim); border: 1px solid color-mix(in srgb, var(--neon) 35%, transparent);
+  border-radius: 999px; padding: 3px 12px; white-space: nowrap; display: inline-block;
+}
+.backCardPriceFree {
+  color: var(--success); background: rgba(0,229,160,0.1); border-color: rgba(0,229,160,0.35);
+}
 .backCardDesc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 
 /* ── QUANTITY ── */
