@@ -337,6 +337,63 @@ export default function AdminPage() {
   const fileRef2 = useRef<HTMLInputElement>(null)
   const fileBackRef = useRef<HTMLInputElement>(null)
 
+  // Zrzut danych zlecenia do pliku .txt — Michał trzyma to otwarte obok Pixlra zamiast
+  // przełączać się z powrotem do panelu za każdym razem, gdy potrzebuje sprawdzić atrybut.
+  const exportOrderAsText = (order: Order) => {
+    const o = order as any
+    // THEMES (wyżej w pliku) nie pokrywa się z realnymi wartościami theme (techno_rave/festival/
+    // adventure/custom) — osobna mapa tylko na potrzeby eksportu, żeby nie pokazywać surowego id.
+    const THEME_EXPORT_LABELS: Record<string, string> = {
+      techno_rave: 'Techno / Rave', festival: 'Festiwal', adventure: 'Adventure', custom: 'Custom',
+    }
+    const backLabel = o.back_option === 'logo' ? 'Standard Logo'
+      : o.back_option === 'dedication' ? 'Dedykacja'
+      : o.back_option === 'custom_back' ? 'Custom Artwork'
+      : o.back_option === 'qr' ? 'QR Code' : (o.back_option || '—')
+    const frameLabel = FRAME_COLORS[o.frame_color]?.name || o.frame_color || '—'
+
+    const lines = [
+      `ZLECENIE #${order.id.slice(0, 8).toUpperCase()}`,
+      `Data: ${formatDate(order.created_at)}`,
+      `Klient: ${order.name} (${order.email})`,
+      '',
+      '--- KARTA ---',
+      `Typ: ${o.card_type === 'laminated' ? 'Wizytówka (100 szt.)' : 'PVC'}`,
+      `Motyw: ${THEME_EXPORT_LABELS[order.theme] || order.theme}`,
+      `Tył: ${backLabel}`,
+      `Ilość: ${o.quantity ?? '—'}`,
+      `NFC/RFID: ${o.nfc_enabled ? `Tak (+${o.nfc_price || 0} zł)` : 'Nie'}`,
+      '',
+      '--- ATRYBUTY KARTY ---',
+      `① Lewy nagłówek: ${o.card_year || '—'}`,
+      `② Prawy nagłówek: ${o.card_rarity || '—'}`,
+      `③ Nazwa: ${o.card_name_custom || '—'}`,
+      `④ Atrybut 1: ${[o.attr1_label, o.attr1_value].filter(Boolean).join(' — ') || '—'}`,
+      `⑤ Umiejętność: ${o.card_skill || '—'}`,
+      `⑥ Atrybut 2: ${[o.attr2_label, o.attr2_value].filter(Boolean).join(' — ') || '—'}`,
+      `⑦ Napis w ramce: ${o.card_bottom_text || '—'}`,
+      `⑧ Kolor ramki: ${frameLabel}`,
+      `⑨ Efekt holo: ${o.holo_effect ? 'Tak' : 'Nie'}`,
+    ]
+
+    if (o.custom_desc) lines.push('', '--- OPIS (CUSTOM) ---', o.custom_desc)
+    if (o.qr_link) lines.push('', '--- QR LINK ---', o.qr_link)
+    if (order.notes) lines.push('', '--- UWAGI (PRZÓD) ---', order.notes)
+    const backNotes = order.card_text || o.notes_back
+    if (backNotes) lines.push('', '--- UWAGI / DEDYKACJA (TYŁ) ---', backNotes)
+    if (order.review_notes) lines.push('', '--- UWAGI Z KOREKTY PROJEKTU ---', order.review_notes)
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `zlecenie-${order.id.slice(0, 8)}.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
   const deleteOrder = async (id: string) => {
     // Kasuje też zapisane podglądy maili (/dev-emails) powiązane z tym zleceniem — bezpieczne
     // do wywołania zawsze (endpoint zwraca 404 na produkcji i po prostu nic nie robi).
@@ -1035,6 +1092,13 @@ export default function AdminPage() {
                 <p style={{ margin: '10px 0 0', fontSize: '11px', color: '#ec4899' }}>💡 Po oznaczeniu jako opłacone status automatycznie zmieni się na "Produkcja".</p>
               )}
             </div>
+
+            <button
+              onClick={() => exportOrderAsText(selected)}
+              style={{ width: '100%', marginTop: '8px', background: 'rgba(180,77,255,0.12)', border: '1px solid rgba(180,77,255,0.35)', color: '#b44dff', padding: '10px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            >
+              📄 Eksportuj dane zlecenia (.txt)
+            </button>
 
             {/* Dane klienta */}
             <div style={{ background: '#16162a', borderRadius: '10px', overflow: 'hidden', marginTop: '8px' }}>
