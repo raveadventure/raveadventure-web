@@ -79,12 +79,13 @@
   padding: 14px 5vw; max-width: 1100px; margin: 0 auto;
 }
 .quickNavBtn {
-  font-size: 12.5px; font-weight: 600; color: var(--text-muted);
-  padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border);
-  background: var(--surface2); text-decoration: none; white-space: nowrap;
-  transition: color .15s, border-color .15s, background .15s;
+  font-size: 12.5px; font-weight: 700; color: var(--neon);
+  padding: 7px 16px; border-radius: 20px; border: 1px solid rgba(180,77,255,0.45);
+  background: var(--neon-dim); text-decoration: none; white-space: nowrap;
+  transition: color .15s, border-color .15s, background .15s, transform .15s, box-shadow .15s;
 }
-.quickNavBtn:hover { color: var(--neon); border-color: var(--neon); background: var(--neon-dim); }
+.quickNavBtn:hover { color: #0a0014; border-color: var(--neon); background: var(--neon); box-shadow: 0 0 16px rgba(180,77,255,0.4); }
+.quickNavBtn:active { transform: scale(0.95); }
 
 /* ── ROZWIJANE MODUŁY (tylko na mobile) — "Jak to działa" i "co możesz zamówić" są długie
    i na telefonie robią stronę bardzo długą. Sterowane stanem Reacta (nie natywnym
