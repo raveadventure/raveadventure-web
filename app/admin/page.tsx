@@ -1087,7 +1087,7 @@ export default function AdminPage() {
                   {(selected as any).unit_price ? ` (${(selected as any).unit_price} zł/szt.)` : ''}
                 </span>
                 {(selected as any).has_discount && (
-                  <span style={{ fontSize: '12px', color: '#00e5a0' }}>🎉 Rabat ilościowy (-50%)</span>
+                  <span style={{ fontSize: '12px', color: '#00e5a0' }}>🎉 Rabat ilościowy (-35%)</span>
                 )}
                 {(selected as any).discount_code && (
                   <span style={{ fontSize: '12px', color: '#00e5a0' }}>

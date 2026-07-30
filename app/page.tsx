@@ -196,16 +196,17 @@ export default function Home() {
   const nfcTotal = nfcActive ? nfcUnitPrice * quantity : 0
   // Wykończenie karty — tylko dla PVC. "zestaw_promocyjny" zastępuje bazową cenę karty (płynie
   // przez unitPrice i rabat ilościowy jak zwykła cena); reszta to dopłata per sztuka liczona
-  // OSOBNO od rabatu -50%, dokładnie jak NFC/RFID (patrz CARD_FINISH_I18N w lib/translations.tsx).
+  // OSOBNO od rabatu ilościowego, dokładnie jak NFC/RFID (patrz CARD_FINISH_I18N w lib/translations.tsx).
   const cardFinishId = cardType === 'pvc' ? cardFinish : 'standard'
   const cardFinishObj = CARD_FINISHES.find(f => f.id === cardFinishId)!
   const isZestawPromocyjny = cardFinishId === 'zestaw_promocyjny'
   const cardFinishAddonTotal = (!isZestawPromocyjny && cardFinishId !== 'standard') ? cardFinishObj.price * quantity : 0
   const effectiveCardTypePrice = isZestawPromocyjny ? cardFinishObj.price : cardObj.price
   const unitPrice = effectiveCardTypePrice + backObj.price
+  const QUANTITY_DISCOUNT_RATE = 0.35 // -35% rabat ilościowy przy 3+ sztukach (obniżone z -50%, bo przy tamtej stawce zamówienia 3+ szt. wychodziły na zero/stratę — patrz BOM kosztów)
   const hasDiscount = quantity >= 3
-  const baseTotal = hasDiscount ? Math.round(unitPrice * quantity * 0.5) : unitPrice * quantity
-  const savedAmount = hasDiscount ? Math.round(unitPrice * quantity * 0.5) : 0
+  const baseTotal = hasDiscount ? Math.round(unitPrice * quantity * (1 - QUANTITY_DISCOUNT_RATE)) : unitPrice * quantity
+  const savedAmount = hasDiscount ? Math.round(unitPrice * quantity * QUANTITY_DISCOUNT_RATE) : 0
   const discountSaved = discountApplied ? Math.round(baseTotal * discountPct / 100) : 0
   const totalPrice = baseTotal - discountSaved + SHIPPING_COST + nfcTotal + cardFinishAddonTotal
 

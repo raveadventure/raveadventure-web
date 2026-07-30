@@ -44,7 +44,7 @@ export const BACK_OPTIONS_I18N = {
 }
 
 // Wykończenie karty — dostępne tylko dla Karty PVC. Ceny "magnes"/"top_holder"/kombinacji
-// liczone są per sztuka OSOBNO od rabatu ilościowego -50% (jak NFC/RFID). "zestaw_promocyjny"
+// liczone są per sztuka OSOBNO od rabatu ilościowego (jak NFC/RFID). "zestaw_promocyjny"
 // to wyjątek: jego cena ZASTĘPUJE bazową cenę karty PVC (40 zł), zamiast być dodatkiem na wierzchu —
 // patrz obliczenie unitPrice w app/page.tsx.
 export const CARD_FINISH_I18N = {
@@ -74,7 +74,7 @@ export const T = {
       title1: 'Twoje zdjęcie.',
       title2: 'Twoja karta.',
       sub: 'Personalizowane karty z klimatem techno i rave. Mieszczą się w portfelu — zabierasz ze sobą na każdy event.',
-      badge1: '-50% przy 3+ sztukach',
+      badge1: '-35% przy 3+ sztukach',
       cta: 'Zamów swoją kartę →',
     },
     howItWorks: {
@@ -156,14 +156,14 @@ export const T = {
       },
       step4: {
         title: 'Ile kart zamawiasz?',
-        discountBadge: (q: number) => `🎉 Rabat 50% aktywny — zamawiasz ${q} sztuki tego samego typu!`,
-        discountHint: 'Dodaj jeszcze 1 kartę i oszczędź 50% na całości!',
+        discountBadge: (q: number) => `🎉 Rabat 35% aktywny — zamawiasz ${q} sztuki tego samego typu!`,
+        discountHint: 'Dodaj jeszcze 1 kartę i oszczędź 35% na całości!',
         cardTypeLabel: 'Typ karty',
         themeLabel: 'Motyw frontu',
         backLabel: 'Rewers',
         unitPriceLabel: 'Cena za sztukę',
         qtyLabel: 'Ilość',
-        discountLabel: 'Rabat 50%',
+        discountLabel: 'Rabat 35%',
         totalLabel: 'Łącznie',
         note: 'Płatność przelewem po zatwierdzeniu projektu.',
         back: '← Wstecz',
@@ -192,7 +192,7 @@ export const T = {
         discountPlaceholder: 'np. RAVE10',
         discountApply: 'Zastosuj',
         discountActive: '✓ Aktywny',
-        quantityDiscountLabel: 'Rabat ilościowy (50%)',
+        quantityDiscountLabel: 'Rabat ilościowy (35%)',
         codeDiscountLabel: (code: string, pct: number) => `Kod rabatowy (${code} −${pct}%)`,
         payLabel: 'Do zapłaty',
         payNote: 'Płatność przelewem lub BLIK po zatwierdzeniu projektu. Dane do płatności wyślemy mailem.',
@@ -236,7 +236,7 @@ export const T = {
       title1: 'Your photo.',
       title2: 'Your card.',
       sub: 'Personalized cards with a techno and rave vibe. They fit in your wallet — take them to every event.',
-      badge1: '-50% at 3+ cards',
+      badge1: '-35% at 3+ cards',
       cta: 'Order your card →',
     },
     howItWorks: {
@@ -318,14 +318,14 @@ export const T = {
       },
       step4: {
         title: 'How many cards are you ordering?',
-        discountBadge: (q: number) => `🎉 50% discount active — you're ordering ${q} cards of the same type!`,
-        discountHint: 'Add 1 more card and save 50% on the total!',
+        discountBadge: (q: number) => `🎉 35% discount active — you're ordering ${q} cards of the same type!`,
+        discountHint: 'Add 1 more card and save 35% on the total!',
         cardTypeLabel: 'Card type',
         themeLabel: 'Front theme',
         backLabel: 'Back',
         unitPriceLabel: 'Price per card',
         qtyLabel: 'Quantity',
-        discountLabel: '50% discount',
+        discountLabel: '35% discount',
         totalLabel: 'Total',
         note: 'Payment by bank transfer after the design is approved.',
         back: '← Back',
@@ -354,7 +354,7 @@ export const T = {
         discountPlaceholder: 'e.g. RAVE10',
         discountApply: 'Apply',
         discountActive: '✓ Active',
-        quantityDiscountLabel: 'Quantity discount (50%)',
+        quantityDiscountLabel: 'Quantity discount (35%)',
         codeDiscountLabel: (code: string, pct: number) => `Discount code (${code} −${pct}%)`,
         payLabel: 'Total due',
         payNote: "Payment by bank transfer or BLIK after the design is approved. We'll send payment details by email.",

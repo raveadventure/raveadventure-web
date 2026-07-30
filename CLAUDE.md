@@ -18,9 +18,9 @@ To jest hobby/pasja, nie skalowany biznes VC. Michał prowadzi to solo, obok pra
 - **[W TRAKCIE, od 2026-07-28] Automatyczne płatności online — decyzja zmieniona, wdrażamy PayByLink (Blue Media).** Wcześniej świadomie brak automatycznych płatności; teraz Michał założył osobne, dedykowane konto bankowe firmowe dla RaveAdventure (płatności BLIK już przekierowane na nowe konto) i czeka na aktywację konta PayByLink — jak dostanie dostęp/dokumentację API, przekaże ją do integracji. **Stripe został odrzucony na rzecz PayByLink** (natywne BLIK, lepiej pasuje do polskiego rynku i obecnego flow "link w mailu zamiast ręcznych danych") — nie proponuj Stripe/PayU. Do czasu aktywacji konta płatność działa jak dotąd: BLIK/przelew ręczny, dane wysyłane w mailu z projektem karty (`/api/send-design`, stałe `BLIK_PHONE`/`BANK_ACCOUNT`/`BANK_RECIPIENT` na górze pliku — `BANK_ACCOUNT` zaktualizowany 2026-07-28 na nowe dedykowane konto).
 - Nienaruszalna logika cenowa (pełne szczegóły, w tym lista kodów rabatowych, patrz „Logika cenowa" niżej):
   - `unitPrice`: Karta PVC = 40 zł, Wizytówki (100 szt.) = 50 zł
-  - Rabat ilościowy: -50% przy zamówieniu ≥ 3 sztuk
+  - Rabat ilościowy: -35% przy zamówieniu ≥ 3 sztuk (obniżone z -50% 2026-07-30 — realny koszt wytworzenia w BOM pokazał, że -50% na 3+ szt. wychodziło na zero/stratę)
   - Kody rabatowe: dodatkowy % nakładany OSOBNO od rabatu ilościowego
-  - NFC/RFID (tylko karta PVC): +15 zł/kartę przy ≤3 sztukach, +8 zł/kartę przy >3 sztukach — liczone OSOBNO od rabatu -50%, żeby nie zdublować przeceny
+  - NFC/RFID (tylko karta PVC): +15 zł/kartę przy ≤3 sztukach, +8 zł/kartę przy >3 sztukach — liczone OSOBNO od rabatu -35%, żeby nie zdublować przeceny
   - Wysyłka: stałe 15 zł, doliczane zawsze
 - Nienaruszalna paleta kolorów marki (dokładne kody hex):
   ```
@@ -156,14 +156,16 @@ unitPrice = cena_typu_karty + cena_opcji_tyłu
   - Karta PVC: 40 zł
   - Wizytówka (100 szt.): 50 zł
 
-hasDiscount (ilość ≥ 3) → -50% na (unitPrice × ilość)  [baseTotal]
+hasDiscount (ilość ≥ 3) → -35% na (unitPrice × ilość)  [baseTotal]
+  (QUANTITY_DISCOUNT_RATE w app/page.tsx — obniżone z -50% 2026-07-30, bo realny
+  koszt wytworzenia z BOM pokazał zerową/ujemną marżę na zamówieniach 3+ szt.)
 kod rabatowy → dodatkowy % od baseTotal (jedyny aktywny kod: LSF2026 — 25%,
   czasowy, promocja Łódź Summer Festival, ważny do 27.07.2026, do usunięcia po dacie)
 
 NFC/RFID (tylko dla karty PVC, opcjonalny dodatek):
   - ≤3 sztuki: +15 zł/kartę
   - >3 sztuki: +8 zł/kartę
-  - LICZONE OSOBNO od rabatu ilościowego -50% (świadoma decyzja — inaczej
+  - LICZONE OSOBNO od rabatu ilościowego -35% (świadoma decyzja — inaczej
     NFC zostałoby podwójnie przecenione)
 
 Wykończenie karty (card_finish, tylko dla karty PVC, patrz CARD_FINISH_I18N
@@ -175,10 +177,10 @@ w lib/translations.tsx) — jedna z 6 opcji, wybór wykluczający się wzajemnie
   - top_holder_stojak: +30 zł/kartę
   - zestaw_promocyjny: 80 zł/kpl. — WYJĄTEK: ta cena ZASTĘPUJE bazową cenę
     karty PVC (40 zł) zamiast być dopłatą na wierzchu (płynie przez unitPrice
-    i rabat ilościowy -50% jak zwykła cena karty). Zestaw = 2 karty (jedna
+    i rabat ilościowy -35% jak zwykła cena karty). Zestaw = 2 karty (jedna
     luzem + jedna w Top Holderze ze stojakiem) + naklejka magnetyczna.
   - Pozostałe 4 opcje (magnes/holder/kombinacje) liczone OSOBNO od rabatu
-    ilościowego -50%, dokładnie jak NFC/RFID.
+    ilościowego -35%, dokładnie jak NFC/RFID.
 
 Wysyłka: stałe 15 zł, doliczane zawsze
 
