@@ -21,6 +21,14 @@
 .navCta:hover { background: var(--neon-dim); box-shadow: var(--glow-neon); transform: translateY(-1px); }
 .navCta:active { transform: translateY(0); }
 
+/* Na telefonie pasek nawigacji zajmował sporo miejsca głównie przez to, że "Zamów kartę"
+   zawijał się do dwóch linijek — mniejszy tekst/padding + nowrap naprawia to i obniża cały pasek. */
+@media (max-width: 768px) {
+  .nav { padding: 10px 4vw; }
+  .logo { font-size: 15px; }
+  .navCta { font-size: 12px; padding: 7px 14px; white-space: nowrap; }
+}
+
 /* ── HERO ── */
 .hero {
   min-height: auto;
