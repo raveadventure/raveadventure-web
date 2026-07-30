@@ -138,7 +138,29 @@ function ReviewContent() {
   )
 
   if (step === 'success-approve') return box(<>
-    <div style={{ width: '64px', height: '64px', background: '#ec4899', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', margin: '0 auto 20px' }}>💳</div>
+    {/* Jedyny moment w całym flow, gdzie warto na chwilę odpuścić powściągliwość — klient
+        właśnie zaakceptował projekt i zaraz płaci. Rzadki, wysokoemocjonalny punkt (raz na
+        zamówienie), więc scale-in z przeskokiem + neonowy puls pasujący do marki. */}
+    <style>{`
+      @keyframes reviewSuccessPop {
+        0% { transform: scale(0.4); opacity: 0; }
+        60% { transform: scale(1.12); opacity: 1; }
+        80% { transform: scale(0.96); }
+        100% { transform: scale(1); }
+      }
+      @keyframes reviewSuccessGlow {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(236,72,153,0.5); }
+        50% { box-shadow: 0 0 28px 6px rgba(236,72,153,0.45); }
+      }
+      .reviewSuccessIcon {
+        animation: reviewSuccessPop 550ms cubic-bezier(0.23, 1, 0.32, 1) both,
+                   reviewSuccessGlow 1.8s ease-in-out 550ms 2;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .reviewSuccessIcon { animation: none; }
+      }
+    `}</style>
+    <div className="reviewSuccessIcon" style={{ width: '64px', height: '64px', background: '#ec4899', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', margin: '0 auto 20px' }}>💳</div>
     <h2 style={{ color: '#ec4899', fontSize: '22px', margin: '0 0 12px' }}>Projekt zatwierdzony!</h2>
     {designPreview}
     {option && (

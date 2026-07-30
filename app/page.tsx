@@ -536,14 +536,16 @@ export default function Home() {
             <span className={styles.collapseIcon} style={{ transform: howItWorksOpen ? 'rotate(180deg)' : 'none' }}>▾</span>
           </button>
           <div className={`${styles.mobileCollapseBody} ${howItWorksOpen ? styles.mobileCollapseBodyOpen : ''}`}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px', marginBottom: '24px' }}>
-              {t.howItWorks.steps.map(s => (
-                <div key={s.n} className={styles.infoBlock}>
-                  <span style={{ fontFamily: 'var(--font-hero)', fontSize: '11px', fontWeight: 700, color: 'var(--neon)', letterSpacing: '1px' }}>{s.n}</span>
-                  <p style={{ margin: '5px 0 2px', fontSize: '12px', fontWeight: 600, color: 'var(--text)' }}>{s.t}</p>
-                  <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.5' }}>{s.d}</p>
-                </div>
-              ))}
+            <div className={styles.mobileCollapseBodyInner}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px', marginBottom: '24px' }}>
+                {t.howItWorks.steps.map(s => (
+                  <div key={s.n} className={styles.infoBlock}>
+                    <span style={{ fontFamily: 'var(--font-hero)', fontSize: '11px', fontWeight: 700, color: 'var(--neon)', letterSpacing: '1px' }}>{s.n}</span>
+                    <p style={{ margin: '5px 0 2px', fontSize: '12px', fontWeight: 600, color: 'var(--text)' }}>{s.t}</p>
+                    <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.5' }}>{s.d}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -554,44 +556,46 @@ export default function Home() {
             <span className={styles.collapseIcon} style={{ transform: optionsOpen ? 'rotate(180deg)' : 'none' }}>▾</span>
           </button>
           <div className={`${styles.mobileCollapseBody} ${optionsOpen ? styles.mobileCollapseBodyOpen : ''}`}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
-              {t.options.cards.map((o, i) => (
-                <div key={i} className={styles.infoBlock} style={{ borderRadius: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '16px' }}>{o.icon}</span>
-                    <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{o.title}</p>
+            <div className={styles.mobileCollapseBodyInner}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+                {t.options.cards.map((o, i) => (
+                  <div key={i} className={styles.infoBlock} style={{ borderRadius: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '16px' }}>{o.icon}</span>
+                      <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{o.title}</p>
+                    </div>
+                    <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{o.desc}</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                      {o.tags.map(tag => (
+                        <span key={tag} className={styles.tagPill}>{tag}</span>
+                      ))}
+                    </div>
                   </div>
-                  <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{o.desc}</p>
+                ))}
+                <div className={styles.infoBlock} style={{ borderRadius: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '16px' }}>📲</span>
+                    <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
+                      {lang === 'pl' ? 'Karta z NFC/RFID' : 'NFC/RFID Card'}
+                    </p>
+                  </div>
+                  <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+                    {lang === 'pl'
+                      ? 'Chcesz, żeby Twoja karta robiła coś więcej niż tylko dobrze wyglądała? Zaprogramuj wbudowany chip NFC — wystarczy zbliżyć telefon, żeby błyskawicznie udostępnić Twój Instagram, TikTok albo hasło do WiFi na imprezie. Bez wpisywania, bez szukania — jeden dotyk.'
+                      : 'Want your card to do more than just look good? Program the built-in NFC chip — one tap of a phone instantly shares your Instagram, TikTok, or the WiFi password at your party. No typing, no searching — just a tap.'}
+                  </p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                    {o.tags.map(tag => (
+                    {['NFC', 'RFID', '+15 zł'].map(tag => (
                       <span key={tag} className={styles.tagPill}>{tag}</span>
                     ))}
                   </div>
                 </div>
-              ))}
-              <div className={styles.infoBlock} style={{ borderRadius: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '16px' }}>📲</span>
-                  <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
-                    {lang === 'pl' ? 'Karta z NFC/RFID' : 'NFC/RFID Card'}
-                  </p>
-                </div>
-                <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
-                  {lang === 'pl'
-                    ? 'Chcesz, żeby Twoja karta robiła coś więcej niż tylko dobrze wyglądała? Zaprogramuj wbudowany chip NFC — wystarczy zbliżyć telefon, żeby błyskawicznie udostępnić Twój Instagram, TikTok albo hasło do WiFi na imprezie. Bez wpisywania, bez szukania — jeden dotyk.'
-                    : 'Want your card to do more than just look good? Program the built-in NFC chip — one tap of a phone instantly shares your Instagram, TikTok, or the WiFi password at your party. No typing, no searching — just a tap.'}
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                  {['NFC', 'RFID', '+15 zł'].map(tag => (
-                    <span key={tag} className={styles.tagPill}>{tag}</span>
-                  ))}
-                </div>
               </div>
-            </div>
 
-            <div className={styles.infoBlock} style={{ marginTop: '10px', borderRadius: '10px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-              <span style={{ fontSize: '14px', flexShrink: 0 }}>⚙</span>
-              <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{t.options.attrNote}</p>
+              <div className={styles.infoBlock} style={{ marginTop: '10px', borderRadius: '10px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                <span style={{ fontSize: '14px', flexShrink: 0 }}>⚙</span>
+                <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{t.options.attrNote}</p>
+              </div>
             </div>
           </div>
         </div>

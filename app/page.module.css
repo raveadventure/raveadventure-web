@@ -92,7 +92,8 @@
    <details>/[open] — w części przeglądarek zwinięta zawartość <details> chowa się przez
    content-visibility, którego nie da się łatwo przebić samym display:block!important).
    Na desktopie .mobileCollapseBody jest zawsze widoczne; dopiero @media (max-width: 768px)
-   chowa ją, chyba że doklejona jest klasa mobileCollapseBodyOpen. ── */
+   animuje wysokość trickiem grid-template-rows 0fr→1fr (jedyny sposób na płynne przejście
+   do "auto" bez JS-owego mierzenia wysokości) zamiast skokowego display:none↔block. ── */
 .mobileCollapse { margin-bottom: 8px; }
 .mobileCollapseSummary {
   width: 100%; background: none; border: none; padding: 0; margin: 0; text-align: left;
@@ -103,9 +104,18 @@
 
 @media (max-width: 768px) {
   .mobileCollapseSummary { cursor: pointer; pointer-events: auto; padding: 10px 0; }
-  .collapseIcon { display: inline-block; color: var(--neon); transition: transform .2s ease; margin-left: auto; }
-  .mobileCollapseBody { display: none; }
-  .mobileCollapseBodyOpen { display: block !important; }
+  .collapseIcon { display: inline-block; color: var(--neon); transition: transform 250ms cubic-bezier(0.23, 1, 0.32, 1); margin-left: auto; }
+  .mobileCollapseBody {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 300ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .mobileCollapseBodyInner { overflow: hidden; min-height: 0; }
+  .mobileCollapseBodyOpen { grid-template-rows: 1fr; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mobileCollapseBody, .collapseIcon { transition-duration: 1ms; }
+  }
 }
 
 /* ── THEMES ── */
