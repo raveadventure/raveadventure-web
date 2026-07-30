@@ -56,7 +56,7 @@ export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' 
   if (items.length === 0) return null
 
   return (
-    <section style={{ padding: '32px 5vw 40px', maxWidth: '1100px', margin: '0 auto' }}>
+    <section id="realizacje" style={{ padding: '32px 5vw 40px', maxWidth: '1100px', margin: '0 auto', scrollMarginTop: 'var(--nav-height, 70px)' }}>
       <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: 'var(--neon)', letterSpacing: '2px', marginBottom: '12px' }}>{t.eyebrow}</p>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
         <h2 style={{ fontFamily: "'Space Mono', monospace", fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 700, color: 'var(--text)', margin: 0 }}>{t.title}</h2>

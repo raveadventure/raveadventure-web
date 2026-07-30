@@ -154,7 +154,12 @@ export default function Home() {
   useEffect(() => {
     if (!navRef.current) return
     const el = navRef.current
-    const update = () => setNavHeight(el.offsetHeight)
+    const update = () => {
+      setNavHeight(el.offsetHeight)
+      // Udostępnij wysokość fixed navu jako CSS var, żeby scroll-margin-top na sekcjach
+      // (kotwice w quick-nav) mogły się do niej dopasować bez twardego kodowania pikseli.
+      document.documentElement.style.setProperty('--nav-height', `${el.offsetHeight}px`)
+    }
     update()
     const observer = new ResizeObserver(update)
     observer.observe(el)
@@ -440,6 +445,13 @@ export default function Home() {
         <p className={`${styles.brandTagline} ${styles.shimmer}`}>The best memories from your adventure deserve a card</p>
       </div>
 
+      <nav className={styles.quickNav} aria-label={lang === 'pl' ? 'Szybka nawigacja' : 'Quick navigation'}>
+        <a href="#realizacje" className={styles.quickNavBtn}>{lang === 'pl' ? 'Realizacje' : 'Portfolio'}</a>
+        <a href="#prawdziwe-karty" className={styles.quickNavBtn}>{lang === 'pl' ? 'Prawdziwy produkt' : 'Real product'}</a>
+        <a href="#jak-zamowic" className={styles.quickNavBtn}>{lang === 'pl' ? 'Jak to działa' : 'How it works'}</a>
+        <a href="#order" className={styles.quickNavBtn}>{lang === 'pl' ? 'Zamówienie' : 'Order'}</a>
+      </nav>
+
       <AdShowcase lang={lang} />
       <PortfolioCarousel lang={lang} />
       <RealCardsSection lang={lang} />
@@ -507,7 +519,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="jak-zamowic">
         <div className={styles.mobileCollapse}>
           <button type="button" className={styles.mobileCollapseSummary} onClick={() => setHowItWorksOpen(o => !o)}>
             <p className={styles.sectionEye} style={{ margin: 0 }}>{t.howItWorks.eyebrow}</p>

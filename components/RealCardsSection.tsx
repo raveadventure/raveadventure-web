@@ -23,7 +23,7 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
   const [lightbox, setLightbox] = useState<string | null>(null)
 
   return (
-    <section style={{ padding: '32px 5vw 40px', maxWidth: '1100px', margin: '0 auto', textAlign: 'center' }}>
+    <section id="prawdziwe-karty" style={{ padding: '32px 5vw 40px', maxWidth: '1100px', margin: '0 auto', textAlign: 'center', scrollMarginTop: 'var(--nav-height, 70px)' }}>
       <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: 'var(--neon)', letterSpacing: '2px', marginBottom: '12px' }}>{t.eyebrow}</p>
       <h2 style={{ fontFamily: "'Space Mono', monospace", fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 700, color: 'var(--text)', margin: '0 0 10px' }}>{t.title}</h2>
       <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: '1.7', maxWidth: '560px', margin: '0 auto 28px' }}>{t.sub}</p>
