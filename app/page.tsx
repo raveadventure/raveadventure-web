@@ -10,7 +10,7 @@ import InpostGeowidget from '../components/InpostGeowidget'
 import InpostAutocomplete from '../components/InpostAutocomplete'
 import HeroCardAnimation from '../components/HeroCardAnimation'
 import LogoEqualizer from '../components/LogoEqualizer'
-import { T, CARD_TYPES_I18N, FRONT_THEMES_I18N, BACK_OPTIONS_I18N, Lang } from '../lib/translations'
+import { T, CARD_TYPES_I18N, FRONT_THEMES_I18N, BACK_OPTIONS_I18N, CARD_FINISH_I18N, Lang } from '../lib/translations'
 
 // Baner promocyjny nad stroną — wyłączony między eventami. Włącz z powrotem (i zaktualizuj
 // tekst/kod/datę) gdy ruszy kolejna promocja powiązana z festiwalem.
@@ -97,10 +97,12 @@ export default function Home() {
   })
   const FRONT_THEMES = FRONT_THEMES_I18N[lang]
   const BACK_OPTIONS = BACK_OPTIONS_I18N[lang]
+  const CARD_FINISHES = CARD_FINISH_I18N[lang]
 
   const [step, setStep] = useState<Step>(1)
   const [cardType, setCardType] = useState('pvc')
   const [nfcEnabled, setNfcEnabled] = useState(false)
+  const [cardFinish, setCardFinish] = useState('standard')
   const [showPaymentInfo, setShowPaymentInfo] = useState(false)
   const [frontTheme, setFrontTheme] = useState('techno_rave')
   const [frameColor, setFrameColor] = useState('neon_purple')
@@ -192,12 +194,20 @@ export default function Home() {
   const nfcActive = nfcEnabled && cardType === 'pvc'
   const nfcUnitPrice = quantity > 3 ? NFC_PRICE_BULK : NFC_PRICE_STANDARD
   const nfcTotal = nfcActive ? nfcUnitPrice * quantity : 0
-  const unitPrice = cardObj.price + backObj.price
+  // Wykończenie karty — tylko dla PVC. "zestaw_promocyjny" zastępuje bazową cenę karty (płynie
+  // przez unitPrice i rabat ilościowy jak zwykła cena); reszta to dopłata per sztuka liczona
+  // OSOBNO od rabatu -50%, dokładnie jak NFC/RFID (patrz CARD_FINISH_I18N w lib/translations.tsx).
+  const cardFinishId = cardType === 'pvc' ? cardFinish : 'standard'
+  const cardFinishObj = CARD_FINISHES.find(f => f.id === cardFinishId)!
+  const isZestawPromocyjny = cardFinishId === 'zestaw_promocyjny'
+  const cardFinishAddonTotal = (!isZestawPromocyjny && cardFinishId !== 'standard') ? cardFinishObj.price * quantity : 0
+  const effectiveCardTypePrice = isZestawPromocyjny ? cardFinishObj.price : cardObj.price
+  const unitPrice = effectiveCardTypePrice + backObj.price
   const hasDiscount = quantity >= 3
   const baseTotal = hasDiscount ? Math.round(unitPrice * quantity * 0.5) : unitPrice * quantity
   const savedAmount = hasDiscount ? Math.round(unitPrice * quantity * 0.5) : 0
   const discountSaved = discountApplied ? Math.round(baseTotal * discountPct / 100) : 0
-  const totalPrice = baseTotal - discountSaved + SHIPPING_COST + nfcTotal
+  const totalPrice = baseTotal - discountSaved + SHIPPING_COST + nfcTotal + cardFinishAddonTotal
 
   const handlePhoto = (file: File) => {
     setPhoto(file)
@@ -232,7 +242,7 @@ export default function Home() {
     try {
       const orderFields = {
         theme: frontTheme, card_type: cardType, back_option: backOption, quantity,
-        nfc_enabled: nfcActive, nfc_price: nfcTotal,
+        nfc_enabled: nfcActive, nfc_price: nfcTotal, card_finish: cardFinishId,
         unit_price: unitPrice, total_price: totalPrice, has_discount: hasDiscount,
         name: form.name, email: form.email, phone: form.phone, address: form.address,
         notes: form.notes, card_text: form.notesBack, custom_desc: form.customDesc, qr_link: form.notesBack,
@@ -314,7 +324,7 @@ export default function Home() {
         body: JSON.stringify({
           name: form.name, email: form.email, phone: form.phone, address: form.address, deliveryMethod, paczkomatId, cardText: form.notesBack, notes: form.notes,
           theme: frontTheme, orderId: orderData?.id, cardType, backOption, quantity, unitPrice, totalPrice, hasDiscount, savedAmount,
-          nfcEnabled: nfcActive, nfcPrice: nfcTotal,
+          nfcEnabled: nfcActive, nfcPrice: nfcTotal, cardFinish: cardFinishId,
           cardYear: form.cardYear, cardRarity: form.cardRarity, cardName: form.cardName,
           attr1Label: form.attr1Label, attr1Value: form.attr1Value, cardSkill: form.cardSkill,
           attr2Label: form.attr2Label, attr2Value: form.attr2Value, cardDesc: form.cardDesc, cardBottomText: form.cardBottomText, frameColor, holoEffect, notesBack: form.notesBack,
@@ -693,6 +703,32 @@ export default function Home() {
                   </div>
                 </div>
               )}
+              {cardType === 'pvc' && (
+                <div style={{ marginTop: '16px' }}>
+                  <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>
+                    {lang === 'pl' ? '// wykończenie karty' : '// card finish'}
+                  </p>
+                  <div className={styles.backGrid}>
+                    {CARD_FINISHES.map(f => (
+                      <div key={f.id}
+                        className={`${styles.backCard} ${cardFinish === f.id ? styles.backCardSelected : ''}`}
+                        onClick={() => setCardFinish(f.id)} role="button" tabIndex={0}
+                        onKeyDown={e => e.key === 'Enter' && setCardFinish(f.id)} aria-pressed={cardFinish === f.id}>
+                        <div className={styles.backCardTop}>
+                          <p className={styles.backCardLabel}>{f.label}</p>
+                          <span className={styles.backCardPrice}>
+                            {f.id === 'standard' ? (lang === 'pl' ? 'Gratis' : 'Free')
+                              : f.id === 'zestaw_promocyjny' ? `${f.price} zł${lang === 'pl' ? '/kpl.' : '/set'}`
+                              : `+${f.price} zł`}
+                          </span>
+                        </div>
+                        <p className={styles.backCardDesc}>{f.desc}</p>
+                        {cardFinish === f.id && <span className={styles.themeCheck}>✓</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <button className={styles.btnPrimary} onClick={() => setStep(2)}>{t.order.step1.next}</button>
             </div>
           )}
@@ -973,6 +1009,7 @@ export default function Home() {
               {quantity === 2 && <div className={styles.discountHint}>{t.order.step4.discountHint}</div>}
               <div className={styles.priceSummary}>
                 <p className={styles.summaryRow}><span>{t.order.step4.cardTypeLabel}</span><strong>{cardObj.label}</strong></p>
+                {cardFinishId !== 'standard' && <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Wykończenie' : 'Finish'}</span><strong>{cardFinishObj.label}</strong></p>}
                 <p className={styles.summaryRow}><span>{t.order.step4.themeLabel}</span><strong>{FRONT_THEMES.find(th=>th.id===frontTheme)?.label}</strong></p>
                 <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Kolor ramki' : 'Frame color'}</span><strong style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '12px', height: '12px', borderRadius: '50%', background: FRAME_COLORS.find(c=>c.id===frameColor)?.hex, flexShrink: 0 }} />{FRAME_COLORS.find(c=>c.id===frameColor)?.name}</strong></p>
                 {holoEffect && <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Efekt holograficzny' : 'Holographic effect'}</span><strong>✨ {lang === 'pl' ? 'Tak' : 'Yes'}</strong></p>}
@@ -981,6 +1018,7 @@ export default function Home() {
                 <p className={styles.summaryRow}><span>{t.order.step4.qtyLabel}</span><strong>× {quantity}</strong></p>
                 {hasDiscount && <p className={styles.summaryRow}><span>{t.order.step4.discountLabel}</span><strong className={styles.discount}>−{savedAmount} zł</strong></p>}
                 {nfcActive && <p className={styles.summaryRow}><span>{lang === 'pl' ? `NFC/RFID (${quantity} × ${nfcUnitPrice} zł)` : `NFC/RFID (${quantity} × ${nfcUnitPrice} zł)`}</span><strong>{nfcTotal} zł</strong></p>}
+                {cardFinishAddonTotal > 0 && <p className={styles.summaryRow}><span>{cardFinishObj.label} ({quantity} × {cardFinishObj.price} zł)</span><strong>{cardFinishAddonTotal} zł</strong></p>}
                 <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Wysyłka' : 'Shipping'}</span><strong>{SHIPPING_COST} zł</strong></p>
                 <div className={styles.summaryTotal}><span>{t.order.step4.totalLabel}</span><strong className={styles.totalPrice}>{totalPrice} zł</strong></div>
                 <p className={styles.summaryNote}>{t.order.step4.note}</p>
@@ -1092,13 +1130,15 @@ export default function Home() {
               </div>
 
               <div className={styles.priceSummary} style={{ marginTop: '8px' }}>
-                <p className={styles.summaryRow}><span>{cardObj.label}</span><strong>{cardObj.price} zł</strong></p>
+                <p className={styles.summaryRow}><span>{cardObj.label}</span><strong>{effectiveCardTypePrice} zł</strong></p>
+                {cardFinishId !== 'standard' && <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Wykończenie' : 'Finish'}</span><strong>{cardFinishObj.label}</strong></p>}
                 <p className={styles.summaryRow}><span>{t.order.step4.backLabel} — {backObj.label}</span><strong>{backObj.price === 0 ? t.order.step3.freeLabel : `+${backObj.price} zł`}</strong></p>
                 <p className={styles.summaryRow}><span>{t.order.step4.unitPriceLabel}</span><strong>{unitPrice} zł</strong></p>
                 <p className={styles.summaryRow}><span>{t.order.step4.qtyLabel}</span><strong>× {quantity}</strong></p>
                 {hasDiscount && <p className={styles.summaryRow}><span>{t.order.step5.quantityDiscountLabel}</span><strong className={styles.discount}>−{savedAmount} zł</strong></p>}
                 {discountApplied && <p className={styles.summaryRow}><span>{t.order.step5.codeDiscountLabel(discountCode.toUpperCase(), discountPct)}</span><strong className={styles.discount}>−{discountSaved} zł</strong></p>}
                 {nfcActive && <p className={styles.summaryRow}><span>{lang === 'pl' ? `NFC/RFID (${quantity} × ${nfcUnitPrice} zł)` : `NFC/RFID (${quantity} × ${nfcUnitPrice} zł)`}</span><strong>{nfcTotal} zł</strong></p>}
+                {cardFinishAddonTotal > 0 && <p className={styles.summaryRow}><span>{cardFinishObj.label} ({quantity} × {cardFinishObj.price} zł)</span><strong>{cardFinishAddonTotal} zł</strong></p>}
                 <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Wysyłka' : 'Shipping'}</span><strong>{SHIPPING_COST} zł</strong></p>
                 <div className={styles.summaryTotal}><span>{t.order.step5.payLabel}</span><strong className={styles.totalPrice}>{totalPrice} zł</strong></div>
                 <p className={styles.summaryNote}>{t.order.step5.payNote}</p>

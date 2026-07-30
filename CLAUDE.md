@@ -166,9 +166,23 @@ NFC/RFID (tylko dla karty PVC, opcjonalny dodatek):
   - LICZONE OSOBNO od rabatu ilościowego -50% (świadoma decyzja — inaczej
     NFC zostałoby podwójnie przecenione)
 
+Wykończenie karty (card_finish, tylko dla karty PVC, patrz CARD_FINISH_I18N
+w lib/translations.tsx) — jedna z 6 opcji, wybór wykluczający się wzajemnie:
+  - standard: bez dopłaty (domyślne)
+  - magnes: +5 zł/kartę
+  - top_holder: +20 zł/kartę
+  - top_holder_magnes: +25 zł/kartę
+  - top_holder_stojak: +30 zł/kartę
+  - zestaw_promocyjny: 100 zł/kpl. — WYJĄTEK: ta cena ZASTĘPUJE bazową cenę
+    karty PVC (40 zł) zamiast być dopłatą na wierzchu (płynie przez unitPrice
+    i rabat ilościowy -50% jak zwykła cena karty). Zestaw = 2 karty (jedna
+    luzem + jedna w Top Holderze ze stojakiem) + naklejka magnetyczna.
+  - Pozostałe 4 opcje (magnes/holder/kombinacje) liczone OSOBNO od rabatu
+    ilościowego -50%, dokładnie jak NFC/RFID.
+
 Wysyłka: stałe 15 zł, doliczane zawsze
 
-totalPrice = baseTotal - discountSaved + SHIPPING_COST + nfcTotal
+totalPrice = baseTotal - discountSaved + SHIPPING_COST + nfcTotal + cardFinishAddonTotal
 ```
 
 ## Schemat bazy danych — tabela `orders` (Supabase)
@@ -181,7 +195,7 @@ custom_desc, qr_link, card_year, card_rarity, card_name_custom,
 attr1_label, attr1_value, card_skill, attr2_label, attr2_value, card_desc,
 discount_code, discount_pct, approved_at, shipped_at,
 design_back_url, notes_back, paid, lang,
-nfc_enabled, nfc_price,
+nfc_enabled, nfc_price, card_finish,
 design_original_url, design_back_original_url,
 card_bottom_text, frame_color, holo_effect,
 design_url_2, design_original_url_2, approved_design_option,

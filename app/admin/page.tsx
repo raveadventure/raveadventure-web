@@ -209,6 +209,15 @@ function ClientMaterials({ order }: { order: Order }) {
   const cardType = (order as any).card_type || 'pvc'
   const nfcEnabled = !!(order as any).nfc_enabled
   const nfcPrice = (order as any).nfc_price || 0
+  const cardFinish = (order as any).card_finish || 'standard'
+
+  const CARD_FINISH_LABELS: Record<string, string> = {
+    magnes: '🧲 Magnes (wersja na lodówkę)',
+    top_holder: '🛡 Top Holder',
+    top_holder_magnes: '🛡🧲 Top Holder + Magnes',
+    top_holder_stojak: '🛡📐 Top Holder + Stojak',
+    zestaw_promocyjny: '🎁 Zestaw Promocyjny (2 karty + Top Holder + stojak + naklejka magnetyczna)',
+  }
 
   const THEME_LABELS: Record<string, string> = {
     techno_rave: 'Techno / Rave',
@@ -244,6 +253,9 @@ function ClientMaterials({ order }: { order: Order }) {
             </span>
           ) : (
             <span style={{ color: 'rgba(240,238,255,0.3)' }}>bez NFC</span>
+          )}
+          {cardFinish !== 'standard' && CARD_FINISH_LABELS[cardFinish] && (
+            <span style={{ color: '#f59e0b', fontWeight: 700 }}>{CARD_FINISH_LABELS[cardFinish]}</span>
           )}
         </p>
 
@@ -351,6 +363,14 @@ export default function AdminPage() {
       : o.back_option === 'custom_back' ? 'Custom Artwork'
       : o.back_option === 'qr' ? 'QR Code' : (o.back_option || '—')
     const frameLabel = FRAME_COLORS[o.frame_color]?.name || o.frame_color || '—'
+    const finishLabels: Record<string, string> = {
+      magnes: 'Magnes (wersja na lodówkę)',
+      top_holder: 'Top Holder',
+      top_holder_magnes: 'Top Holder + Magnes',
+      top_holder_stojak: 'Top Holder + Stojak',
+      zestaw_promocyjny: 'Zestaw Promocyjny (2 karty + Top Holder + stojak + naklejka magnetyczna)',
+    }
+    const finishLabel = finishLabels[o.card_finish] || 'Standard (brak)'
 
     const lines = [
       `ZLECENIE #${order.id.slice(0, 8).toUpperCase()}`,
@@ -363,6 +383,7 @@ export default function AdminPage() {
       `Tył: ${backLabel}`,
       `Ilość: ${o.quantity ?? '—'}`,
       `NFC/RFID: ${o.nfc_enabled ? `Tak (+${o.nfc_price || 0} zł)` : 'Nie'}`,
+      `Wykończenie: ${finishLabel}`,
       '',
       '--- ATRYBUTY KARTY ---',
       `① Lewy nagłówek: ${o.card_year || '—'}`,

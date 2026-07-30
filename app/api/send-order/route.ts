@@ -4,7 +4,7 @@ import { sendEmail } from '../../../lib/devEmail'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { name, email, theme, address, phone, cardText, notes, orderId, totalPrice, cardType, nfcEnabled, nfcPrice, deliveryMethod, lang: langRaw } = body
+    const { name, email, theme, address, phone, cardText, notes, orderId, totalPrice, cardType, nfcEnabled, nfcPrice, cardFinish, deliveryMethod, lang: langRaw } = body
     const lang: 'pl' | 'en' = langRaw === 'en' ? 'en' : 'pl'
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://raveadventure.pl'
 
@@ -92,6 +92,19 @@ export async function POST(req: NextRequest) {
       ? `<span style="background:rgba(180,77,255,0.15);color:#b44dff;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:700;margin-left:6px;">📦 Paczkomat</span>`
       : ''
 
+    // Wykończenie karty (magnes/holder/stojak/zestaw) — admin musi wiedzieć jakie fizyczne
+    // materiały przygotować do tego zamówienia (magnesy, toplowadery, stojaki).
+    const cardFinishLabels: Record<string, string> = {
+      magnes: '🧲 Magnes (wersja na lodówkę)',
+      top_holder: '🛡 Top Holder',
+      top_holder_magnes: '🛡🧲 Top Holder + Magnes',
+      top_holder_stojak: '🛡📐 Top Holder + Stojak',
+      zestaw_promocyjny: '🎁 Zestaw Promocyjny (2 karty + Top Holder + stojak + naklejka magnetyczna)',
+    }
+    const cardFinishBadgeAdmin = cardFinish && cardFinishLabels[cardFinish]
+      ? `<span style="background:rgba(245,158,11,0.15);color:#f59e0b;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:700;margin-left:6px;">${cardFinishLabels[cardFinish]}</span>`
+      : ''
+
     const adminEmailHtml = `
 <!DOCTYPE html>
 <html lang="pl">
@@ -127,7 +140,7 @@ export async function POST(req: NextRequest) {
             <tr>
               <td style="padding:12px 20px;font-size:13px;color:rgba(240,238,255,0.5);border-bottom:1px solid rgba(255,255,255,0.05);">Typ karty</td>
               <td style="padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.05);">
-                <span style="background:rgba(180,77,255,0.15);color:#b44dff;padding:3px 10px;border-radius:4px;font-size:13px;font-weight:600;">${cardTypeLabel}</span>${nfcBadgeAdmin}${deliveryBadge}
+                <span style="background:rgba(180,77,255,0.15);color:#b44dff;padding:3px 10px;border-radius:4px;font-size:13px;font-weight:600;">${cardTypeLabel}</span>${nfcBadgeAdmin}${cardFinishBadgeAdmin}${deliveryBadge}
               </td>
             </tr>
             <tr>
