@@ -17,7 +17,7 @@ export default function PolitykaPrywatnosci() {
       <div className={styles.content}>
         <p className={styles.eyebrow}>// dokumenty</p>
         <h1 className={styles.title}>Polityka Prywatności</h1>
-        <p className={styles.updated}>Ostatnia aktualizacja: czerwiec 2025</p>
+        <p className={styles.updated}>Ostatnia aktualizacja: lipiec 2026</p>
 
         <div className={styles.body}>
 
@@ -49,6 +49,7 @@ export default function PolitykaPrywatnosci() {
 
           <h2>5. Jak długo przechowujemy dane</h2>
           <p>Dane przechowujemy przez czas niezbędny do realizacji zamówienia oraz przez okres wymagany przepisami prawa (do 5 lat dla celów rozliczeń). Zdjęcia przesłane do realizacji zamówienia są przechowywane w serwisie Supabase i mogą być usunięte na Twoje żądanie.</p>
+          <p>Po zakończeniu realizacji zamówienia pliki (zdjęcia, projekty) mogą zostać pobrane przez administratora na własne urządzenie w celu zwolnienia miejsca w usłudze Supabase — pozostają objęte tymi samymi zasadami (prawo do usunięcia na żądanie). Podstawowe dane zamówienia (identyfikator, imię, adres e-mail) mogą być tymczasowo eksportowane przez administratora do pliku roboczego na potrzeby przygotowania projektu graficznego.</p>
 
           <h2>6. Komu przekazujemy dane</h2>
           <p>Twoje dane mogą być przekazywane wyłącznie podmiotom niezbędnym do realizacji zamówienia:</p>

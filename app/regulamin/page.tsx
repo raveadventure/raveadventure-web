@@ -17,7 +17,7 @@ export default function Regulamin() {
       <div className={styles.content}>
         <p className={styles.eyebrow}>// dokumenty</p>
         <h1 className={styles.title}>Regulamin</h1>
-        <p className={styles.updated}>Ostatnia aktualizacja: czerwiec 2025</p>
+        <p className={styles.updated}>Ostatnia aktualizacja: lipiec 2026</p>
 
         <div className={styles.body}>
 
@@ -41,7 +41,7 @@ export default function Regulamin() {
           <p>Proces realizacji zamówienia składa się z następujących etapów:</p>
           <ul>
             <li><strong>Projekt:</strong> W ciągu 24–48 godzin roboczych od złożenia zamówienia przygotowujemy projekt graficzny karty i przesyłamy go do akceptacji na adres e-mail Klienta.</li>
-            <li><strong>Akceptacja:</strong> Klient zatwierdza projekt lub zgłasza uwagi. Możliwe są maksymalnie 2 rundy poprawek w ramach zamówienia.</li>
+            <li><strong>Akceptacja:</strong> Klient zatwierdza projekt lub zgłasza uwagi wraz z opisem oczekiwanych zmian. Poprawki projektu są bezpłatne i wprowadzane do momentu zaakceptowania karty przez Klienta.</li>
             <li><strong>Produkcja i wysyłka:</strong> Po akceptacji projektu karta jest drukowana i wysyłana w ciągu 3–5 dni roboczych.</li>
           </ul>
 
@@ -49,7 +49,7 @@ export default function Regulamin() {
           <p>Aktualne ceny dostępne są na stronie raveadventure.pl. Płatność realizowana jest przelewem bankowym lub przez BLIK na podstawie indywidualnych ustaleń z Klientem po akceptacji projektu. Zamówienie jest realizowane po zaksięgowaniu płatności.</p>
 
           <h2>6. Dostawa</h2>
-          <p>Karty wysyłamy na terenie Polski. Koszt dostawy ustalany jest indywidualnie i doliczany do ceny zamówienia. Czas dostawy zależy od wybranego operatora pocztowego i wynosi zazwyczaj 1–3 dni robocze od momentu nadania przesyłki.</p>
+          <p>Karty wysyłamy na terenie Polski, na adres wskazany przez Klienta lub do wybranego paczkomatu InPost. Koszt dostawy wynosi stałe 15 zł i jest doliczany do każdego zamówienia. Czas dostawy zależy od wybranego sposobu wysyłki i wynosi zazwyczaj 1–3 dni robocze od momentu nadania przesyłki.</p>
 
           <h2>7. Reklamacje</h2>
           <p>Jeśli otrzymana karta jest niezgodna z zatwierdzonym projektem lub uszkodzona w transporcie, Klient ma prawo do reklamacji w ciągu 7 dni od otrzymania przesyłki. Reklamacje należy zgłaszać na adres <a href="mailto:kontakt@raveadventure.pl">kontakt@raveadventure.pl</a> wraz ze zdjęciem wadliwego produktu. Uznana reklamacja skutkuje bezpłatnym wykonaniem nowej karty.</p>
