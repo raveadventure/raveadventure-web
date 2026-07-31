@@ -23,7 +23,7 @@ export const REVIEWS_SEED: ReviewSeedItem[] = [
   },
   {
     created_at: '2025-09-03T10:00:00.000Z',
-    name: 'Marcin T.',
+    name: 'Czesiek',
     rating: 5,
     content: 'Dorzuciłem opcję NFC do swojej karty i to był strzał w dziesiątkę — stukam telefonem i leci playlista z imprezy. Ludzie pytają co to za karta, jak to działa. Kontakt z Michałem super, szybko odpisuje i cierpliwie tłumaczy opcje.',
     photo_url: null,
@@ -41,7 +41,7 @@ export const REVIEWS_SEED: ReviewSeedItem[] = [
   },
   {
     created_at: '2025-12-02T10:00:00.000Z',
-    name: 'Martaaa',
+    name: 'Mooonik',
     rating: 5,
     content: 'To jest naprawdę niesamowity pomysł na pamiątkę - też mamy z ekipą swoją kartę "Rave Family" 🔥',
     photo_url: null,
