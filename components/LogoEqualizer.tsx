@@ -1,4 +1,5 @@
 'use client'
+import { useEffect, useRef } from 'react'
 
 // Animowana wersja logo (public/logo_strona.svg) — patrz pamięć project-logo-symbolism dla pełnej
 // interpretacji. Michał narysował w Inkscape referencyjne linie DOKŁADNIE tam, gdzie mają
@@ -240,9 +241,44 @@ function buildDotBounce(suffix: string) {
   return `@keyframes dotBounceKf${suffix} {\n          ${body}\n        }`
 }
 
+// Klasy wszystkich elementów sterowanych przez CSS @keyframes (osobny "zegar" od SMIL
+// animateMotion poniżej) — używane przez efekt synchronizujący do wymuszenia jednoczesnego
+// restartu obu zegarów po zamontowaniu.
+const CSS_ANIMATED_SELECTOR = '.dotBounceViolet, .violetGlow, .violetGlowGold, .dotFadeDark, .dotFadeViolet, .arrowFillRect, .junctionFlash, .frameFlashCore, .frameFlashHalo'
+
 export default function LogoEqualizer() {
+  const rootRef = useRef<HTMLDivElement>(null)
+  const svgRef = useRef<SVGSVGElement>(null)
+
+  // CSS animations i SMIL (animateMotion) to dwa NIEZALEŻNE zegary w przeglądarce — nawet przy
+  // identycznej długości pętli (LOOP_S) startują w nieco innych momentach (zwłaszcza przy
+  // hydratacji), więc kropki (SMIL) i ich podskoki/błyski/zanikanie (CSS) rozjeżdżają się i
+  // zostają rozjechane na stałe (ta sama różnica co pętlę). Wymuszamy tu jednoczesny restart
+  // obu zegarów zaraz po zamontowaniu, żeby zawsze startowały z tego samego momentu — bez tego
+  // synchronizacja zależała od przypadku (stąd "działa dopiero po odświeżeniu", ale nie zawsze).
+  useEffect(() => {
+    const svg = svgRef.current
+    const root = rootRef.current
+    if (!svg || !root) return
+
+    const cssEls = root.querySelectorAll<HTMLElement | SVGElement>(CSS_ANIMATED_SELECTOR)
+    cssEls.forEach(el => { (el as HTMLElement).style.animation = 'none' })
+
+    const motions = svg.querySelectorAll('animateMotion')
+    motions.forEach(m => {
+      const anim = m as unknown as { beginElement?: () => void }
+      try { anim.beginElement?.() } catch { /* SMIL beginElement niedostępne (bardzo stara przeglądarka) — SVG i tak wystartuje samo, tylko bez wymuszonej synchronizacji */ }
+    })
+
+    // Wymuszony reflow — bez odczytu layoutu przeglądarka mogłaby zbatchować "none" i przywrócenie
+    // animacji w jedną klatkę i restart by się nie wydarzył.
+    void root.offsetHeight
+
+    cssEls.forEach(el => { (el as HTMLElement).style.animation = '' })
+  }, [])
+
   return (
-    <div style={{ position: 'relative', width: '100%', maxWidth: '720px', margin: '0 auto' }}>
+    <div ref={rootRef} style={{ position: 'relative', width: '100%', maxWidth: '720px', margin: '0 auto' }}>
       <img src="/logo_white.png" alt="RaveAdventure" style={{ width: '100%', height: 'auto', display: 'block' }} />
 
       {/* equalizer w ramce — pozycja 1:1 ze złotej ramki (rect39 po transformie) w logo_strona.svg.
@@ -270,16 +306,15 @@ export default function LogoEqualizer() {
 
       {/* błysk ramki (flesz) — mocny rdzeń w ramce + osobna, szersza i rozmyta warstwa dająca
           delikatny poblask poza jej krawędziami; obie zapalają się dopiero gdy podskoki ustają */}
-      <div style={{
+      <div className="frameFlashCore" style={{
         position: 'absolute',
         left: '37.15%', width: '13.84%', top: '12.66%', height: '75.87%',
         borderRadius: '18px',
         background: 'radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,235,180,0.95) 40%, rgba(245,180,0,0.65) 72%, transparent 100%)',
         mixBlendMode: 'screen',
         pointerEvents: 'none',
-        animation: `frameFlash ${LOOP_S}s linear infinite`,
       }} />
-      <div style={{
+      <div className="frameFlashHalo" style={{
         position: 'absolute',
         left: '28%', width: '30%', top: '-2%', height: '104%',
         borderRadius: '50px',
@@ -287,11 +322,10 @@ export default function LogoEqualizer() {
         mixBlendMode: 'screen',
         pointerEvents: 'none',
         filter: 'blur(6px)',
-        animation: `frameFlash ${LOOP_S}s linear infinite`,
       }} />
 
       {/* kropki + blask strzałki + błysk dużej kropki — natywne SVG, viewBox skaluje się razem z obrazkiem */}
-      <svg viewBox="0 0 1024 383" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+      <svg ref={svgRef} viewBox="0 0 1024 383" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
         <defs>
           <radialGradient id="gradDark" cx="35%" cy="30%" r="75%">
             <stop offset="0%" stopColor="#cfc2e0" />
@@ -381,6 +415,7 @@ export default function LogoEqualizer() {
           100% { transform: scaleY(0.6); }
         }
 
+        .frameFlashCore, .frameFlashHalo { animation: frameFlash ${LOOP_S}s linear infinite; }
         @keyframes frameFlash {
           0%, ${pct(T.center)}%, ${pct(T.center + 0.3 * SPEED)}%, ${pct(T.centerEnd)}%, 100% { opacity: 0; }
           ${pct(T.center + 0.55 * SPEED)}% { opacity: 1; }
