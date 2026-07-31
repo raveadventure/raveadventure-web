@@ -132,7 +132,7 @@ export default function Home() {
   const [discountPct, setDiscountPct] = useState(0)
   const [discountMsg, setDiscountMsg] = useState<string | null>(null)
 
-  const DISCOUNT_CODES: Record<string, number> = { 'LSF2026': 25 }
+  const DISCOUNT_CODES: Record<string, number> = {} // brak aktywnych kodów — LSF2026 wygasł 27.07.2026, usunięty
 
   const applyDiscount = () => {
     const code = discountCode.trim().toUpperCase()

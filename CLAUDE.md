@@ -159,8 +159,8 @@ unitPrice = cena_typu_karty + cena_opcji_tyłu
 hasDiscount (ilość ≥ 3) → -35% na (unitPrice × ilość)  [baseTotal]
   (QUANTITY_DISCOUNT_RATE w app/page.tsx — obniżone z -50% 2026-07-30, bo realny
   koszt wytworzenia z BOM pokazał zerową/ujemną marżę na zamówieniach 3+ szt.)
-kod rabatowy → dodatkowy % od baseTotal (jedyny aktywny kod: LSF2026 — 25%,
-  czasowy, promocja Łódź Summer Festival, ważny do 27.07.2026, do usunięcia po dacie)
+kod rabatowy → dodatkowy % od baseTotal (mechanizm gotowy, DISCOUNT_CODES puste —
+  LSF2026 — 25%, promocja Łódź Summer Festival — wygasł 27.07.2026, usunięty 2026-07-31)
 
 NFC/RFID (tylko dla karty PVC, opcjonalny dodatek):
   - ≤3 sztuki: +15 zł/kartę
