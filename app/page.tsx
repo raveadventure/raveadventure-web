@@ -6,6 +6,7 @@ import styles from './page.module.css'
 import PortfolioCarousel from '../components/PortfolioCarousel'
 import RealCardsSection from '../components/RealCardsSection'
 import AdShowcase from '../components/AdShowcase'
+import FaqReviews from '../components/FaqReviews'
 import InpostGeowidget from '../components/InpostGeowidget'
 import InpostAutocomplete from '../components/InpostAutocomplete'
 import HeroCardAnimation from '../components/HeroCardAnimation'
@@ -461,6 +462,7 @@ export default function Home() {
         <a href="#prawdziwe-karty" className={styles.quickNavBtn}>{lang === 'pl' ? 'Prawdziwy produkt' : 'Real product'}</a>
         <a href="#jak-zamowic" className={styles.quickNavBtn}>{lang === 'pl' ? 'Jak to działa' : 'How it works'}</a>
         <a href="#order" className={styles.quickNavBtn}>{lang === 'pl' ? 'Zamówienie' : 'Order'}</a>
+        <a href="#faq-opinie" className={styles.quickNavBtn}>{lang === 'pl' ? 'FAQ i opinie' : 'FAQ & reviews'}</a>
       </nav>
 
       <AdShowcase lang={lang} />
@@ -1170,6 +1172,8 @@ export default function Home() {
           )}
         </div>
       </section>
+
+      <FaqReviews lang={lang} />
 
       <footer className={styles.footer}>
         <p className={styles.footerLogo}>RaveAdventure</p>

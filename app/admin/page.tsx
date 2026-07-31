@@ -792,6 +792,7 @@ export default function AdminPage() {
             )}
           </div>
           <a href="/admin/portfolio" style={{ background: 'rgba(180,77,255,0.15)', border: '1px solid rgba(180,77,255,0.3)', color: '#b44dff', padding: '6px 14px', borderRadius: '6px', fontSize: '13px', textDecoration: 'none' }}>Portfolio</a>
+          <a href="/admin/opinie" style={{ background: 'rgba(180,77,255,0.15)', border: '1px solid rgba(180,77,255,0.3)', color: '#b44dff', padding: '6px 14px', borderRadius: '6px', fontSize: '13px', textDecoration: 'none' }}>Opinie</a>
           {!isSupabasePlaceholder() && (
             <button
               onClick={archiveAllDone}

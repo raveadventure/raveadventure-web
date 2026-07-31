@@ -37,6 +37,10 @@
 # app/api/dev-portfolio) — zawiera zdjęcia jako base64, potrafi urosnąć, nigdy nie commitować
 /.dev-portfolio/
 
+# lokalny mock tabeli reviews (patrz lib/devReviewsStore.ts / app/api/dev-reviews) — zawiera
+# zdjęcia jako base64, potrafi urosnąć, nigdy nie commitować
+/.dev-reviews/
+
 # lokalny licznik odwiedzin (patrz app/api/track-visit) — realne dane liczy prawdziwa tabela
 # page_views w Supabase, to tylko do testów lokalnych
 /.dev-page-views/
