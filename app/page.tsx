@@ -257,11 +257,19 @@ export default function Home() {
         delivery_method: deliveryMethod, paczkomat_id: deliveryMethod === 'paczkomat' ? paczkomatId : null,
       }
       const localMock = isSupabasePlaceholder()
-      const { data: orderData, error: insertError } = localMock
-        ? await mockInsertOrder(orderFields)
-        : await supabase.from('orders').insert([orderFields]).select('id').single()
-
-      if (insertError) throw new Error(insertError.message)
+      let orderData: { id: string } | null = null
+      if (localMock) {
+        const { data, error: insertError } = await mockInsertOrder(orderFields)
+        if (insertError) throw new Error(insertError.message)
+        orderData = data
+      } else {
+        const res = await fetch('/api/create-order', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderFields),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Nie udało się zapisać zamówienia.')
+        orderData = data
+      }
 
       if (photo && orderData?.id) {
         if (localMock) {
@@ -282,8 +290,10 @@ export default function Home() {
           if (uploadError) { console.error('Photo upload error:', uploadError.message) }
           else {
             const { data: urlData } = supabase.storage.from('order-photos').getPublicUrl(fileName)
-            const { error: updateError } = await supabase.from('orders').update({ photo_url: urlData.publicUrl }).eq('id', orderData.id)
-            if (updateError) console.error('Photo URL update error:', updateError.message)
+            const patchRes = await fetch('/api/create-order', {
+              method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: orderData.id, photo_url: urlData.publicUrl }),
+            })
+            if (!patchRes.ok) console.error('Photo URL update error:', (await patchRes.json()).error)
           }
         }
       }

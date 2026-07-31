@@ -17,29 +17,6 @@ const THEMES: Record<string, string> = {
   techno: 'Techno', rave: 'Rave', festival: 'Festival', travel: 'Adventure',
 }
 
-// ── ARCHIWIZACJA ZDJĘĆ ZAKOŃCZONYCH ZAMÓWIEŃ ──────────────────────────────
-// Gdy zamówienie trafia do statusu "done", przenosimy jego pliki w Storage do
-// folderu closed-orders/, żeby dało się je później zbiorczo ściągnąć na dysk
-// i skasować z Supabase (limit 5GB na Free Planie — patrz Lekcja #5 w CLAUDE.md).
-const STORAGE_BUCKET = 'order-photos'
-const ARCHIVE_PREFIX = 'closed-orders/'
-const ARCHIVABLE_URL_FIELDS = [
-  'photo_url', 'design_url', 'design_url_2', 'design_back_url',
-  'design_original_url', 'design_original_url_2', 'design_back_original_url',
-] as const
-
-function storagePathFromUrl(url: string | null | undefined): string | null {
-  if (!url) return null
-  const marker = `/storage/v1/object/public/${STORAGE_BUCKET}/`
-  const idx = url.indexOf(marker)
-  if (idx === -1) return null
-  const path = url.slice(idx + marker.length)
-  // ?v=... na końcu to tylko cache-busting doklejany przy wyświetlaniu (patrz admin/page.tsx
-  // przy zapisie design_url) — nie jest częścią prawdziwej ścieżki pliku w Storage.
-  const queryIdx = path.indexOf('?')
-  return queryIdx === -1 ? path : path.slice(0, queryIdx)
-}
-
 // Ta sama lista co FRAME_COLORS w app/page.tsx (duplikacja świadoma — admin już trzyma własne,
 // niezależne słowniki etykiet, np. THEMES powyżej, więc to zgodne z ustaloną konwencją).
 const FRAME_COLORS: Record<string, { name: string; hex: string }> = {
@@ -181,7 +158,6 @@ function LangBadge({ lang, size = 'normal' }: { lang: string | null; size?: 'nor
 function ClientMaterials({ order }: { order: Order }) {
   const [refFrontUrl, setRefFrontUrl] = React.useState<string | null>(null)
   const [refBackUrl, setRefBackUrl] = React.useState<string | null>(null)
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 
   React.useEffect(() => {
     if (isSupabasePlaceholder()) {
@@ -191,14 +167,13 @@ function ClientMaterials({ order }: { order: Order }) {
       if ((order as any).ref_back_url) setRefBackUrl((order as any).ref_back_url)
       return
     }
-    supabase.storage.from('order-photos').list('', { search: order.id })
-      .then(({ data }) => {
-        if (!data) return
-        const front = data.find(f => f.name.includes(order.id + '-custom'))
-        const back = data.find(f => f.name.includes(order.id + '-ref-back'))
-        if (front) setRefFrontUrl(`${supabaseUrl}/storage/v1/object/public/order-photos/${front.name}`)
-        if (back) setRefBackUrl(`${supabaseUrl}/storage/v1/object/public/order-photos/${back.name}`)
+    fetch(`/api/admin/storage-refs?orderId=${encodeURIComponent(order.id)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.refFrontUrl) setRefFrontUrl(data.refFrontUrl)
+        if (data.refBackUrl) setRefBackUrl(data.refBackUrl)
       })
+      .catch(() => {})
   }, [order.id])
 
   const backOption = (order as any).back_option || 'logo'
@@ -436,29 +411,8 @@ export default function AdminPage() {
       setConfirmDelete(null)
       return
     }
-    const filesToDelete: string[] = []
-    const exts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'pdf']
-
-    exts.forEach(ext => filesToDelete.push(`${id}-front.${ext}`))
-    exts.forEach(ext => filesToDelete.push(`${id}-custom.${ext}`))
-    exts.forEach(ext => filesToDelete.push(`${id}-ref-back.${ext}`))
-
-    const { data: designFiles } = await supabase.storage
-      .from('order-photos')
-      .list('designs')
-    if (designFiles) {
-      designFiles
-        .filter(f => f.name.startsWith(id))
-        .forEach(f => filesToDelete.push(`designs/${f.name}`))
-    }
-
-    const unique = filesToDelete.filter((v, i, a) => a.indexOf(v) === i)
-    if (unique.length > 0) {
-      await supabase.storage.from('order-photos').remove(unique)
-    }
-
-    const { error } = await supabase.from('orders').delete().eq('id', id)
-    if (!error) {
+    const res = await fetch(`/api/admin/orders?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+    if (res.ok) {
       setOrders(prev => prev.filter(o => o.id !== id))
       if (selected?.id === id) {
         setSelected(null)
@@ -475,58 +429,31 @@ export default function AdminPage() {
     setConfirmDelete(null)
   }
 
-  const archiveOrderFiles = async (order: Record<string, any>) => {
-    const updates: Record<string, string> = {}
-    for (const field of ARCHIVABLE_URL_FIELDS) {
-      const path = storagePathFromUrl(order[field])
-      if (!path) {
-        if (order[field]) console.warn(`[archive] ${order.id}: pole "${field}" nie pasuje do formatu URL Storage:`, order[field])
-        continue
-      }
-      if (path.startsWith(ARCHIVE_PREFIX)) continue
-      const destPath = ARCHIVE_PREFIX + path
-      const { error: moveError } = await supabase.storage.from(STORAGE_BUCKET).move(path, destPath)
-      if (moveError) {
-        console.error(`[archive] ${order.id}: nie udało się przenieść "${field}" (${path} → ${destPath}):`, moveError)
-        continue
-      }
-      const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(destPath)
-      updates[field] = data.publicUrl
-    }
-    return updates
-  }
-
   const [archiving, setArchiving] = useState(false)
   const archiveAllDone = async () => {
     if (isSupabasePlaceholder() || archiving) return
     setArchiving(true)
-    const doneOrders = orders.filter(o => o.status === 'done')
-    let archivedCount = 0
-    let filesMoved = 0
-    for (const order of doneOrders) {
-      const fileUpdates = await archiveOrderFiles(order)
-      filesMoved += Object.keys(fileUpdates).length
-      if (Object.keys(fileUpdates).length > 0) {
-        const { error } = await supabase.from('orders').update(fileUpdates).eq('id', order.id)
-        if (error) {
-          console.error(`[archive] ${order.id}: przeniesiono pliki, ale nie udało się zaktualizować zamówienia:`, error)
-        } else {
-          setOrders(prev => prev.map(o => o.id === order.id ? { ...o, ...fileUpdates } : o))
-          archivedCount++
-        }
-      }
+    const res = await fetch('/api/admin/archive', { method: 'POST' })
+    const data = await res.json()
+    if (res.ok) {
+      fetchOrders()
+      alert(`Zarchiwizowano pliki dla ${data.archivedCount} z ${data.total} zakończonych zamówień (${data.filesMoved} plików łącznie).`)
+    } else {
+      alert('Błąd archiwizacji: ' + (data.error || 'nieznany'))
     }
-    console.log(`[archive] Gotowe: ${archivedCount}/${doneOrders.length} zamówień, ${filesMoved} plików przeniesionych. Szczegóły błędów (jeśli są) wyżej w konsoli.`)
     setArchiving(false)
-    alert(`Zarchiwizowano pliki dla ${archivedCount} z ${doneOrders.length} zakończonych zamówień (${filesMoved} plików łącznie).${filesMoved === 0 ? '\n\nNic nie przeniesiono — otwórz konsolę przeglądarki (F12 → Console) i sprawdź komunikaty [archive], to pokaże dokładną przyczynę.' : ''}`)
   }
 
   const fetchOrders = async () => {
     setLoading(true)
-    const { data, error } = isSupabasePlaceholder()
-      ? await mockListOrders()
-      : await supabase.from('orders').select('*').order('created_at', { ascending: false })
-    if (!error && data) setOrders(data)
+    if (isSupabasePlaceholder()) {
+      const { data, error } = await mockListOrders()
+      if (!error && data) setOrders(data)
+    } else {
+      const res = await fetch('/api/admin/orders')
+      const data = await res.json()
+      if (res.ok) setOrders(data.orders)
+    }
     setLoading(false)
   }
 
@@ -540,16 +467,22 @@ export default function AdminPage() {
     const updates: Record<string, unknown> = { status }
     if (status === 'production') updates.approved_at = new Date().toISOString()
     if (status === 'shipped') updates.shipped_at = new Date().toISOString()
-    if (status === 'done' && !isSupabasePlaceholder()) {
-      const order = orders.find(o => o.id === id)
-      if (order) Object.assign(updates, await archiveOrderFiles(order))
-    }
-    const { error } = isSupabasePlaceholder()
-      ? await mockUpdateOrder(id, updates)
-      : await supabase.from('orders').update(updates).eq('id', id)
-    if (!error) {
-      setOrders(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o))
-      if (selected?.id === id) setSelected(prev => prev ? { ...prev, ...updates } : null)
+
+    if (isSupabasePlaceholder()) {
+      const { error } = await mockUpdateOrder(id, updates)
+      if (!error) {
+        setOrders(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o))
+        if (selected?.id === id) setSelected(prev => prev ? { ...prev, ...updates } : null)
+      }
+    } else {
+      const res = await fetch('/api/admin/orders', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, updates }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setOrders(prev => prev.map(o => o.id === id ? (data.order as Order) : o))
+        if (selected?.id === id) setSelected(data.order as Order)
+      }
     }
     setUpdating(null)
   }
@@ -561,18 +494,31 @@ export default function AdminPage() {
       updates.status = 'production'
       updates.approved_at = new Date().toISOString()
     }
-    const { data, error } = isSupabasePlaceholder()
-      ? await mockUpdateOrder(id, updates)
-      : await supabase.from('orders').update(updates).eq('id', id).select('*').single()
-    if (error) {
-      console.error('Błąd zapisu płatności:', error.message)
-      alert('Błąd zapisu: ' + error.message)
+
+    if (isSupabasePlaceholder()) {
+      const { data, error } = await mockUpdateOrder(id, updates)
+      if (error) {
+        alert('Błąd zapisu: ' + error.message)
+        return
+      }
+      if (data) {
+        setOrders(prev => prev.map(o => o.id === id ? (data as Order) : o))
+        setSelected(prev => prev?.id === id ? (data as Order) : prev)
+      }
       return
     }
-    if (data) {
-      setOrders(prev => prev.map(o => o.id === id ? (data as Order) : o))
-      setSelected(prev => prev?.id === id ? (data as Order) : prev)
+
+    const res = await fetch('/api/admin/orders', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, updates }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      console.error('Błąd zapisu płatności:', data.error)
+      alert('Błąd zapisu: ' + data.error)
+      return
     }
+    setOrders(prev => prev.map(o => o.id === id ? (data.order as Order) : o))
+    setSelected(prev => prev?.id === id ? (data.order as Order) : prev)
   }
 
   const handleDesignFile = (file: File) => {

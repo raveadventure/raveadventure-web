@@ -149,6 +149,21 @@ Pojedyncza tabela `orders` w Supabase napędza wszystko. Status to liniowy pipel
 
 `middleware.ts` chroni każdą ścieżkę zaczynającą się od `/admin`: sprawdza cookie (`admin_session` === `ADMIN_SESSION_SECRET`) ustawiane przez `/api/login`. To nie JWT ani session store — pojedynczy współdzielony sekret dla jednego admina. To samo middleware obsługuje też globalne przekierowania trybu konserwacji sterowane przez `NEXT_PUBLIC_MAINTENANCE`.
 
+**Ważne — middleware NIE chroni tras `/api/*`** (matcher tylko dla stron), więc każdy endpoint pod `/api/admin/*` sam sprawdza to samo ciasteczko przez `lib/adminAuth.ts` (`isAdminRequest(req)`), niezależnie od middleware.
+
+### RLS na Supabase — orders/portfolio/reviews/Storage (2026-07-31)
+
+Do 2026-07-31 tabela `orders` miała RLS włączone, ale z politykami `USING (true)` dla SELECT/UPDATE/DELETE — każdy znający publiczny klucz anon (musi być jawny w kodzie strony) mógł czytać/zmieniać/kasować WSZYSTKIE zamówienia (imiona, maile, telefony, adresy, zdjęcia, `review_token`) przez REST API Supabase, z pominięciem loginu do `/admin`. Naprawione: RLS na `orders` jest teraz zamknięte całkowicie dla ról `public`/`anon` (zero polityk — service_role i tak zawsze omija RLS). Wszystkie operacje na `orders` idą przez server-side API kluczem `SUPABASE_SERVICE_KEY`:
+- `/api/admin/orders` (GET/PATCH/DELETE, chronione `admin_session`) — panel admina.
+- `/api/admin/archive` (POST) — zbiorcza archiwizacja `closed-orders/` (przycisk w adminie); logika w `lib/orderArchive.ts`, używana też przez PATCH w `/api/admin/orders` przy zmianie statusu na `done`.
+- `/api/admin/storage-refs` (GET) — listowanie grafik referencyjnych klienta dla `ClientMaterials` w adminie.
+- `/api/create-order` (POST insert / PATCH photo_url) — jedyny publiczny, bez logowania, punkt zapisu (formularz zamówienia).
+- `/api/order-status` (GET) — publiczny odczyt wąskiego zestawu pól po tokenie (`/status?token=`).
+
+Ten sam wzorzec zastosowany do `portfolio` (SELECT zostaje publiczne — dane marketingowe; INSERT/UPDATE/DELETE tylko przez `/api/admin/portfolio`) i `reviews` (SELECT `approved=true` i INSERT `approved=false` zostają publiczne — obsługują formularz opinii; UPDATE/DELETE tylko przez `/api/admin/reviews`). Storage bucket `order-photos`: INSERT (upload) zostaje publiczne (zdjęcia klienta + projekty admina idą zawsze bezpośrednio z przeglądarki, Lekcja #3 niżej), ale SELECT (listowanie — advisor Supabase flagował to jako `public_bucket_allows_listing`), UPDATE (przenoszenie przy archiwizacji) i DELETE (kasowanie zamówienia) przeniesione server-side — bezpośredni dostęp po znanym URL nadal działa (bucket publiczny), zablokowane jest tylko wyliczanie/kasowanie/przenoszenie plików kluczem anon.
+
+**Wniosek na przyszłość**: nowa tabela z danymi klienta lub panelem admina NIE powinna mieć RLS otwartego na `public`/`anon` dla SELECT/UPDATE/DELETE — pisać od razu przez server-side route kluczem service-role + `isAdminRequest()`, tak jak wyżej. Publiczne INSERT/SELECT są OK tylko gdy to świadomie zamierzona, publiczna funkcja (formularz zamówienia, formularz opinii, publiczne portfolio).
+
 ## Logika cenowa (musi zostać zachowana funkcjonalnie)
 
 ```

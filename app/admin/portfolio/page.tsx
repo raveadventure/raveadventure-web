@@ -24,7 +24,7 @@ export default function AdminPortfolio() {
   const cardRef = useRef<HTMLInputElement>(null)
   const origRef = useRef<HTMLInputElement>(null)
 
-  const fetch = async () => {
+  const loadItems = async () => {
     setLoading(true)
     if (isSupabasePlaceholder()) {
       const { data } = await mockListPortfolio()
@@ -32,12 +32,13 @@ export default function AdminPortfolio() {
       setLoading(false)
       return
     }
+    // SELECT zostaje publiczne (dane marketingowe) — czytamy wprost kluczem anon, tak jak strona /portfolio.
     const { data } = await supabase.from('portfolio').select('*').order('sort_order')
     if (data) setItems(data)
     setLoading(false)
   }
 
-  useEffect(() => { fetch() }, [])
+  useEffect(() => { loadItems() }, [])
 
   const handleAdd = async () => {
     if (!form.name || !cardFile) { setMsg({ type: 'err', text: 'Podaj nazwę i wgraj grafikę karty.' }); return }
@@ -68,17 +69,20 @@ export default function AdminPortfolio() {
           origUrl = ou.publicUrl
         }
 
-        const { error: ie } = await supabase.from('portfolio').insert([{
-          id, name: form.name, theme: form.theme, description: form.description,
-          card_url: cardUrl.publicUrl, original_url: origUrl, active: true, sort_order: maxOrder,
-        }])
-        if (ie) throw ie
+        const res = await fetch('/api/admin/portfolio', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id, name: form.name, theme: form.theme, description: form.description,
+            card_url: cardUrl.publicUrl, original_url: origUrl, active: true, sort_order: maxOrder,
+          }),
+        })
+        if (!res.ok) throw new Error((await res.json()).error || 'Insert failed')
       }
 
       setMsg({ type: 'ok', text: 'Karta dodana do portfolio!' })
       setForm({ name: '', theme: 'techno_rave', description: '' })
       setCardFile(null); setOrigFile(null)
-      fetch()
+      loadItems()
     } catch (e: unknown) {
       setMsg({ type: 'err', text: 'Błąd: ' + (e instanceof Error ? e.message : String(e)) })
     }
@@ -89,7 +93,9 @@ export default function AdminPortfolio() {
     if (isSupabasePlaceholder()) {
       await mockUpdatePortfolio(id, { active: !active })
     } else {
-      await supabase.from('portfolio').update({ active: !active }).eq('id', id)
+      await fetch('/api/admin/portfolio', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, active: !active }),
+      })
     }
     setItems(prev => prev.map(i => i.id === id ? { ...i, active: !active } : i))
   }
@@ -99,7 +105,7 @@ export default function AdminPortfolio() {
     if (isSupabasePlaceholder()) {
       await mockDeletePortfolio(id)
     } else {
-      await supabase.from('portfolio').delete().eq('id', id)
+      await fetch(`/api/admin/portfolio?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
     }
     setItems(prev => prev.filter(i => i.id !== id))
   }

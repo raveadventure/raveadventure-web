@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { supabase } from '../../lib/supabase'
 import { isSupabasePlaceholder, mockGetOrder } from '../../lib/ordersLocalMock'
 
 const STATUSES = [
@@ -50,18 +49,22 @@ function StatusContent() {
 
   useEffect(() => {
     if (!token) { setNotFound(true); setLoading(false); return }
-    const query = isSupabasePlaceholder()
-      ? mockGetOrder(token)
-      : supabase
-          .from('orders')
-          .select('id,created_at,approved_at,shipped_at,status,name,theme,card_type,quantity,total_price')
-          .eq('id', token)
-          .single()
-    query.then(({ data, error }: { data: any; error: any }) => {
-      if (error || !data) setNotFound(true)
-      else setOrder(data)
-      setLoading(false)
-    })
+    if (isSupabasePlaceholder()) {
+      mockGetOrder(token).then(({ data, error }: { data: any; error: any }) => {
+        if (error || !data) setNotFound(true)
+        else setOrder(data)
+        setLoading(false)
+      })
+      return
+    }
+    fetch(`/api/order-status?token=${encodeURIComponent(token)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.error || !data.order) setNotFound(true)
+        else setOrder(data.order)
+        setLoading(false)
+      })
+      .catch(() => { setNotFound(true); setLoading(false) })
   }, [token])
 
   const s = { fontFamily: "'Space Grotesk', sans-serif", color: '#f0eeff' }

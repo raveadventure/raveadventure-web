@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { supabase } from '../../../lib/supabase'
 import { isSupabasePlaceholder, mockListReviews, mockUpdateReview, mockDeleteReview, ReviewItem } from '../../../lib/reviewsLocalMock'
 
 export default function AdminReviews() {
@@ -8,25 +7,28 @@ export default function AdminReviews() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'pending' | 'approved'>('pending')
 
-  const fetch = async () => {
+  const loadReviews = async () => {
     setLoading(true)
     if (isSupabasePlaceholder()) {
       const { data } = await mockListReviews()
       setItems(data || [])
     } else {
-      const { data } = await supabase.from('reviews').select('*').order('created_at', { ascending: false })
-      setItems(data || [])
+      const res = await fetch('/api/admin/reviews')
+      const data = await res.json()
+      if (res.ok) setItems(data.reviews)
     }
     setLoading(false)
   }
 
-  useEffect(() => { fetch() }, [])
+  useEffect(() => { loadReviews() }, [])
 
   const approve = async (id: string) => {
     if (isSupabasePlaceholder()) {
       await mockUpdateReview(id, { approved: true })
     } else {
-      await supabase.from('reviews').update({ approved: true }).eq('id', id)
+      await fetch('/api/admin/reviews', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, approved: true }),
+      })
     }
     setItems(prev => prev.map(i => i.id === id ? { ...i, approved: true } : i))
   }
@@ -35,7 +37,9 @@ export default function AdminReviews() {
     if (isSupabasePlaceholder()) {
       await mockUpdateReview(id, { approved: false })
     } else {
-      await supabase.from('reviews').update({ approved: false }).eq('id', id)
+      await fetch('/api/admin/reviews', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, approved: false }),
+      })
     }
     setItems(prev => prev.map(i => i.id === id ? { ...i, approved: false } : i))
   }
@@ -45,7 +49,7 @@ export default function AdminReviews() {
     if (isSupabasePlaceholder()) {
       await mockDeleteReview(id)
     } else {
-      await supabase.from('reviews').delete().eq('id', id)
+      await fetch(`/api/admin/reviews?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
     }
     setItems(prev => prev.filter(i => i.id !== id))
   }
