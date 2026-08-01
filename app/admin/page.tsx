@@ -435,17 +435,21 @@ export default function AdminPage() {
       if (order.design_back_url) lines.push(`Projekt — tył: ${storageFileName(order.design_back_url)}`)
     }
 
-    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' })
+    const textContent = lines.join('\n')
+    const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' })
     const fileName = `zlecenie-${order.id.slice(0, 8)}.txt`
 
     // Poza zwykłym pobraniem na dysk (niżej, bez zmian) — ta sama treść trafia też
     // do folderu zamówienia w Supabase (orders/{id8}/), obok zdjęcia i projektów, żeby dało się
-    // ściągnąć jednym folderem zamiast szukać każdego pliku osobno (patrz CLAUDE.md).
+    // ściągnąć jednym folderem zamiast szukać każdego pliku osobno (patrz CLAUDE.md). Idzie przez
+    // server-side route kluczem service-role — klucz anon nie ma uprawnienia UPDATE w Storage
+    // (blokada RLS), a ten plik trzeba umieć nadpisać przy kolejnych eksportach tego zamówienia.
     if (!isSupabasePlaceholder()) {
-      const { error: txtUploadError } = await supabase.storage
-        .from('order-photos')
-        .upload(`orders/${order.id.slice(0, 8)}/${fileName}`, blob, { upsert: true, contentType: 'text/plain;charset=utf-8' })
-      if (txtUploadError) console.error('[export] Nie udało się wgrać .txt do Storage:', txtUploadError.message)
+      const txtUploadRes = await fetch('/api/admin/export-txt', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: order.id, fileName, content: textContent }),
+      })
+      if (!txtUploadRes.ok) console.error('[export] Nie udało się wgrać .txt do Storage:', (await txtUploadRes.json().catch(() => ({}))).error)
     }
 
     const url = URL.createObjectURL(blob)

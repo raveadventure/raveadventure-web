@@ -355,7 +355,11 @@ export default function Home() {
           const ext = (photo.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
           const safeExt = ['jpg','jpeg','png','gif','webp','heic'].includes(ext) ? ext : 'jpg'
           const fileName = `orders/${orderData.id.slice(0, 8)}/front.${safeExt}`
-          const { error: uploadError } = await supabase.storage.from('order-photos').upload(fileName, photo, { upsert: true })
+          // upsert:false (nie upsert:true) — ścieżka zawiera świeże ID zamówienia, więc plik nigdy
+          // nie istnieje wcześniej; upsert:true wymagałby dodatkowo uprawnienia UPDATE w Storage,
+          // którego klucz anon celowo nie ma od blokady RLS (patrz CLAUDE.md) — z upsert:true ten
+          // upload kończył się cichym błędem 403 i zamówienie zostawało bez zdjęcia.
+          const { error: uploadError } = await supabase.storage.from('order-photos').upload(fileName, photo, { upsert: false })
           if (uploadError) { console.error('Photo upload error:', uploadError.message) }
           else {
             const { data: urlData } = supabase.storage.from('order-photos').getPublicUrl(fileName)
@@ -381,7 +385,7 @@ export default function Home() {
         } else {
           const ext = (refFileFront.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
           const safeExt = ['jpg','jpeg','png','gif','webp','pdf'].includes(ext) ? ext : 'jpg'
-          await supabase.storage.from('order-photos').upload(`orders/${orderData.id.slice(0, 8)}/custom.${safeExt}`, refFileFront, { upsert: true })
+          await supabase.storage.from('order-photos').upload(`orders/${orderData.id.slice(0, 8)}/custom.${safeExt}`, refFileFront, { upsert: false })
         }
       }
       if (refFileBack && orderData?.id) {
@@ -396,7 +400,7 @@ export default function Home() {
         } else {
           const ext = (refFileBack.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
           const safeExt = ['jpg','jpeg','png','gif','webp','pdf'].includes(ext) ? ext : 'jpg'
-          await supabase.storage.from('order-photos').upload(`orders/${orderData.id.slice(0, 8)}/ref-back.${safeExt}`, refFileBack, { upsert: true })
+          await supabase.storage.from('order-photos').upload(`orders/${orderData.id.slice(0, 8)}/ref-back.${safeExt}`, refFileBack, { upsert: false })
         }
       }
 
