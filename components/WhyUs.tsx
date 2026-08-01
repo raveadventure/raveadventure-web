@@ -23,6 +23,10 @@ const TXT = {
   },
 }
 
+// Te same 4 kolory co reszta marki (var(--neon)/--neon2/--success/--warning w globals.css) —
+// każda karta dostaje inny akcent, cyklicznie, żeby siatka 2×2 nie wyglądała jednolicie płasko.
+const ACCENTS = ['var(--neon)', 'var(--neon2)', 'var(--success)', 'var(--warning)']
+
 export default function WhyUs({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
   const t = TXT[lang]
 
@@ -33,15 +37,46 @@ export default function WhyUs({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
         @media (max-width: 640px) {
           .whyUsGrid { grid-template-columns: 1fr; }
         }
+        .whyUsCard {
+          position: relative;
+          overflow: hidden;
+          background: linear-gradient(160deg, var(--surface) 0%, var(--surface2) 120%);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          padding: 20px;
+          transition: border-color 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+        }
+        .whyUsCard:hover {
+          transform: translateY(-3px);
+          border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+          box-shadow: 0 10px 28px -12px color-mix(in srgb, var(--accent) 45%, transparent);
+        }
+        .whyUsBar {
+          position: absolute; top: 0; left: 0; right: 0; height: 2px;
+          background: linear-gradient(90deg, transparent, var(--accent), transparent);
+          box-shadow: 0 0 12px var(--accent);
+        }
+        .whyUsIcon {
+          width: 42px; height: 42px; flex-shrink: 0;
+          border-radius: 12px;
+          background: color-mix(in srgb, var(--accent) 16%, transparent);
+          border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+          box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 35%, transparent);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 20px;
+        }
       `}</style>
       <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: 'var(--neon)', letterSpacing: '2px', marginBottom: '12px' }}>{t.eyebrow}</p>
       <h2 style={{ fontFamily: "'Space Mono', monospace", fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 700, color: 'var(--text)', margin: '0 0 28px' }}>{t.title}</h2>
 
       <div className="whyUsGrid">
         {t.items.map((item, i) => (
-          <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '22px 20px' }}>
-            <div style={{ fontSize: '28px', marginBottom: '12px' }}>{item.icon}</div>
-            <h3 style={{ margin: '0 0 8px', fontSize: '15px', fontWeight: 700, color: 'var(--text)' }}>{item.heading}</h3>
+          <div key={i} className="whyUsCard" style={{ '--accent': ACCENTS[i % ACCENTS.length] } as React.CSSProperties}>
+            <div className="whyUsBar" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+              <div className="whyUsIcon">{item.icon}</div>
+              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--text)' }}>{item.heading}</h3>
+            </div>
             <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{item.detail}</p>
           </div>
         ))}
