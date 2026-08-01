@@ -354,7 +354,7 @@ export default function Home() {
         } else {
           const ext = (photo.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
           const safeExt = ['jpg','jpeg','png','gif','webp','heic'].includes(ext) ? ext : 'jpg'
-          const fileName = `${orderData.id}-front.${safeExt}`
+          const fileName = `orders/${orderData.id.slice(0, 8)}/front.${safeExt}`
           const { error: uploadError } = await supabase.storage.from('order-photos').upload(fileName, photo, { upsert: true })
           if (uploadError) { console.error('Photo upload error:', uploadError.message) }
           else {
@@ -381,7 +381,7 @@ export default function Home() {
         } else {
           const ext = (refFileFront.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
           const safeExt = ['jpg','jpeg','png','gif','webp','pdf'].includes(ext) ? ext : 'jpg'
-          await supabase.storage.from('order-photos').upload(`${orderData.id}-custom.${safeExt}`, refFileFront, { upsert: true })
+          await supabase.storage.from('order-photos').upload(`orders/${orderData.id.slice(0, 8)}/custom.${safeExt}`, refFileFront, { upsert: true })
         }
       }
       if (refFileBack && orderData?.id) {
@@ -396,7 +396,7 @@ export default function Home() {
         } else {
           const ext = (refFileBack.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
           const safeExt = ['jpg','jpeg','png','gif','webp','pdf'].includes(ext) ? ext : 'jpg'
-          await supabase.storage.from('order-photos').upload(`${orderData.id}-ref-back.${safeExt}`, refFileBack, { upsert: true })
+          await supabase.storage.from('order-photos').upload(`orders/${orderData.id.slice(0, 8)}/ref-back.${safeExt}`, refFileBack, { upsert: true })
         }
       }
 

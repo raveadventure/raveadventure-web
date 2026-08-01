@@ -17,12 +17,30 @@ export async function GET(req: NextRequest) {
   if (!orderId) return NextResponse.json({ error: 'Missing orderId' }, { status: 400 })
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const { data } = await supabaseAdmin.storage.from('order-photos').list('', { search: orderId })
-  const front = data?.find(f => f.name.includes(orderId + '-custom'))
-  const back = data?.find(f => f.name.includes(orderId + '-ref-back'))
+
+  // Nowa struktura (od 2026-08-01) — orders/{id8}/custom.ext i orders/{id8}/ref-back.ext.
+  const orderFolder = `orders/${orderId.slice(0, 8)}`
+  const { data: folderData } = await supabaseAdmin.storage.from('order-photos').list(orderFolder)
+  let front = folderData?.find(f => f.name.startsWith('custom.'))
+  let back = folderData?.find(f => f.name.startsWith('ref-back.'))
+  let frontPath = front ? `${orderFolder}/${front.name}` : null
+  let backPath = back ? `${orderFolder}/${back.name}` : null
+
+  // Stara, płaska struktura (zamówienia sprzed folderów per-zlecenie) — fallback.
+  if (!frontPath || !backPath) {
+    const { data: flatData } = await supabaseAdmin.storage.from('order-photos').list('', { search: orderId })
+    if (!frontPath) {
+      const flatFront = flatData?.find(f => f.name.includes(orderId + '-custom'))
+      frontPath = flatFront ? flatFront.name : null
+    }
+    if (!backPath) {
+      const flatBack = flatData?.find(f => f.name.includes(orderId + '-ref-back'))
+      backPath = flatBack ? flatBack.name : null
+    }
+  }
 
   return NextResponse.json({
-    refFrontUrl: front ? `${supabaseUrl}/storage/v1/object/public/order-photos/${front.name}` : null,
-    refBackUrl: back ? `${supabaseUrl}/storage/v1/object/public/order-photos/${back.name}` : null,
+    refFrontUrl: frontPath ? `${supabaseUrl}/storage/v1/object/public/order-photos/${frontPath}` : null,
+    refBackUrl: backPath ? `${supabaseUrl}/storage/v1/object/public/order-photos/${backPath}` : null,
   })
 }

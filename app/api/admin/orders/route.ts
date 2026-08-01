@@ -42,6 +42,8 @@ export async function DELETE(req: NextRequest) {
   const id = new URL(req.url).searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
 
+  // Stara, płaska struktura (zamówienia sprzed folderów per-zlecenie) — zgadywanie nazw plików,
+  // no-op dla nowych zamówień skoro nic tam nie ma pod tymi ścieżkami.
   const exts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'pdf']
   const filesToDelete: string[] = []
   exts.forEach(ext => filesToDelete.push(`${id}-front.${ext}`))
@@ -51,6 +53,14 @@ export async function DELETE(req: NextRequest) {
   const { data: designFiles } = await supabaseAdmin.storage.from(STORAGE_BUCKET).list('designs')
   if (designFiles) {
     designFiles.filter(f => f.name.startsWith(id)).forEach(f => filesToDelete.push(`designs/${f.name}`))
+  }
+
+  // Nowa struktura (od 2026-08-01) — wszystkie pliki zamówienia w jednym folderze orders/{id8}/
+  // (zdjęcie, grafiki referencyjne, projekty, wyeksportowany .txt) — usuwamy całą zawartość naraz.
+  const orderFolder = `orders/${id.slice(0, 8)}`
+  const { data: orderFolderFiles } = await supabaseAdmin.storage.from(STORAGE_BUCKET).list(orderFolder)
+  if (orderFolderFiles) {
+    orderFolderFiles.forEach(f => filesToDelete.push(`${orderFolder}/${f.name}`))
   }
 
   const unique = filesToDelete.filter((v, i, a) => a.indexOf(v) === i)

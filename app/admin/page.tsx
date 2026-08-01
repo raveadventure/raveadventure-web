@@ -344,7 +344,7 @@ export default function AdminPage() {
 
   // Zrzut danych zlecenia do pliku .txt — Michał trzyma to otwarte obok Pixlra zamiast
   // przełączać się z powrotem do panelu za każdym razem, gdy potrzebuje sprawdzić atrybut.
-  const exportOrderAsText = (order: Order) => {
+  const exportOrderAsText = async (order: Order) => {
     const o = order as any
     // THEMES (wyżej w pliku) nie pokrywa się z realnymi wartościami theme (techno_rave/festival/
     // adventure/custom) — osobna mapa tylko na potrzeby eksportu, żeby nie pokazywać surowego id.
@@ -436,10 +436,22 @@ export default function AdminPage() {
     }
 
     const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' })
+    const fileName = `zlecenie-${order.id.slice(0, 8)}.txt`
+
+    // Poza zwykłym pobraniem na dysk (niżej, bez zmian) — ta sama treść trafia też
+    // do folderu zamówienia w Supabase (orders/{id8}/), obok zdjęcia i projektów, żeby dało się
+    // ściągnąć jednym folderem zamiast szukać każdego pliku osobno (patrz CLAUDE.md).
+    if (!isSupabasePlaceholder()) {
+      const { error: txtUploadError } = await supabase.storage
+        .from('order-photos')
+        .upload(`orders/${order.id.slice(0, 8)}/${fileName}`, blob, { upsert: true, contentType: 'text/plain;charset=utf-8' })
+      if (txtUploadError) console.error('[export] Nie udało się wgrać .txt do Storage:', txtUploadError.message)
+    }
+
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `zlecenie-${order.id.slice(0, 8)}.txt`
+    a.download = fileName
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -621,7 +633,7 @@ export default function AdminPage() {
       } else {
         const extFront = (designFile.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
         const safeExtFront = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extFront) ? extFront : 'jpg'
-        const fileNameFrontOriginal = `designs/${selected.id}-${timestamp}-original.${safeExtFront}`
+        const fileNameFrontOriginal = `orders/${selected.id.slice(0, 8)}/design-front-${timestamp}-original.${safeExtFront}`
         const { error: uploadFrontOriginalError } = await supabase.storage
           .from('order-photos')
           .upload(fileNameFrontOriginal, designFile, { upsert: false })
@@ -634,7 +646,7 @@ export default function AdminPage() {
         designOriginalUrl = urlFrontOriginalData.publicUrl
 
         const compressedFront = await compressImage(designFile, 1200, 0.82, true)
-        const fileNameFront = `designs/${selected.id}-${timestamp}.jpg`
+        const fileNameFront = `orders/${selected.id.slice(0, 8)}/design-front-${timestamp}.jpg`
         const { error: uploadFrontError } = await supabase.storage
           .from('order-photos')
           .upload(fileNameFront, compressedFront, { upsert: false, contentType: 'image/jpeg' })
@@ -658,7 +670,7 @@ export default function AdminPage() {
         } else {
           const extFront2 = (designFile2.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
           const safeExtFront2 = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extFront2) ? extFront2 : 'jpg'
-          const fileNameFrontOriginal2 = `designs/${selected.id}-${timestamp}-2-original.${safeExtFront2}`
+          const fileNameFrontOriginal2 = `orders/${selected.id.slice(0, 8)}/design-front-2-${timestamp}-original.${safeExtFront2}`
           const { error: uploadFrontOriginalError2 } = await supabase.storage
             .from('order-photos')
             .upload(fileNameFrontOriginal2, designFile2, { upsert: false })
@@ -668,7 +680,7 @@ export default function AdminPage() {
           }
 
           const compressedFront2 = await compressImage(designFile2, 1200, 0.82, true)
-          const fileNameFront2 = `designs/${selected.id}-${timestamp}-2.jpg`
+          const fileNameFront2 = `orders/${selected.id.slice(0, 8)}/design-front-2-${timestamp}.jpg`
           const { error: uploadFrontError2 } = await supabase.storage
             .from('order-photos')
             .upload(fileNameFront2, compressedFront2, { upsert: false, contentType: 'image/jpeg' })
@@ -690,7 +702,7 @@ export default function AdminPage() {
         } else {
           const extBack = (designFileBack.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '')
           const safeExtBack = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extBack) ? extBack : 'jpg'
-          const fileNameBackOriginal = `designs/${selected.id}-${timestamp}-back-original.${safeExtBack}`
+          const fileNameBackOriginal = `orders/${selected.id.slice(0, 8)}/design-back-${timestamp}-original.${safeExtBack}`
           const { error: uploadBackOriginalError } = await supabase.storage
             .from('order-photos')
             .upload(fileNameBackOriginal, designFileBack, { upsert: false })
@@ -700,7 +712,7 @@ export default function AdminPage() {
           }
 
           const compressedBack = await compressImage(designFileBack, 1200, 0.82, true)
-          const fileNameBack = `designs/${selected.id}-${timestamp}-back.jpg`
+          const fileNameBack = `orders/${selected.id.slice(0, 8)}/design-back-${timestamp}.jpg`
           const { error: uploadBackError } = await supabase.storage
             .from('order-photos')
             .upload(fileNameBack, compressedBack, { upsert: false, contentType: 'image/jpeg' })

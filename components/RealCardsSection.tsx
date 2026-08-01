@@ -44,7 +44,7 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
       {/* WIDEO: karty w portfelu — wyśrodkowane, węższy blok niż cała sekcja */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', marginBottom: '14px', maxWidth: '640px', margin: '0 auto 14px' }}>
         {['wallet-1', 'wallet-2'].map(id => (
-          <div key={id} style={{ position: 'relative', borderRadius: '14px', overflow: 'hidden', border: '1px solid var(--border)' }}>
+          <div key={id} style={{ position: 'relative', aspectRatio: '2 / 3', borderRadius: '14px', overflow: 'hidden', border: '1px solid var(--border)' }}>
             <video
               src={`/real-cards/${id}.mp4`}
               poster={`/real-cards/${id}-poster.jpg`}
@@ -52,7 +52,7 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
               loop
               autoPlay
               playsInline
-              style={{ width: '100%', display: 'block' }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
           </div>
         ))}

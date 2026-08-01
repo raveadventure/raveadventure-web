@@ -331,6 +331,33 @@ Wybór paczkomatu domyślnie idzie przez `components/InpostAutocomplete.tsx` —
 
 ### Konwencje nazw plików w Storage (bucket `order-photos`)
 
+**Od 2026-08-01 — folder per zamówienie (`orders/{id8}/`)**, gdzie `{id8}` to
+pierwsze 8 znaków `order.id` (ten sam skrót co w numerze „ZLECENIE #XXXXXXXX"
+i w nazwie eksportowanego pliku .txt). Dotyczy TYLKO nowych zamówień od tej daty
+— starsze zamówienia zostają przy starej, płaskiej strukturze (patrz niżej),
+kod obsługuje oba warianty równolegle (delete/archiwizacja/wyszukiwanie grafik
+referencyjnych sprawdzają nowy folder, z fallbackiem na starą strukturę).
+
+```
+orders/{id8}/front.ext                              — zdjęcie klienta
+orders/{id8}/custom.ext                              — grafika referencyjna (custom theme)
+orders/{id8}/ref-back.ext                             — grafika referencyjna tyłu
+orders/{id8}/design-front-{timestamp}-original.ext    — oryginał projektu, wariant 1 (pełna rozdzielczość, NIE ładowany automatycznie nigdzie)
+orders/{id8}/design-front-{timestamp}.jpg             — skompresowany podgląd projektu, wariant 1 (trafia do maila i podglądu w adminie)
+orders/{id8}/design-front-2-{timestamp}-original.ext / design-front-2-{timestamp}.jpg — analogicznie dla wariantu 2 (opcjonalnego)
+orders/{id8}/design-back-{timestamp}-original.ext / design-back-{timestamp}.jpg — analogicznie dla tyłu
+orders/{id8}/zlecenie-{id8}.txt                       — kopia eksportu .txt (patrz „Eksport zamówienia" niżej), upsert przy każdym kliknięciu eksportu
+closed-orders/<oryginalna-ścieżka>                    — archiwum: pliki zamówień ze statusem "done" (działa niezależnie od struktury, patrz niżej)
+```
+
+**Cel folderu per zamówienie**: Michał ściąga jedną, kompletną paczkę
+(zdjęcie + projekty + .txt) zamiast szukać plików osobno w płaskiej strukturze
+— to jednocześnie zastępuje pomysł zapisu na dysk lokalny (`C:\...\Cards_Projects\
+orders`, technicznie niemożliwy bez interakcji użytkownika — przeglądarka nie
+może pisać na dowolnej ścieżce dysku bez zgody) czymś prostszym i solidniejszym.
+
+**Stara, płaska struktura (zamówienia sprzed 2026-08-01)** — wciąż w użyciu dla
+istniejących zamówień, kod ma dla niej fallback:
 ```
 {id}-front.ext                        — zdjęcie klienta
 {id}-custom.ext                       — grafika referencyjna (custom theme)
@@ -338,8 +365,18 @@ Wybór paczkomatu domyślnie idzie przez `components/InpostAutocomplete.tsx` —
 designs/{id}-{timestamp}-original.ext — oryginał projektu (pełna rozdzielczość, NIE ładowany automatycznie nigdzie)
 designs/{id}-{timestamp}.jpg          — skompresowany podgląd projektu (trafia do maila i podglądu w adminie)
 designs/{id}-{timestamp}-back-original.ext / -back.jpg — analogicznie dla tyłu
-closed-orders/<oryginalna-ścieżka>     — archiwum: pliki zamówień ze statusem "done", patrz niżej
 ```
+
+**Eksport zamówienia jako .txt** (`exportOrderAsText` w `app/admin/page.tsx`,
+przycisk „📄 Eksportuj dane zlecenia" w panelu) — poza dotychczasowym pobraniem
+pliku na dysk (bez zmian, ten sam format co zawsze — patrz „Aplikacja
+towarzysząca" wyżej, to on jest importowany przez Cards Creator), ta sama treść
+jest teraz RÓWNIEŻ wgrywana (upsert) do `orders/{id8}/zlecenie-{id8}.txt` w
+Supabase — obok zdjęcia/projektów tego zamówienia. Działa tylko na prawdziwym
+Supabase (lokalnie/placeholder pomija ten krok, samo pobranie działa jak
+zawsze). Plik .txt w Storage NIE jest częścią automatycznej archiwizacji przy
+statusie „done" (patrz niżej) — zostaje w `orders/{id8}/` nawet po
+przeniesieniu zdjęć/projektów do `closed-orders/`.
 
 **Archiwizacja zdjęć zakończonych zamówień** (`app/admin/page.tsx`, `archiveOrderFiles`/`archiveAllDone`): gdy zamówienie zmienia status na `done`, pliki powiązane z nim (`photo_url`, `design_url`, `design_url_2`, `design_back_url`, `design_original_url`, `design_original_url_2`, `design_back_original_url`) są automatycznie przenoszone (`supabase.storage.move()`) do folderu `closed-orders/`, a odpowiednie kolumny w `orders` aktualizowane na nowe publiczne URL-e — inaczej stare linki (mail, panel) prowadziłyby donikąd. Przycisk „🗄 Zarchiwizuj zakończone" w nagłówku panelu robi to samo zbiorczo dla już istniejących zamówień `done` (jednorazowa migracja, bezpieczna do wielokrotnego kliknięcia — pomija pliki już przeniesione). Cel: Michał może okresowo ściągnąć zawartość `closed-orders/` na dysk i skasować ją z Supabase, żeby zwolnić miejsce na Free Planie (5GB limit, patrz Lekcja #5 o Cached Egress). Działa tylko na prawdziwym Supabase — lokalnie (placeholder) przycisk się nie pokazuje.
 

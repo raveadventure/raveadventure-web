@@ -1,8 +1,10 @@
 # dependencies
 /node_modules
 
-# prywatne pliki biznesowe (koszty, marże) — nie kod strony, nie do gita
+# prywatne pliki biznesowe (koszty, marże, opis biznesu/strony) — nie kod strony, nie do gita
 /RaveAdventure_BOM_koszty.xlsx
+/RaveAdventure_opis_biznesu.txt
+/Strona raveadventure.pl.txt
 ~$*.xlsx
 
 # lokalne skille Claude Code (npx skills add ...) — narzędzia developerskie,
