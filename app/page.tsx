@@ -176,7 +176,21 @@ export default function Home() {
   const progressRef = useRef<HTMLDivElement>(null)
   const prevStepRef = useRef(step)
   const [howItWorksOpen, setHowItWorksOpen] = useState(false)
-  const [optionsOpen, setOptionsOpen] = useState(false)
+  // "co możesz zamówić" — akordeon per-pozycja (nie sekcja jako całość): każda opcja to tylko
+  // ikonka + napis, dopóki klient jej nie kliknie — docelowo dojdą tam też zdjęcia/modele
+  // przykładowe, więc trzymanie wszystkiego zwiniętego domyślnie chroni przed rozdęciem sekcji.
+  const [openOptionIdx, setOpenOptionIdx] = useState<number | null>(null)
+
+  // Przycisk (i) przy blokach wyboru w formularzu (typ karty/motyw/rewers/wykończenie) skacze do
+  // odpowiadającej pozycji w "co możesz zamówić" i od razu ją rozwija — zamiast każdy blok tłumaczyć
+  // dwa razy (raz krótko w formularzu, raz szczegółowo w osobnej sekcji), formularz zostaje
+  // maksymalnie zwięzły, a szczegóły są o jedno kliknięcie dalej.
+  const jumpToOption = (idx: number) => {
+    setOpenOptionIdx(idx)
+    setTimeout(() => {
+      document.getElementById(`option-item-${idx}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 80)
+  }
 
   useEffect(() => {
     if (!navRef.current) return
@@ -625,54 +639,54 @@ export default function Home() {
           </div>
         </div>
 
-        <div className={styles.mobileCollapse}>
-          <button type="button" className={styles.mobileCollapseSummary} onClick={() => setOptionsOpen(o => !o)}>
-            <p className={styles.sectionEye} style={{ margin: 0 }}>{t.options.eyebrow}</p>
-            <span className={styles.collapseIcon} style={{ transform: optionsOpen ? 'rotate(180deg)' : 'none' }}>▾</span>
-          </button>
-          <div className={`${styles.mobileCollapseBody} ${optionsOpen ? styles.mobileCollapseBodyOpen : ''}`}>
-            <div className={styles.mobileCollapseBodyInner}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
-                {t.options.cards.map((o, i) => (
-                  <div key={i} className={styles.infoBlock} style={{ borderRadius: '10px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '16px' }}>{o.icon}</span>
-                      <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{o.title}</p>
+        <div>
+          <p className={styles.sectionEye} style={{ margin: '0 0 12px' }}>{t.options.eyebrow}</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {[
+              ...t.options.cards,
+              {
+                icon: '📲',
+                title: lang === 'pl' ? 'Karta z NFC/RFID' : 'NFC/RFID Card',
+                desc: lang === 'pl'
+                  ? 'Chcesz, żeby Twoja karta robiła coś więcej niż tylko dobrze wyglądała? Zaprogramuj wbudowany chip NFC — wystarczy zbliżyć telefon, żeby błyskawicznie udostępnić Twój Instagram, TikTok albo hasło do WiFi na imprezie. Bez wpisywania, bez szukania — jeden dotyk.'
+                  : 'Want your card to do more than just look good? Program the built-in NFC chip — one tap of a phone instantly shares your Instagram, TikTok, or the WiFi password at your party. No typing, no searching — just a tap.',
+                tags: ['NFC', 'RFID'],
+                priceTag: '+15 zł',
+              },
+            ].map((o, i) => {
+              const isOpen = openOptionIdx === i
+              return (
+                <div key={i} id={`option-item-${i}`} className={styles.infoBlock} style={{ borderRadius: '10px', padding: 0, overflow: 'hidden', scrollMarginTop: 'var(--nav-height, 70px)' }}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenOptionIdx(isOpen ? null : i)}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', background: 'transparent', border: 'none', padding: '12px 14px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}
+                  >
+                    <span style={{ fontSize: '17px', flexShrink: 0 }}>{o.icon}</span>
+                    <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text)', flex: 1 }}>{o.title}</p>
+                    <span style={{ fontSize: '13px', color: 'var(--neon)', flexShrink: 0, transition: 'transform 250ms cubic-bezier(0.23, 1, 0.32, 1)', transform: isOpen ? 'rotate(180deg)' : 'none' }}>▾</span>
+                  </button>
+                  <div style={{ display: 'grid', gridTemplateRows: isOpen ? '1fr' : '0fr', transition: 'grid-template-rows 300ms cubic-bezier(0.23, 1, 0.32, 1)' }}>
+                    <div style={{ overflow: 'hidden', minHeight: 0 }}>
+                      <div style={{ padding: '0 14px 14px' }}>
+                        <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{o.desc}</p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          {o.tags.map(tag => (
+                            <span key={tag} className={styles.tagPill}>{tag}</span>
+                          ))}
+                          {'priceTag' in o && o.priceTag && <span className={styles.priceTagSm}>{o.priceTag}</span>}
+                        </div>
+                      </div>
                     </div>
-                    <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{o.desc}</p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                      {o.tags.map(tag => (
-                        <span key={tag} className={styles.tagPill}>{tag}</span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-                <div className={styles.infoBlock} style={{ borderRadius: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '16px' }}>📲</span>
-                    <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
-                      {lang === 'pl' ? 'Karta z NFC/RFID' : 'NFC/RFID Card'}
-                    </p>
-                  </div>
-                  <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
-                    {lang === 'pl'
-                      ? 'Chcesz, żeby Twoja karta robiła coś więcej niż tylko dobrze wyglądała? Zaprogramuj wbudowany chip NFC — wystarczy zbliżyć telefon, żeby błyskawicznie udostępnić Twój Instagram, TikTok albo hasło do WiFi na imprezie. Bez wpisywania, bez szukania — jeden dotyk.'
-                      : 'Want your card to do more than just look good? Program the built-in NFC chip — one tap of a phone instantly shares your Instagram, TikTok, or the WiFi password at your party. No typing, no searching — just a tap.'}
-                  </p>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                    {['NFC', 'RFID'].map(tag => (
-                      <span key={tag} className={styles.tagPill}>{tag}</span>
-                    ))}
-                    <span className={styles.priceTagSm}>+15 zł</span>
                   </div>
                 </div>
-              </div>
+              )
+            })}
+          </div>
 
-              <div className={styles.infoBlock} style={{ marginTop: '10px', borderRadius: '10px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                <span style={{ fontSize: '14px', flexShrink: 0 }}>⚙</span>
-                <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{t.options.attrNote}</p>
-              </div>
-            </div>
+          <div className={styles.infoBlock} style={{ marginTop: '10px', borderRadius: '10px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+            <span style={{ fontSize: '14px', flexShrink: 0 }}>⚙</span>
+            <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{t.options.attrNote}</p>
           </div>
         </div>
       </section>
@@ -737,6 +751,7 @@ export default function Home() {
                     style={{ '--accent': c.accent } as React.CSSProperties}
                     onClick={() => setCardType(c.id)} role="button" tabIndex={0}
                     onKeyDown={e => e.key === 'Enter' && setCardType(c.id)} aria-pressed={cardType === c.id}>
+                    <button type="button" className={styles.infoBtn} onClick={e => { e.stopPropagation(); jumpToOption(0) }} aria-label={lang === 'pl' ? 'Więcej informacji' : 'More info'}>i</button>
                     <div className={styles.themeAccentBar} />
                     <p className={styles.cardTypeName}>{c.label}</p>
                     <span className={styles.cardTypeDims}>{c.dims}</span>
@@ -778,7 +793,12 @@ export default function Home() {
                       return (
                         <div key={f.id} className={styles.backCard} style={{ cursor: 'default' }}>
                           <div className={styles.backCardTop}>
-                            <p className={styles.backCardLabel}>{f.label}</p>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                              {f.id !== 'standard' && (
+                                <button type="button" className={styles.infoBtnInline} onClick={() => jumpToOption(f.id === 'zestaw_promocyjny' ? 6 : 5)} aria-label={lang === 'pl' ? 'Więcej informacji' : 'More info'}>i</button>
+                              )}
+                              <p className={styles.backCardLabel} style={{ margin: 0 }}>{f.label}</p>
+                            </span>
                             <span className={`${styles.backCardPrice} ${f.id === 'standard' ? styles.backCardPriceFree : ''}`}>
                               {f.id === 'standard' ? (lang === 'pl' ? 'Gratis' : 'Free')
                                 : f.id === 'zestaw_promocyjny' ? `${f.price} zł${lang === 'pl' ? '/kpl.' : '/set'}`
@@ -824,7 +844,10 @@ export default function Home() {
                     style={{ '--accent': th.accent } as React.CSSProperties}
                     onClick={() => setFrontTheme(th.id)} role="button" tabIndex={0}
                     onKeyDown={e => e.key === 'Enter' && setFrontTheme(th.id)} aria-pressed={frontTheme === th.id}>
-                    <p className={styles.themeLabel}>{th.label}</p>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '6px' }}>
+                      <button type="button" className={styles.infoBtnInline} style={{ marginTop: '2px' }} onClick={e => { e.stopPropagation(); jumpToOption(th.id === 'custom' ? 2 : 1) }} aria-label={lang === 'pl' ? 'Więcej informacji' : 'More info'}>i</button>
+                      <p className={styles.themeLabel} style={{ margin: 0 }}>{th.label}</p>
+                    </div>
                     {frontTheme === th.id && <span className={styles.themeCheck}>✓</span>}
                   </div>
                 ))}
@@ -1013,7 +1036,12 @@ export default function Home() {
                     onClick={() => setBackOption(b.id)} role="button" tabIndex={0}
                     onKeyDown={e => e.key === 'Enter' && setBackOption(b.id)} aria-pressed={backOption === b.id}>
                     <div className={styles.backCardTop}>
-                      <p className={styles.backCardLabel}>{b.label}</p>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                        {(b.id === 'dedication' || b.id === 'qr') && (
+                          <button type="button" className={styles.infoBtnInline} onClick={e => { e.stopPropagation(); jumpToOption(b.id === 'dedication' ? 3 : 4) }} aria-label={lang === 'pl' ? 'Więcej informacji' : 'More info'}>i</button>
+                        )}
+                        <p className={styles.backCardLabel} style={{ margin: 0 }}>{b.label}</p>
+                      </span>
                       <span className={`${styles.backCardPrice} ${b.price === 0 ? styles.backCardPriceFree : ''}`}>{b.price === 0 ? t.order.step3.freeLabel : `+${b.price} zł`}</span>
                     </div>
                     {backOption === b.id && <span className={styles.themeCheck}>✓</span>}

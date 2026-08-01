@@ -155,6 +155,22 @@
 .themeAccentBar { height: 3px; border-radius: 2px; background: var(--accent); margin-bottom: 14px; width: 32px; box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent); }
 .themeLabel { font-family: var(--font-hero); font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; letter-spacing: -0.1px; padding-right: 26px; line-height: 1.25; }
 .themeCheck { position: absolute; top: 14px; right: 14px; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #0a0014; font-weight: 700; box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 60%, transparent); }
+.infoBtn {
+  position: absolute; top: 14px; left: 14px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700;
+  font-style: italic; font-family: Georgia, serif; cursor: pointer; z-index: 2;
+  transition: border-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+.infoBtn:hover { border-color: var(--neon); color: var(--neon); box-shadow: 0 0 10px rgba(180,77,255,0.4); }
+.infoBtnInline {
+  width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted);
+  display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700;
+  font-style: italic; font-family: Georgia, serif; cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+.infoBtnInline:hover { border-color: var(--neon); color: var(--neon); box-shadow: 0 0 8px rgba(180,77,255,0.4); }
 
 /* ── HOW IT WORKS ── */
 .stepsGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
