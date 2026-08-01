@@ -1,7 +1,9 @@
 'use client'
 import { useEffect, useState } from 'react'
 
-// Fazy: photo → flash → artwork → frame → attrs → final → (loop)
+// Fazy: photo → flash → artwork → frame → attrs → final → real → (loop)
+// "real" (prawdziwa, sfotografowana karta) dotyczy tylko kart z polem `real` (patrz CARDS) —
+// dla kart bez tego pola faza jest pomijana w useEffect niżej.
 const PHASES = [
   { id: 'photo', dur: 2200 },
   { id: 'flash', dur: 450 },
@@ -9,6 +11,7 @@ const PHASES = [
   { id: 'frame', dur: 1100 },
   { id: 'attrs', dur: 2300 },
   { id: 'final', dur: 7000 },
+  { id: 'real', dur: 2800 },
   { id: 'fade', dur: 900 },
 ] as const
 
@@ -22,8 +25,10 @@ const TXT = {
     frame: '// dodajemy ramkę',
     attrs: ['NAZWA', 'ATRYBUT 1', 'UMIEJĘTNOŚĆ', 'ATRYBUT 2'],
     final: '✦ Twoja karta gotowa',
+    real: '✦ Prawdziwa karta w Twojej dłoni',
     photoAlt: 'Zdjęcie z festiwalu',
     finalAlt: 'Gotowa karta RaveAdventure',
+    realAlt: 'Prawdziwa, wydrukowana karta RaveAdventure',
   },
   en: {
     photo: '// your photo from the event',
@@ -32,8 +37,10 @@ const TXT = {
     frame: '// adding the frame',
     attrs: ['NAME', 'ATTRIBUTE 1', 'SKILL', 'ATTRIBUTE 2'],
     final: '✦ Your card is ready',
+    real: '✦ A real card in your hands',
     photoAlt: 'Photo from the festival',
     finalAlt: 'Finished RaveAdventure card',
+    realAlt: 'A real, printed RaveAdventure card',
   },
 }
 
@@ -61,10 +68,16 @@ const ZONES_2 = {
 // Realne atrybuty widoczne na karcie #2 — pokazywane w plakietkach fazy "attrs"
 const CARD2_ATTRS = ['RAVE FAMILY', 'UNITY ×6', 'AUDIORIVER AURA', 'HAPPINESS ×100']
 
-// Kolejne karty odtwarzane w pętli: najpierw #1, potem #2, potem znów #1...
+// Kolejne karty odtwarzane w pętli: #1, #2, #3 (nowa, "prawdziwa karta"), potem znów #1... Każda
+// ma teraz `real` — dokłada dodatkową fazę po "final": crossfade z cyfrowego projektu do zdjęcia
+// prawdziwej, wydrukowanej karty w dłoni — dowód, że to nie tylko plik JPG (patrz WhyUs.tsx).
+// Karta #3 dodatkowo nie ma skalibrowanych `zones` (procentowych stref do budowania warstwa-po-
+// warstwie jak #1/#2) — `simple: true` sprawia, że pomija fazy artwork/frame/attrs i przechodzi
+// prosto do gotowej grafiki.
 const CARDS = [
-  { photo: '/anim-photo.jpg', card: '/anim-card.png', zones: ZONES_1 },
-  { photo: '/anim-photo-2.jpg', card: '/anim-card-2.png', zones: ZONES_2 },
+  { photo: '/anim-photo.jpg', card: '/anim-card.png', zones: ZONES_1, real: '/first_animation_real_card.jpg' },
+  { photo: '/anim-photo-2.jpg', card: '/anim-card-2.png', zones: ZONES_2, real: '/second_animation_real_card.jpg' },
+  { photo: '/new_animation_bacic_photo.png', card: '/new_animation_final_card.png', zones: ZONES_1, simple: true, real: '/new_animation_real_card.png' },
 ] as const
 
 // Proporcje (szerokość/wysokość) każdego pliku — używane, żeby "scena" mogła
@@ -77,6 +90,11 @@ const DEFAULT_RATIOS: Record<string, number> = {
   '/anim-card.png': 591 / 1063,
   '/anim-photo-2.jpg': 900 / 1176,
   '/anim-card-2.png': 638 / 1011,
+  '/new_animation_bacic_photo.png': 638 / 1011,
+  '/new_animation_final_card.png': 638 / 1011,
+  '/new_animation_real_card.png': 638 / 1011,
+  '/first_animation_real_card.jpg': 1785 / 2830,
+  '/second_animation_real_card.jpg': 638 / 1011,
 }
 
 // Proporcja samej "sceny" (czarnego tła). Dobrana tak, by przy obecnych
@@ -101,7 +119,7 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
   const attrsLabels = cardIndex === 0 ? t.attrs : CARD2_ATTRS
 
   useEffect(() => {
-    const allSrcs = Array.from(new Set(CARDS.flatMap(c => [c.photo, c.card])))
+    const allSrcs = Array.from(new Set(CARDS.flatMap(c => [c.photo, c.card, ...('real' in c && c.real ? [c.real] : [])])))
     allSrcs.forEach(src => {
       const img = new Image()
       img.onload = () => {
@@ -115,10 +133,24 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
   }, [])
 
   useEffect(() => {
+    const card = CARDS[cardIndex]
     const idx = PHASES.findIndex(p => p.id === phase)
     const isLastPhase = idx === PHASES.length - 1
-    const next = PHASES[(idx + 1) % PHASES.length]
-    const currentDur = PHASES[idx].dur
+    let nextIdx = (idx + 1) % PHASES.length
+    // Karty "simple" (patrz CARDS) nie mają skalibrowanych stref do budowania warstwa-po-warstwie
+    // — pomijają artwork/frame/attrs i przechodzą prosto do gotowej grafiki karty.
+    if ('simple' in card && card.simple && PHASES[nextIdx].id === 'artwork') {
+      nextIdx = PHASES.findIndex(p => p.id === 'final')
+    }
+    // Faza "real" (crossfade do zdjęcia prawdziwej, wydrukowanej karty) tylko dla kart, które ją mają.
+    if (PHASES[nextIdx].id === 'real' && !('real' in card && card.real)) {
+      nextIdx = PHASES.findIndex(p => p.id === 'fade')
+    }
+    const next = PHASES[nextIdx]
+    // Karta "simple" (#3) pomija cały wieloetapowy build-up (patrz wyżej), więc "final" nie musi
+    // trzymać się tak długo jak u kart #1/#2, które dochodzą do niego przez artwork/frame/attrs.
+    const durOverrides: Partial<Record<Phase, number>> = ('simple' in card && card.simple) ? { final: 1800 } : {}
+    const currentDur = durOverrides[phase] ?? PHASES[idx].dur
     const timer = setTimeout(() => {
       if (isLastPhase) {
         setCardIndex(ci => (ci + 1) % CARDS.length)
@@ -126,15 +158,17 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
       setPhase(next.id)
     }, currentDur)
     return () => clearTimeout(timer)
-  }, [phase])
+  }, [phase, cardIndex])
 
   const idx = PHASES.findIndex(p => p.id === phase)
   const isPhoto = phase === 'photo'
   const isFlash = phase === 'flash'
   const isArtwork = phase === 'artwork'
   const isFinal = phase === 'final'
+  const isReal = phase === 'real'
   const isFade = phase === 'fade'
-  const showCard = isFinal || isFade
+  const showCard = isFinal || isReal || isFade
+  const realSrc = 'real' in current && current.real ? current.real : null
 
   // Dopóki widoczne jest zdjęcie źródłowe (photo/flash) dopasowujemy scenę do
   // JEGO proporcji; od fazy "artwork" w górę — do proporcji finalnej karty.
@@ -307,6 +341,20 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
             />
           )}
 
+          {/* Crossfade z cyfrowego projektu do zdjęcia prawdziwej, wydrukowanej karty — dowód
+              namacalny, że to nie tylko plik JPG (patrz WhyUs.tsx, "fizyczny produkt, nie plik JPG"). */}
+          {(isReal || isFade) && realSrc && (
+            <img
+              src={realSrc}
+              alt={t.realAlt}
+              style={{
+                position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+                zIndex: 2, transform: 'translateZ(0)',
+                animation: isReal ? 'raArtIn 0.9s ease-out both' : undefined,
+              }}
+            />
+          )}
+
           <CardLayer clip={current.zones.artwork} show={idx >= 2 && !showCard} anim={isArtwork ? 'raArtIn 1.4s ease-out both' : undefined} z={2} />
 
           {isArtwork && (
@@ -341,7 +389,7 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
             }} />
           )}
 
-          {isFinal && (
+          {(isFinal || isReal) && (
             <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 7, pointerEvents: 'none' }}>
               <div style={{
                 position: 'absolute', top: 0, bottom: 0, width: '45%',
@@ -397,6 +445,11 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
         {isFinal && (
           <span style={{ fontSize: '11px', fontFamily: 'monospace', letterSpacing: '1px', color: '#b44dff', fontWeight: 700, animation: 'raPop 0.3s ease-out' }}>
             {t.final}
+          </span>
+        )}
+        {isReal && (
+          <span style={{ fontSize: '11px', fontFamily: 'monospace', letterSpacing: '1px', color: '#00e5a0', fontWeight: 700, animation: 'raPop 0.3s ease-out' }}>
+            {t.real}
           </span>
         )}
         {isFade && <span style={{ fontSize: '11px' }}>&nbsp;</span>}

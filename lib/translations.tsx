@@ -70,12 +70,13 @@ export const T = {
   pl: {
     nav: { orderCta: 'Zamów kartę' },
     hero: {
-      eyebrow: '// festival cards',
-      title1: 'Twoje zdjęcie.',
-      title2: 'Twoja karta.',
-      sub: 'Personalizowane karty z klimatem techno i rave. Mieszczą się w portfelu — zabierasz ze sobą na każdy event.',
+      eyebrow: '// Wyjątkowa pamiątka',
+      title1: 'Zamień swoje zdjęcie z festiwalu',
+      title2: 'w kolekcjonerską kartę.',
+      sub: 'PVC jak karta bankomatowa, z Twoim zdjęciem, opisem i dodatkami (NFC, magnes, Top Holder).',
       badge1: '-35% przy 3+ sztukach',
-      cta: 'Zamów swoją kartę →',
+      cta: 'Zamów swoją kartę',
+      ctaSecondary: 'Zobacz przykładowe karty',
     },
     howItWorks: {
       eyebrow: '// jak to działa',
@@ -88,10 +89,13 @@ export const T = {
     options: {
       eyebrow: '// co możesz zamówić',
       cards: [
+        { icon: '💳', title: 'Karta PVC lub Wizytówka', desc: 'Karta PVC — trwały format karty bankomatowej, mieści się w portfelu, można dodać NFC. Wizytówka — tańszy, lżejszy zestaw 100 sztuk.', tags: ['PVC', 'Wizytówka (100 szt.)'], color: '#b44dff' },
         { icon: '🎨', title: 'Karta z Twoim zdjęciem', desc: 'Wgrywasz zdjęcie — my przerabiamy w klimacie Techno, Festiwal lub Adventure. Dodajesz własną nazwę, atrybuty i umiejętność.', tags: ['Techno / Rave', 'Festiwal', 'Adventure'], color: 'var(--neon)' },
         { icon: '✦', title: 'Karta w pełni niestandardowa', desc: 'Masz inspirację? Wgrywasz grafikę referencyjną i opisujesz styl. Tworzymy projekt od podstaw — unikalny, dopasowany do Twojej wizji.', tags: ['Custom', 'Pełna swoboda'], color: '#f59e0b' },
         { icon: '✍', title: 'Dedykacja na rewersie', desc: 'Zamiast standardowego logo — Twój cytat, tekst lub osobista dedykacja. Idealne na prezent lub pamiątkę z eventu.', tags: ['Dedykacja', '+15 zł'], color: '#00e5a0' },
         { icon: '⬛', title: 'QR Code na rewersie', desc: 'Link do mediów społecznościowych, portfolio lub muzyki zakodowany w QR. Ktoś skanuje kartę — trafia prosto do Ciebie.', tags: ['QR Code', '+40 zł'], color: '#00f0ff' },
+        { icon: '🧲', title: 'Wykończenie: magnes, Top Holder, stojak', desc: 'Magnes do powieszenia na lodówce, sztywne etui Top Holder (chroni przed zarysowaniem) albo stojak biurkowy — osobno lub w Zestawie Promocyjnym z dwiema kartami.', tags: ['Magnes', 'Top Holder', 'Stojak'], color: '#00e5a0' },
+        { icon: '🎁', title: 'Co zawiera Zestaw Promocyjny (80 zł)', desc: 'Dwie karty PVC z tym samym projektem: jedna luzem do portfela + jedna w sztywnym Top Holderze ze stojakiem biurkowym, plus naklejka magnetyczna do ewentualnego użycia na lodówce. Cena zestawu zastępuje cenę pojedynczej karty.', tags: ['2 karty', 'Top Holder + stojak', 'Naklejka magnetyczna'], color: '#f59e0b' },
       ],
       attrNote: 'Do każdej karty możesz dodać własne atrybuty — nazwę karty, rok, rzadkość (Common · Rare · Epic · Legendary), dwa atrybuty z wartościami i umiejętność. Twoja karta, Twoje zasady.',
     },
@@ -232,12 +236,13 @@ export const T = {
   en: {
     nav: { orderCta: 'Order a card' },
     hero: {
-      eyebrow: '// festival cards',
-      title1: 'Your photo.',
-      title2: 'Your card.',
-      sub: 'Personalized cards with a techno and rave vibe. They fit in your wallet — take them to every event.',
+      eyebrow: '// A unique keepsake',
+      title1: 'Turn your festival photo',
+      title2: 'into a collectible card.',
+      sub: 'PVC like an ATM card, with your photo, description, and add-ons (NFC, magnet, Top Holder).',
       badge1: '-35% at 3+ cards',
-      cta: 'Order your card →',
+      cta: 'Order your card',
+      ctaSecondary: 'See example cards',
     },
     howItWorks: {
       eyebrow: '// how it works',
@@ -250,10 +255,13 @@ export const T = {
     options: {
       eyebrow: '// what you can order',
       cards: [
+        { icon: '💳', title: 'PVC Card or Business Card', desc: 'PVC card — durable ATM-card format, fits in your wallet, NFC-ready. Business card — cheaper, lighter set of 100 pieces.', tags: ['PVC', 'Business Card (100 pcs)'], color: '#b44dff' },
         { icon: '🎨', title: 'Card with your photo', desc: 'Upload a photo — we turn it into a Techno, Festival, or Adventure themed artwork. Add your own name, attributes, and skill.', tags: ['Techno / Rave', 'Festival', 'Adventure'], color: 'var(--neon)' },
         { icon: '✦', title: 'Fully custom card', desc: "Have an inspiration? Upload a reference image and describe the style. We build the design from scratch — unique, matched to your vision.", tags: ['Custom', 'Full freedom'], color: '#f59e0b' },
         { icon: '✍', title: 'Dedication on the back', desc: 'Instead of the standard logo — your quote, text, or personal dedication. Perfect as a gift or event keepsake.', tags: ['Dedication', '+15 zł'], color: '#00e5a0' },
         { icon: '⬛', title: 'QR Code on the back', desc: 'A link to your social media, portfolio, or music, encoded in a QR. Someone scans the card — lands straight on your profile.', tags: ['QR Code', '+40 zł'], color: '#00f0ff' },
+        { icon: '🧲', title: 'Finish: magnet, Top Holder, stand', desc: 'A fridge magnet, a rigid Top Holder case (protects against scratches), or a desk stand — separately or in the Promotional Set with two cards.', tags: ['Magnet', 'Top Holder', 'Stand'], color: '#00e5a0' },
+        { icon: '🎁', title: "What's in the Promotional Set (80 zł)", desc: 'Two PVC cards with the same design: one loose for your wallet + one in a rigid Top Holder with a desk stand, plus a magnetic sticker for optional use on the fridge. The set price replaces the price of a single card.', tags: ['2 cards', 'Top Holder + stand', 'Magnetic sticker'], color: '#f59e0b' },
       ],
       attrNote: "You can add your own attributes to every card — card name, year, rarity (Common · Rare · Epic · Legendary), two attributes with values, and a skill. Your card, your rules.",
     },

@@ -154,8 +154,6 @@
 .themeSelected::before, .themeSelected::after { opacity: 1; border-color: var(--accent); }
 .themeAccentBar { height: 3px; border-radius: 2px; background: var(--accent); margin-bottom: 14px; width: 32px; box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent); }
 .themeLabel { font-family: var(--font-hero); font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; letter-spacing: -0.1px; padding-right: 26px; line-height: 1.25; }
-.themeDesc { font-size: 12px; color: var(--text-muted); }
-.themeCard .themeDesc { font-size: 13px; line-height: 1.5; }
 .themeCheck { position: absolute; top: 14px; right: 14px; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #0a0014; font-weight: 700; box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 60%, transparent); }
 
 /* ── HOW IT WORKS ── */
@@ -332,14 +330,18 @@
 .backCardPriceFree {
   color: var(--success); background: rgba(0,229,160,0.1); border-color: rgba(0,229,160,0.35);
 }
-.backCardDesc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
-
 /* ── QUANTITY ── */
 .quantityWrap { display: flex; align-items: center; gap: 20px; justify-content: center; margin: 16px 0; }
 .qtyBtn { width: 44px; height: 44px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s; font-family: var(--font-body); }
 .qtyBtn:hover { border-color: var(--neon); color: var(--neon); box-shadow: var(--glow-neon); }
 .qtyBtn:active { transform: scale(0.94); }
 .qtyValue { font-family: var(--font-hero); font-size: 36px; font-weight: 700; color: var(--text); min-width: 60px; text-align: center; }
+.qtyWrapSm { display: flex; align-items: center; gap: 10px; }
+.qtyBtnSm { width: 28px; height: 28px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s; font-family: var(--font-body); flex-shrink: 0; }
+.qtyBtnSm:hover:not(:disabled) { border-color: var(--neon); color: var(--neon); }
+.qtyBtnSm:active:not(:disabled) { transform: scale(0.94); }
+.qtyBtnSm:disabled { opacity: 0.3; cursor: not-allowed; }
+.qtyValueSm { font-family: var(--font-hero); font-size: 16px; font-weight: 700; color: var(--text); min-width: 20px; text-align: center; }
 .discountBadge { background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.3); border-radius: 8px; padding: 10px 16px; font-size: 14px; color: var(--success); text-align: center; margin-bottom: 16px; }
 .discountHint { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: 8px; padding: 10px 16px; font-size: 13px; color: #f59e0b; text-align: center; margin-bottom: 16px; }
 

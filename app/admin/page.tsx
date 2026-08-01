@@ -184,7 +184,14 @@ function ClientMaterials({ order }: { order: Order }) {
   const cardType = (order as any).card_type || 'pvc'
   const nfcEnabled = !!(order as any).nfc_enabled
   const nfcPrice = (order as any).nfc_price || 0
+  const nfcQty = (order as any).nfc_qty ?? (nfcEnabled ? (order as any).quantity : 0)
   const cardFinish = (order as any).card_finish || 'standard'
+  // Więcej niż jeden wariant wykończenia w tym samym zamówieniu (patrz app/page.tsx, krok 1 —
+  // klient może zamówić np. 1x magnes + 2x Top Holder naraz) — wtedy card_finish = 'mixed',
+  // a prawdziwy szczegół (który wariant, ile sztuk, ile z NFC) leży w card_finish_breakdown.
+  const finishBreakdown: { finish: string; qty: number; nfc_qty: number }[] = Array.isArray((order as any).card_finish_breakdown)
+    ? (order as any).card_finish_breakdown
+    : []
 
   const CARD_FINISH_LABELS: Record<string, string> = {
     magnes: '🧲 Magnes (wersja na lodówkę)',
@@ -224,15 +231,26 @@ function ClientMaterials({ order }: { order: Order }) {
           </span>
           {nfcEnabled ? (
             <span style={{ color: '#00e5a0', fontWeight: 700 }}>
-              📲 NFC/RFID — do zaprogramowania{nfcPrice ? ` (+${nfcPrice} zł)` : ''}
+              📲 NFC/RFID — do zaprogramowania ({nfcQty} szt.{nfcPrice ? `, +${nfcPrice} zł/szt.` : ''})
             </span>
           ) : (
             <span style={{ color: 'rgba(240,238,255,0.3)' }}>bez NFC</span>
           )}
-          {cardFinish !== 'standard' && CARD_FINISH_LABELS[cardFinish] && (
+          {finishBreakdown.length === 0 && cardFinish !== 'standard' && cardFinish !== 'mixed' && CARD_FINISH_LABELS[cardFinish] && (
             <span style={{ color: '#f59e0b', fontWeight: 700 }}>{CARD_FINISH_LABELS[cardFinish]}</span>
           )}
         </p>
+
+        {finishBreakdown.length > 0 && (
+          <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+            {finishBreakdown.map((l, i) => (
+              <p key={i} style={{ margin: 0, fontSize: '12px', color: '#f59e0b' }}>
+                {(l.finish === 'standard' ? '🎴 Standard' : CARD_FINISH_LABELS[l.finish] || l.finish)} × {l.qty}
+                {l.nfc_qty > 0 ? ` (${l.nfc_qty} z NFC)` : ''}
+              </p>
+            ))}
+          </div>
+        )}
 
         {isCustomFront && (
           <>
@@ -345,7 +363,8 @@ export default function AdminPage() {
       top_holder_stojak: 'Top Holder + Stojak',
       zestaw_promocyjny: 'Zestaw Promocyjny (2 karty + Top Holder + stojak + naklejka magnetyczna)',
     }
-    const finishLabel = finishLabels[o.card_finish] || 'Standard (brak)'
+    const finishLabel = o.card_finish === 'mixed' ? 'Mieszane (patrz sekcja niżej)' : (finishLabels[o.card_finish] || 'Standard (brak)')
+    const finishBreakdownForExport: { finish: string; qty: number; nfc_qty: number }[] = Array.isArray(o.card_finish_breakdown) ? o.card_finish_breakdown : []
 
     const lines = [
       `ZLECENIE #${order.id.slice(0, 8).toUpperCase()}`,
@@ -372,12 +391,49 @@ export default function AdminPage() {
       `⑨ Efekt holo: ${o.holo_effect ? 'Tak' : 'Nie'}`,
     ]
 
+    if (finishBreakdownForExport.length > 1) {
+      lines.push('', '--- WYKOŃCZENIE: ROZBICIE NA WARIANTY ---')
+      finishBreakdownForExport.forEach(l => {
+        const label = l.finish === 'standard' ? 'Standard' : finishLabels[l.finish] || l.finish
+        lines.push(`${label} × ${l.qty}${l.nfc_qty > 0 ? ` (${l.nfc_qty} z NFC)` : ''}`)
+      })
+    }
     if (o.custom_desc) lines.push('', '--- OPIS (CUSTOM) ---', o.custom_desc)
     if (o.qr_link) lines.push('', '--- QR LINK ---', o.qr_link)
     if (order.notes) lines.push('', '--- UWAGI (PRZÓD) ---', order.notes)
     const backNotes = order.card_text || o.notes_back
     if (backNotes) lines.push('', '--- UWAGI / DEDYKACJA (TYŁ) ---', backNotes)
     if (order.review_notes) lines.push('', '--- UWAGI Z KOREKTY PROJEKTU ---', order.review_notes)
+
+    // Dopisane na końcu (nigdy nie wstawiane w środku) — Cards Creator (osobna aplikacja Michała,
+    // patrz CLAUDE.md „Aplikacja towarzysząca") parsuje ten plik po znacznikach sekcji, nie po
+    // stałych numerach linii, ale dla pewności nowe informacje zawsze trafiają na sam koniec.
+    lines.push('', '--- KONTAKT I DOSTAWA ---')
+    lines.push(`Telefon: ${order.phone || '—'}`)
+    lines.push(o.delivery_method === 'paczkomat'
+      ? `Dostawa: Paczkomat InPost — ${o.paczkomat_id || '—'} (${order.address || '—'})`
+      : `Dostawa: Adres — ${order.address || '—'}`)
+    lines.push(`Język klienta: ${o.lang === 'en' ? 'EN' : 'PL'}`)
+
+    lines.push('', '--- PŁATNOŚĆ I STATUS ---')
+    const statusLabel = STATUSES.find(s => s.id === order.status)?.label || order.status
+    lines.push(`Status zlecenia: ${statusLabel}`)
+    lines.push(`Cena jednostkowa (śr.): ${o.unit_price ?? '—'} zł`)
+    lines.push(`Cena całkowita: ${order.total_price ?? '—'} zł`)
+    lines.push(`Rabat ilościowy: ${o.has_discount ? 'Tak' : 'Nie'}`)
+    if (o.discount_code) lines.push(`Kod rabatowy: ${o.discount_code} (-${o.discount_pct || 0}%)`)
+    lines.push(`Opłacone: ${order.paid ? 'Tak' : 'Nie'}`)
+
+    if (order.photo_url || order.design_url || order.design_url_2 || order.design_back_url) {
+      // Sama nazwa pliku w Storage (nie pełny URL) — wystarczy do odnalezienia w Supabase,
+      // pełny link to długi, nieczytelny ciąg znaków bez praktycznej wartości w tym eksporcie.
+      const storageFileName = (url: string) => url.split('/').pop()?.split('?')[0] || url
+      lines.push('', '--- ZAŁĄCZNIKI (NAZWY PLIKÓW W SUPABASE) ---')
+      if (order.photo_url) lines.push(`Zdjęcie klienta (front): ${storageFileName(order.photo_url)}`)
+      if (order.design_url) lines.push(`Projekt — wariant 1: ${storageFileName(order.design_url)}`)
+      if (order.design_url_2) lines.push(`Projekt — wariant 2: ${storageFileName(order.design_url_2)}`)
+      if (order.design_back_url) lines.push(`Projekt — tył: ${storageFileName(order.design_back_url)}`)
+    }
 
     const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)

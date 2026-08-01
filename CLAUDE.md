@@ -8,14 +8,15 @@ Zawsze odpowiadaj po polsku w tej konwersacji (tekst do użytkownika, komentarze
 
 ## Co to za projekt
 
-RaveAdventure to serwis, w którym klienci zamieniają zdjęcia z festiwali techno/rave w spersonalizowane, kolekcjonerskie karty (format karty bankomatowej, PVC lub wizytówki). Klient wgrywa zdjęcie → dostaje mail potwierdzający → właściciel (Michał) ręcznie tworzy grafikę w Pixlr → wysyła projekt do akceptacji → klient płaci (BLIK/przelew) → karta idzie do druku i wysyłki.
+RaveAdventure to serwis, w którym klienci zamieniają zdjęcia z festiwali techno/rave w spersonalizowane, kolekcjonerskie karty (format karty bankomatowej, PVC lub wizytówki). Klient wgrywa zdjęcie → dostaje mail potwierdzający → właściciel (Michał) tworzy grafikę (patrz „Aplikacja towarzysząca" niżej — dziś głównie przez dedykowaną, osobną aplikację Rave Adventure Cards Creator ze stylizacją AI, wcześniej czysto ręcznie w Pixlr) → wysyła projekt do akceptacji → klient płaci (BLIK/przelew, docelowo PayByLink) → karta idzie do druku i wysyłki.
 
 To jest hobby/pasja, nie skalowany biznes VC. Michał prowadzi to solo, obok pracy na etacie, jako niezarejestrowana działalność (limit przychodu kwartalnego). Nie sugeruj rozwiązań zakładających duży zespół, duży budżet infrastruktury czy enterprise-scale — priorytet to prostota utrzymania przez jedną osobę.
 
 ## Niezmienniki biznesowe i bezpieczeństwo
 
 - Michał prowadzi projekt solo, jako działalność nierejestrowaną — to hobby/pasja, nie skalowany biznes. Budżet ograniczony, priorytet to prostota utrzymania przez jedną osobę. Nie proponuj rozwiązań zakładających zespół, duży budżet infrastruktury czy enterprise-scale.
-- **[W TRAKCIE, od 2026-07-28] Automatyczne płatności online — decyzja zmieniona, wdrażamy PayByLink (Blue Media).** Wcześniej świadomie brak automatycznych płatności; teraz Michał założył osobne, dedykowane konto bankowe firmowe dla RaveAdventure (płatności BLIK już przekierowane na nowe konto) i czeka na aktywację konta PayByLink — jak dostanie dostęp/dokumentację API, przekaże ją do integracji. **Stripe został odrzucony na rzecz PayByLink** (natywne BLIK, lepiej pasuje do polskiego rynku i obecnego flow "link w mailu zamiast ręcznych danych") — nie proponuj Stripe/PayU. Do czasu aktywacji konta płatność działa jak dotąd: BLIK/przelew ręczny, dane wysyłane w mailu z projektem karty (`/api/send-design`, stałe `BLIK_PHONE`/`BANK_ACCOUNT`/`BANK_RECIPIENT` na górze pliku — `BANK_ACCOUNT` zaktualizowany 2026-07-28 na nowe dedykowane konto).
+- **[W TRAKCIE, od 2026-07-28, oczekiwane wdrożenie 2026-08-02/03] Automatyczne płatności online — decyzja zmieniona, wdrażamy PayByLink (Blue Media).** Wcześniej świadomie brak automatycznych płatności; teraz Michał założył osobne, dedykowane konto bankowe firmowe dla RaveAdventure (płatności BLIK już przekierowane na nowe konto) i **czeka na potwierdzenie tożsamości/konta PayByLink — spodziewane max w 2-3 dni od 2026-07-31**, czyli integracja jest "do wdrożenia od zaraz", nie odległy plan. Jak dostanie dostęp/dokumentację API, przekaże ją do integracji — warto o to dopytać na początku kolejnych sesji, jeśli minęło już kilka dni. **Stripe został odrzucony na rzecz PayByLink** (natywne BLIK, lepiej pasuje do polskiego rynku i obecnego flow "link w mailu zamiast ręcznych danych") — nie proponuj Stripe/PayU. Do czasu aktywacji konta płatność działa jak dotąd: BLIK/przelew ręczny, dane wysyłane w mailu z projektem karty (`/api/send-design`, stałe `BLIK_PHONE`/`BANK_ACCOUNT`/`BANK_RECIPIENT` na górze pliku — `BANK_ACCOUNT` zaktualizowany 2026-07-28 na nowe dedykowane konto).
+- **[OCZEKIWANE ~2026-08-07] Profesjonalne zdjęcia/wideo fizycznych kart w drodze.** Michał zamówił sesję zdjęciową: karty na lodówce (magnes), karty w Top Holderach (ze stojakiem i bez), karta trzymana w dłoni/w portfelu — realne zdjęcia nowych wariantów wykończenia (patrz `card_finish` w „Logika cenowa" niżej), których na razie brakuje w `components/RealCardsSection.tsx` (sekcja korzysta dziś tylko ze zdjęć/wideo starszych wariantów). To ważny punkt do zrobienia na stronie, gdy tylko materiały dotrą — Michał sam to zasygnalizował jako priorytet („nie zwykła karta, ale pamiątka na lodówkę/biurko"). Warto dopytać na początku kolejnych sesji, czy zdjęcia już są.
 - Nienaruszalna logika cenowa (pełne szczegóły, w tym lista kodów rabatowych, patrz „Logika cenowa" niżej):
   - `unitPrice`: Karta PVC = 40 zł, Wizytówki (100 szt.) = 50 zł
   - Rabat ilościowy: -35% przy zamówieniu ≥ 3 sztuk (obniżone z -50% 2026-07-30 — realny koszt wytworzenia w BOM pokazał, że -50% na 3+ szt. wychodziło na zero/stratę)
@@ -61,6 +62,50 @@ Docelowy stack (żaden z poniższych pakietów nie jest jeszcze zainstalowany w 
 
 Panel admina i strona główna mają fixed nav bez stałej wysokości (`.nav { position: fixed }`, zawija się inaczej na mobile). Zamiast sztywnych `marginTop: '57px'`, wysokość nava jest mierzona dynamicznie przez `ResizeObserver` (`navRef`/`navHeight` w `page.tsx`) — trzymaj się tego wzorca (albo jego odpowiednika w Motion/Tailwind) zamiast hardkodować piksele w nowym designie.
 
+## Plan marketingowy — do wdrożenia (zapisany 2026-07-31, brief od Michała)
+
+Michał dostał zewnętrzną analizę/plan marketingowy strony i poprosił o zapisanie każdego punktu — będzie to wdrażane etapami, w kolejności priorytetów niżej. To NIE jest zlecenie do natychmiastowej realizacji — czekać na wyraźne "zrób punkt X", nie zaczynać samodzielnie od góry listy.
+
+**Ustalona kolejność wdrożenia (wg Michała/briefu), od najważniejszego:**
+1. Hero + CTA + sekcja „Prawdziwy produkt" (największy wpływ na konwersję)
+2. Portfolio kart + „Jak to działa" (4 kroki)
+3. Opinie + FAQ (budowa zaufania)
+4. Uproszczony, wizualny formularz zamówienia
+
+### ✅ Rozstrzygnięte rozbieżności z briefem (2026-07-31 — Michał potwierdził: zostaje jak było ustalone)
+- **Formularz zamówienia — zostaje 5 kroków.** Sugestia briefu (uproszczenie do 4 kroków) **odrzucona** — obowiązuje wcześniejsze ustalenie w „Zakres i priorytet redesignu" niżej: zachować 5 kroków bez zmian liczby, redesign zmienia tylko wygląd.
+- **Poprawki projektu — zostają bezpłatne i nieograniczone.** Sugestia briefu (odpowiedź FAQ „masz 2 rundy poprawek w cenie") **odrzucona** — obowiązuje istniejąca logika biznesowa: poprawki bez limitu, aż klient zaakceptuje projekt (patrz „Regulamin"/„Logika cenowa"). Przy wdrażaniu FAQ z briefu (punkt 7 niżej) użyć tej treści, nie sugestii z briefu.
+
+### ⚠️ Nadal do ustalenia przed wdrożeniem
+- **FAQ — czas realizacji**: brief proponuje „2-3 dni robocze + wysyłka". Obecna treść FAQ (`components/FaqReviews.tsx`) mówi „kilka dni do ok. 2 tygodni". Do ujednolicenia z Michałem przy wdrożeniu — to zależy od realnej kolejki, nie jest czysto kosmetyczne.
+
+### 🔍 Co już mamy (nie budować od nowa) vs. co jest realną luką
+- **„Prawdziwy produkt"**: sekcja `components/RealCardsSection.tsx` już istnieje (zdjęcia + wideo karty w dłoni/portfelu), ale **bez podpisów pod zdjęciami** i **bez zdjęć nowych wariantów** (lodówka/Top Holder) — te dotrą ok. 2026-08-07 (patrz wyżej). Brief chce układu 2×2 z podpisami pod każdym zdjęciem — to rozszerzenie istniejącego komponentu, nie nowa sekcja.
+- **Portfolio**: `components/PortfolioCarousel.tsx` już istnieje z motywami (`techno_rave`/`festival`/`adventure`/`custom`/`fan_art`), ale **bez widocznego filtra/tagów dla użytkownika** i **bez CTA „Zamów swoją kartę z kolejnego eventu" pod siatką** — obie rzeczy to realne luki do dodania.
+- **„Jak to działa"**: sekcja już istnieje (`id="jak-zamowic"`), ale krok 3 briefu („Płacisz wygodnie PayByLink") wymaga najpierw aktywacji PayByLink (patrz wyżej) — do zaktualizowania razem z integracją płatności, nie wcześniej. Krok 2 briefu („2 propozycje grafiki do akceptacji") **już jest wspierane w bazie** (`design_url_2`/`design_original_url_2`/`approved_design_option` w `orders`, wysyłka dwóch wariantów w adminie) — to kwestia dopilnowania, żeby treść kroku to odzwierciedlała, nie budowy nowej funkcji.
+- **Opinie i FAQ**: **już zbudowane w tej sesji** (`components/FaqReviews.tsx`, `/admin/opinie`) — 8 pytań FAQ, siatka opinii z gwiazdkami/opcjonalnym zdjęciem, formularz dodawania z moderacją. Brief dodaje pomysł **screenshotów wiadomości/postów** jako format social proof — to nowy typ treści (nie tylko tekst+ocena), do rozważenia jako rozszerzenie `photo_url` (już obsługuje dowolne zdjęcie, więc screenshot posta technicznie już da się wgrać jako "zdjęcie" do opinii — wystarczy dodać krótszą treść "cytatu" obok).
+- **⚠️ Kolejność sekcji na stronie — realne odkrycie przy analizie tego briefu**: obecny, faktyczny porządek w `app/page.tsx` to `AdShowcase → PortfolioCarousel → RealCardsSection → Hero (H1/CTA) → „Jak to działa" → Formularz → FaqReviews` — czyli **Hero NIE jest pierwszą sekcją na stronie**, wbrew zarówno oryginalnemu planowi MVP wyżej, jak i temu briefowi (oba zakładają Hero jako pierwszy ekran). To się rozjechało przy kolejnych, przyrostowych zmianach w tej sesji (AdShowcase/Portfolio/RealCards dodawane tuż pod logo, bez przesunięcia istniejącej sekcji Hero). **Priorytet #1 z briefu („Hero + CTA na start") wymaga więc też fizycznego przesunięcia `<section className={styles.hero}>` na górę, nad `<AdShowcase>`** — to nie tylko redakcja tekstu, ale reorganizacja kolejności komponentów w JSX.
+
+### Treść z briefu — do wykorzystania przy wdrożeniu (skrót, pełne uzasadnienia w oryginalnej wiadomości Michała)
+
+**1. Hero**: H1 „Zamień swoje zdjęcie z festiwalu w kolekcjonerską kartę.", podtytuł „PVC jak karta bankomatowa, z Twoim zdjęciem, opisem i dodatkami (NFC, magnes, Top Holder).". CTA główne „Zamów swoją kartę", CTA drugorzędne (mniejsze) „Zobacz przykładowe karty". Przycisk blisko animacji karty — ścieżka wzroku animacja→przycisk→formularz.
+
+**2. „Prawdziwy produkt"**: siatka 2×2 lub karuzela, 4 zdjęcia (dłoń / portfel / Top Holder na biurku / magnes na lodówce), każde z krótkim podpisem (przykłady: „Karta z Twojego ulubionego setu, zawsze w portfelu.", „Karta w Top Holderze – mini-plakat z najlepszej nocy.", „Magnes na lodówkę – pamiątka, którą widzisz codziennie.").
+
+**3. Portfolio**: siatka 8–12 zdjęć z podpisami w stylu „Audioriver 2025 – karta z first row.", CTA pod spodem „Zamów swoją kartę z kolejnego eventu". Filtr/tagi RAVE / FESTIWAL / PODRÓŻE / ADVENTURE — opcjonalnie na start wystarczy opis słowny bez realnego filtrowania.
+
+**4. „Jak to działa"**: nagłówek „Jak wygląda proces zamówienia?", 4 kroki w linii (desktop) / pionowo (mobile) z ikonami: (1) wyślij zdjęcie + wybierz typ karty, (2) dostajesz 2 propozycje grafiki do akceptacji, (3) płacisz wygodnie PayByLink, (4) produkcja i wysyłka do paczkomatu. Pod krokami: „Cały proces jest zrobiony tak, żeby był prosty: od zdjęcia, przez projekt, po gotową kartę w Twojej ręce."
+
+**5. „Dlaczego RaveAdventure?"** — **✅ zbudowane 2026-07-31** (`components/WhyUs.tsx`, wpięte w `app/page.tsx` między Hero a „Jak to działa"). Nagłówek „Co wyróżnia RaveAdventure?", 4 karty z ikoną (🎯/🎴/📲/⚙️): personalizacja 1:1 (nie szablon), fizyczny produkt z subkultury rave/techno (nie plik JPG), opcje NFC/magnes/Top Holder/stojak (pamiątka/dekoracja/inteligentny link), proces zoptymalizowany przez inżyniera (szybka realizacja, wysoka jakość, jasna komunikacja) — ostatni punkt to świadome połączenie pasji Michała i jego inżynierskiego backgroundu jako element wiarygodności. Sekcja NIE ma na razie kotwicy w quick-nav (nie dodawałem 6. pigułki bez pytania) — do rozważenia przy dalszym wdrażaniu briefu.
+
+**6. Opinie/social proof**: nagłówek „Co mówią o kartach?", 3-5 bloków, pomysł na screenshoty wiadomości/postów (anonimizowane) + nick + krótki cytat. Tekst zachęcający: „Jeśli zamówisz kartę, możesz dodać swoją opinię razem ze zdjęciem — pomagasz mi rozwijać ten projekt."
+
+**7. FAQ**: 5-7 pytań — czas realizacji, poprawki w projekcie, jak działa NFC, wysyłka za granicę (odpowiedź do ustalenia z Michałem — obecnie nieadresowane), co jeśli nie mam dobrego zdjęcia (porady: ostrość/światło/kadrowanie — obecnie nieadresowane w FAQ). Patrz sprzeczności wyżej co do dokładnej treści odpowiedzi o poprawkach/czasie.
+
+**8. Formularz** (patrz sprzeczność wyżej — 4 vs 5 kroków): pomysł na kafelki z ikoną + dopłatą przy każdej opcji (np. „+15 zł"), krok "opis/atrybuty karty" z limitem znaków, podsumowanie z listą wybranych opcji + ceną przed wysyłką.
+
+**9. Detale UX**: mini-animacja/glow karty przy scrollu w sekcji portfolio (spójnie z istniejącą animacją), max 2 fonty, pasek transparentności „Aktualny czas realizacji: X-Y dni" aktualizowany ręcznie przez Michała (nowy, prosty element — mógłby być zwykłym stałym tekstem w kodzie, aktualizowanym przy commitach, bez potrzeby panelu/bazy).
+
 ## Zakres i priorytet redesignu (MVP)
 
 Priorytet nr 1: efektowny, nowoczesny Landing Page „WOW" (Cyber-Luxe/Dark Neon) zachęcający do złożenia zamówienia.
@@ -76,7 +121,16 @@ Struktura sekcji landing page'a (w tej kolejności):
 
 ### Roadmap (poza obecnym zakresem MVP)
 
-Docelowo: autorskie narzędzie z API Google Gemini/Nano do automatycznego generowania grafiki karty na podstawie zdjęcia klienta, wpięte w szablon. NA TEN MOMENT strona tylko zbiera wytyczne/opis wizji od klienta — generowanie grafiki nadal odbywa się ręcznie (Pixlr, przez Michała). To jest przyszły etap, nie obecny — nie sugeruj wdrażania tego w bieżącym redesignie, chyba że Michał o to poprosi.
+Strona (ten repo) na razie tylko **zbiera** wytyczne/opis wizji od klienta w formularzu (motyw, custom_desc, atrybuty) — samo generowanie grafiki dzieje się POZA tym repo, w osobnej aplikacji (patrz „Aplikacja towarzysząca" niżej). Nie sugeruj wbudowywania generowania AI bezpośrednio w ten Next.js/Supabase projekt, chyba że Michał o to poprosi — to świadomie osobny, dedykowany desktop/lokalny tool, nie funkcja strony.
+
+## Aplikacja towarzysząca — Rave Adventure Cards Creator (osobny projekt, NIE w tym repo)
+
+Michał równolegle z redesignem tej strony buduje **osobną aplikację** do tworzenia grafik kart ze stylizacją AI — to nie jest kod w `raveadventure-web`, ale warto rozumieć jak działa, bo dwa punkty tego repo są jej częścią kontraktu:
+
+- **Co robi**: operator (Michał) wgrywa zdjęcie klienta, wybiera jeden z **8 gotowych stylów AI** (fantasy oil painting, retro/chrome holo, komiksowy, cyberpunk/synthwave, anime klasyczne, anime realistic, GTA5, GTA5 realistic — albo pisze własny opis stylizacji) i jeden z **11 szablonów layoutu karty** (Classic/Custom/Power Bold/Diamond/Postać/Festival/Pokemon Pro/PokemonV1/Avengers/Cyber/LOKI/Mobile) + jeden z **11 motywów kolorystycznych** (ta sama paleta co `FRAME_COLORS` w `app/admin/page.tsx`). Zdjęcie trafia do jednego z **3 niezależnych dostawców AI**, wraca przestylizowane w formacie gotowym do druku (CR80/ID-1, 54×85,6mm, 300dpi), operator ocenia wynik (👍/👎) i pobiera plik. Każde wywołanie (dostawca, styl, czas, sukces/ocena) loguje się automatycznie do lokalnego dziennika jakości.
+- **Punkt styku z tym repo — WAŻNE, nie psuć bez namysłu**: aplikacja **importuje jednym kliknięciem** plik `.txt` wygenerowany przyciskiem „eksportuj zamówienie" w panelu admina (`exportOrderAsText` w `app/admin/page.tsx`, patrz „Struktura kluczowych plików" wyżej) — parsuje ten format, żeby wypełnić dane zamówienia (imię/atrybuty/motyw/ilość/NFC) bez ręcznego przepisywania. **Ten `.txt` jest więc de facto nieformalnym API między dwoma projektami** — zmiana formatu/kolejności linii w `exportOrderAsText` może zepsuć import w Cards Creator. Jeśli trzeba zmienić ten eksport, warto to zasygnalizować Michałowi, żeby zaktualizował też parser po swojej stronie.
+- **Skala i pozycjonowanie (wg stanu aplikacji, 2026-07-31)**: opisana jako „w codziennym użyciu produkcyjnym", rząd wielkości 10–30 kart dziennie obsługiwanych przez jedną osobę, priorytet to jakość/trafność za pierwszym razem, nie szybkość — nadal proces ręczny/kuratorski (operator przechodzi każde zamówienie krok po kroku), nie zautomatyzowana linia. To pozycjonuje całą markę jako premium/boutique, nie masową — istotne przy każdej rozmowie o marketingu/skalowaniu (patrz niżej).
+- **Dlaczego to ważne dla tego repo**: to rozwiązuje wcześniej sygnalizowane ograniczenie mocy przerobowej czysto ręcznej pracy w Pixlr — jeśli w przyszłości padnie pytanie o tempo realizacji zamówień, dodanie nowych opcji na stronie (np. nowych stylów/szablonów jako wybieralnych przez klienta w formularzu) czy o roadmapę „generowania AI na stronie", ten kontekst jest istotnym punktem wyjścia do tej rozmowy — ale sama implementacja stylizacji AI zostaje POZA tym repo, chyba że Michał wyraźnie zdecyduje inaczej.
 
 ## Commands
 
@@ -202,6 +256,38 @@ Wysyłka: stałe 15 zł, doliczane zawsze
 totalPrice = baseTotal - discountSaved + SHIPPING_COST + nfcTotal + cardFinishAddonTotal
 ```
 
+### Mieszane wykończenie w jednym zamówieniu (od 2026-07-31)
+
+Klient może w **kroku 1** zamówić kilka kart NARAZ w różnych wariantach wykończenia (np. 1x magnes
++ 2x Top Holder + 1x Top Holder+stojak), część z NFC — a nie tylko jeden wariant × jedna ilość jak
+wcześniej. Ilość NIE jest już wpisywana osobno w kroku 4 — liczy się sama, jako suma wszystkich
+wybranych wariantów z kroku 1 (dotyczy tylko karty PVC; Wizytówka nie ma wykończeń, zostaje przy
+prostym liczniku `laminatedQty`).
+
+- Stan w `app/page.tsx`: `finishBreakdown: Record<finishId, { qty, nfcQty }>` (domyślnie
+  `{ standard: { qty: 1, nfcQty: 0 } }`) zamiast dawnych `cardFinish`/`quantity`/`nfcEnabled`.
+  Każdy blok wykończenia w kroku 1 ma własny stepper ilości ORAZ własny sub-stepper NFC (capped —
+  nie może przekroczyć ilości sztuk w tym bloku). NFC dotyczy tylko wybranych sztuk w danym bloku,
+  nie całego zamówienia naraz (świadoma decyzja — klient może chcieć NFC np. tylko w 2 z 4 kart).
+- Cena liczona jako suma po wszystkich aktywnych blokach (`activeFinishLines`): `quantity` = suma
+  ilości, `nfcTotalQty` = suma NFC po blokach, rabat ilościowy -35% liczony od SUMY (próg 3+ szt.
+  dotyczy całego zamówienia, nie pojedynczego wariantu), dopłaty za wykończenie i NFC nadal OSOBNO
+  od rabatu (jak wcześniej), `zestaw_promocyjny` nadal zastępuje bazową cenę i płynie przez rabat.
+  `unitPrice` zapisywany do bazy to teraz średnia cena/sztukę (`rawBaseTotal / quantity`) — czysto
+  informacyjna, prawdziwy szczegół jest w rozbiciu.
+- Zapis: `card_finish` zostaje pojedynczą wartością dla wstecznej kompatybilności (starych zamówień
+  z jednym wariantem) — `'mixed'` gdy klient wybrał więcej niż jeden wariant naraz. Prawdziwy
+  szczegół (który wariant, ile sztuk, ile z NFC) leży w nowej kolumnie `card_finish_breakdown`
+  (jsonb, `[{finish, qty, nfc_qty}]`) — NULL dla starych/prostych zamówień. Nowa kolumna `nfc_qty`
+  (int) to łączna liczba kart z NFC w całym zamówieniu (zamiast zakładać, że NFC dotyczy wszystkich
+  sztuk — to był ukryty błąd w starym kodzie przy quantity>1, patrz niżej). `nfc_price` teraz
+  zawsze przechowuje stawkę ZA SZTUKĘ (15 lub 8 zł), nie sumę — tak jak jest wyświetlane wszędzie
+  (badge "+X zł"), więc to była naprawa błędu, nie zmiana znaczenia pola.
+- Panel admina (`ClientMaterials`, `exportOrderAsText`) i mail `send-order` czytają
+  `card_finish_breakdown` gdy obecne i pokazują pełne rozbicie; dla starych zamówień (NULL) wracają
+  do dawnego pojedynczego `card_finish`. `send-design` nie pokazywał nigdy szczegółu wykończenia,
+  więc nie wymagał zmian.
+
 ## Schemat bazy danych — tabela `orders` (Supabase)
 
 ```
@@ -216,7 +302,8 @@ nfc_enabled, nfc_price, card_finish,
 design_original_url, design_back_original_url,
 card_bottom_text, frame_color, holo_effect,
 design_url_2, design_original_url_2, approved_design_option,
-delivery_method, paczkomat_id
+delivery_method, paczkomat_id,
+card_finish_breakdown, nfc_qty
 ```
 
 ### Tabela `page_views` (licznik odwiedzin strony głównej)
@@ -296,3 +383,4 @@ Maile (`send-order`, `send-design`) duplikują podobny wzorzec `L = {pl: {...}, 
 - Czy dana zmiana dotyczy tylko wyglądu, czy też przepływu/logiki biznesowej (te drugie wymagają większej ostrożności).
 - Czy zmiana w bazie wymaga migracji SQL — jeśli tak, przypomnieć o kolejności (najpierw SQL, patrz Lekcja #1).
 - Michał lubi rozumieć dlaczego, nie tylko co — krótkie uzasadnienie decyzji technicznej jest mile widziane, ale bez przesadnego rozwlekania.
+- Jeśli od ostatniej sesji minęło więcej niż kilka dni, dopytaj o status dwóch rzeczy z krótkim terminem (patrz „Niezmienniki biznesowe i bezpieczeństwo" wyżej): aktywacja konta PayByLink (spodziewana 2-3 dni od 2026-07-31) i profesjonalne zdjęcia/wideo fizycznych kart — na lodówce, w Top Holderze, w dłoni (spodziewane ok. 2026-08-07) do sekcji `RealCardsSection`.

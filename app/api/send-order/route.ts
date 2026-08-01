@@ -4,7 +4,7 @@ import { sendEmail } from '../../../lib/devEmail'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { name, email, theme, address, phone, cardText, notes, orderId, totalPrice, cardType, nfcEnabled, nfcPrice, cardFinish, deliveryMethod, lang: langRaw } = body
+    const { name, email, theme, address, phone, cardText, notes, orderId, totalPrice, cardType, nfcEnabled, nfcPrice, nfcQty, cardFinish, cardFinishBreakdown, quantity, deliveryMethod, lang: langRaw } = body
     const lang: 'pl' | 'en' = langRaw === 'en' ? 'en' : 'pl'
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://raveadventure.pl'
 
@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
         orderDetailsEyebrow: '// twoje zamówienie',
         themeRow: 'Motyw karty',
         cardTypeRow: 'Typ karty',
+        quantityRow: 'Ilość',
         nfcRow: 'NFC/RFID',
         nfcActiveText: '📲 Tak — karta zostanie zaprogramowana',
         cardTextRow: 'Tekst na karcie',
@@ -60,6 +61,7 @@ export async function POST(req: NextRequest) {
         orderDetailsEyebrow: '// your order',
         themeRow: 'Card theme',
         cardTypeRow: 'Card type',
+        quantityRow: 'Quantity',
         nfcRow: 'NFC/RFID',
         nfcActiveText: '📲 Yes — the card will be programmed',
         cardTextRow: 'Text on the card',
@@ -101,9 +103,33 @@ export async function POST(req: NextRequest) {
       top_holder_stojak: '🛡📐 Top Holder + Stojak',
       zestaw_promocyjny: '🎁 Zestaw Promocyjny (2 karty + Top Holder + stojak + naklejka magnetyczna)',
     }
-    const cardFinishBadgeAdmin = cardFinish && cardFinishLabels[cardFinish]
+    const cardFinishBadgeAdmin = cardFinish === 'mixed'
+      ? `<span style="background:rgba(245,158,11,0.15);color:#f59e0b;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:700;margin-left:6px;">🔀 Kilka wariantów wykończenia — patrz rozbicie niżej</span>`
+      : cardFinish && cardFinishLabels[cardFinish]
       ? `<span style="background:rgba(245,158,11,0.15);color:#f59e0b;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:700;margin-left:6px;">${cardFinishLabels[cardFinish]}</span>`
       : ''
+
+    // Rozbicie na warianty wykończenia (patrz app/page.tsx, krok 1 — klient może zamówić kilka kart
+    // naraz w różnych wariantach, np. 1x magnes + 2x Top Holder, część z NFC) — do pokazania w obu
+    // mailach, żeby zarówno admin jak i klient widzieli DOKŁADNIE co się składa na zamówienie,
+    // nie tylko łączną cenę. Puste dla Wizytówki (brak wykończeń) i starych, prostych zamówień.
+    const finishBreakdownLabels: Record<string, { pl: string; en: string }> = {
+      standard: { pl: 'Standard', en: 'Standard' },
+      magnes: { pl: '🧲 Magnes (wersja na lodówkę)', en: '🧲 Magnet (fridge version)' },
+      top_holder: { pl: '🛡 Top Holder', en: '🛡 Top Holder' },
+      top_holder_magnes: { pl: '🛡🧲 Top Holder + Magnes', en: '🛡🧲 Top Holder + Magnet' },
+      top_holder_stojak: { pl: '🛡📐 Top Holder + Stojak', en: '🛡📐 Top Holder + Stand' },
+      zestaw_promocyjny: { pl: '🎁 Zestaw Promocyjny', en: '🎁 Promotional Set' },
+    }
+    const finishBreakdownRows = (rowLang: 'pl' | 'en') => {
+      if (!Array.isArray(cardFinishBreakdown) || cardFinishBreakdown.length === 0) return ''
+      return cardFinishBreakdown.map((l: { finish: string; qty: number; nfc_qty: number }) => {
+        const label = finishBreakdownLabels[l.finish]?.[rowLang] || l.finish
+        const nfcNote = l.nfc_qty > 0 ? (rowLang === 'en' ? ` (${l.nfc_qty} with NFC)` : ` (${l.nfc_qty} z NFC)`) : ''
+        return `<tr><td colspan="2" style="padding:6px 20px;font-size:13px;color:#f0eeff;border-bottom:1px solid rgba(255,255,255,0.05);">• ${label} × ${l.qty}${nfcNote}</td></tr>`
+      }).join('')
+    }
+    const qtyRowAdmin = `<tr><td style="padding:12px 20px;font-size:13px;color:rgba(240,238,255,0.5);border-bottom:1px solid rgba(255,255,255,0.05);">Ilość</td><td style="padding:12px 20px;font-size:13px;color:#f0eeff;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.05);">${quantity ?? '—'} szt.</td></tr>${finishBreakdownRows('pl')}`
 
     const adminEmailHtml = `
 <!DOCTYPE html>
@@ -143,6 +169,7 @@ export async function POST(req: NextRequest) {
                 <span style="background:rgba(180,77,255,0.15);color:#b44dff;padding:3px 10px;border-radius:4px;font-size:13px;font-weight:600;">${cardTypeLabel}</span>${nfcBadgeAdmin}${cardFinishBadgeAdmin}${deliveryBadge}
               </td>
             </tr>
+            ${qtyRowAdmin}
             <tr>
               <td style="padding:12px 20px;font-size:13px;color:rgba(240,238,255,0.5);border-bottom:1px solid rgba(255,255,255,0.05);">Klient</td>
               <td style="padding:12px 20px;font-size:13px;color:#f0eeff;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.05);">${name}</td>
@@ -247,6 +274,11 @@ export async function POST(req: NextRequest) {
                 <span style="background:rgba(180,77,255,0.15);color:#b44dff;padding:3px 10px;border-radius:4px;font-size:13px;font-weight:600;">${cardTypeLabel}</span>${nfcBadgeClient}
               </td>
             </tr>
+            <tr>
+              <td style="padding:12px 20px;font-size:13px;color:rgba(240,238,255,0.5);border-bottom:1px solid rgba(255,255,255,0.05);">${L.quantityRow}</td>
+              <td style="padding:12px 20px;font-size:13px;color:#f0eeff;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.05);">${quantity ?? '—'} szt.</td>
+            </tr>
+            ${finishBreakdownRows(lang)}
             <tr>
               <td style="padding:12px 20px;font-size:13px;color:rgba(240,238,255,0.5);border-bottom:1px solid rgba(255,255,255,0.05);">${L.cardTextRow}</td>
               <td style="padding:12px 20px;font-size:13px;color:#f0eeff;border-bottom:1px solid rgba(255,255,255,0.05);">${cardText || '—'}</td>
