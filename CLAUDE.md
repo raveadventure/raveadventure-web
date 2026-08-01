@@ -367,14 +367,28 @@ designs/{id}-{timestamp}.jpg          — skompresowany podgląd projektu (trafi
 designs/{id}-{timestamp}-back-original.ext / -back.jpg — analogicznie dla tyłu
 ```
 
-**Eksport zamówienia jako .txt** (`exportOrderAsText` w `app/admin/page.tsx`,
-przycisk „📄 Eksportuj dane zlecenia" w panelu) — poza dotychczasowym pobraniem
-pliku na dysk (bez zmian, ten sam format co zawsze — patrz „Aplikacja
-towarzysząca" wyżej, to on jest importowany przez Cards Creator), ta sama treść
-jest teraz RÓWNIEŻ wgrywana (upsert) do `orders/{id8}/zlecenie-{id8}.txt` w
-Supabase — obok zdjęcia/projektów tego zamówienia. Działa tylko na prawdziwym
-Supabase (lokalnie/placeholder pomija ten krok, samo pobranie działa jak
-zawsze). Plik .txt w Storage NIE jest częścią automatycznej archiwizacji przy
+**Eksport zamówienia jako .txt** (logika w `lib/orderExportText.ts` —
+`buildOrderExportLines`, budowanie treści — i `lib/orderExportServer.ts` —
+`regenerateOrderTxt`, pobranie zamówienia + wgranie do Storage; ten sam format
+co zawsze, patrz „Aplikacja towarzysząca" wyżej, to on jest importowany przez
+Cards Creator) trafia do `orders/{id8}/zlecenie-{id8}.txt` w Supabase na DWA
+sposoby:
+- **Automatycznie** (`/api/generate-order-txt`, publiczny endpoint bez
+  logowania) — wywoływane z `app/page.tsx` zaraz po złożeniu zamówienia i
+  zapisaniu zdjęcia, więc folder `orders/{id8}/` jest kompletny od razu, bez
+  ręcznego klikania w panelu. Nie blokuje potwierdzenia zamówienia, jeśli się
+  nie uda (fire-and-forget).
+- **Ręcznie** (`/api/admin/export-txt`, chronione `admin_session`) — przycisk
+  „📄 Eksportuj dane zlecenia" w panelu, przeliczany na świeżo (odzwierciedla
+  aktualny status/płatność/projekt), zwraca treść do panelu, który jednocześnie
+  uruchamia zwykłe pobranie pliku na dysk.
+
+Obie ścieżki idą server-side kluczem service-role (`upsert:true` bezpieczne
+tylko tam — service-role zawsze omija RLS; klucz anon używany w `app/page.tsx`
+do uploadu zdjęcia/grafik referencyjnych celowo NIE ma `upsert:true`, patrz
+Lekcja #6 niżej). Działa tylko na prawdziwym Supabase (lokalnie/placeholder
+buduje treść w przeglądarce tą samą funkcją `buildOrderExportLines`, bez
+uploadu). Plik .txt w Storage NIE jest częścią automatycznej archiwizacji przy
 statusie „done" (patrz niżej) — zostaje w `orders/{id8}/` nawet po
 przeniesieniu zdjęć/projektów do `closed-orders/`.
 
@@ -390,6 +404,7 @@ przeniesieniu zdjęć/projektów do `closed-orders/`.
    - Kompresja obrazu w przeglądarce (canvas, `compressImage()` w `admin/page.tsx`) przed uploadem — oryginał i skompresowany podgląd jako dwa osobne pliki, podgląd używany wszędzie gdzie coś się automatycznie wyświetla.
    - `LazyImage` — żadne zdjęcie w panelu admina nie ładuje się automatycznie, tylko na kliknięcie (ikona 🖼 jako placeholder).
    - Storage Image Transformations (auto-thumbnaile) wymaga płatnego planu Supabase — niedostępne na Free.
+6. **`upsert: true` w Supabase Storage wymaga uprawnienia UPDATE, nawet dla pliku, który jeszcze nie istnieje.** Po zamknięciu RLS na `storage.objects` (patrz „RLS na Supabase" wyżej) klucz anon ma tylko INSERT — wszystkie uploady klienta (zdjęcie zamówienia, grafiki referencyjne) używały `{ upsert: true }`, mimo że ścieżka zawsze zawiera świeże ID zamówienia i nigdy realnie nie koliduje. Skutek: **każdy upload kończył się cichym błędem 403** (`new row violates row-level security policy`) — zamówienia zapisywały się bez zdjęcia, bez żadnego widocznego komunikatu dla klienta. Zweryfikowane bezpośrednio na produkcyjnym Storage: identyczny request z `upsert:false` → 200, z `upsert:true` → 403, ta sama polityka RLS. **Zasada na przyszłość**: `upsert: true` z kluczem anon/publicznym używać TYLKO gdy naprawdę trzeba nadpisywać istniejący plik (i wtedy dodać politykę UPDATE świadomie) — jeśli ścieżka jest z definicji zawsze nowa (zawiera unikalne ID), używać `upsert: false`. Operacje faktycznie wymagające nadpisania (np. eksport .txt zamówienia, przeliczany wielokrotnie) powinny iść server-side kluczem service-role (zawsze omija RLS), nie klientem z kluczem anon.
 
 ## Maile transakcyjne (Resend)
 
