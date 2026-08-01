@@ -1,11 +1,12 @@
-// Wgrywa kopię wyeksportowanego .txt zamówienia do Storage (orders/{id8}/zlecenie-{id8}.txt),
-// obok zdjęcia/projektów tego zamówienia — patrz exportOrderAsText w app/admin/page.tsx.
-// Server-side (service-role), bo klucz anon może tylko wstawiać NOWE pliki (upsert:false) —
-// ten plik trzeba umieć nadpisać przy ponownym kliknięciu eksportu, a upsert:true wymaga
-// uprawnienia UPDATE w Storage, którego anon celowo nie ma od blokady RLS (patrz CLAUDE.md).
+// Ręczny eksport zamówienia z panelu admina (przycisk „📄 Eksportuj dane zlecenia") — pobiera
+// świeże dane z bazy, buduje treść i wgrywa ją do orders/{id8}/ w Storage (patrz
+// lib/orderExportServer.ts), a treść odsyła z powrotem, żeby panel mógł uruchomić też zwykłe
+// pobranie pliku na dysk. Server-side (service-role) — klucz anon nie ma uprawnienia UPDATE
+// w Storage (blokada RLS), a ten plik trzeba umieć nadpisać przy kolejnych eksportach.
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { isAdminRequest } from '../../../../lib/adminAuth'
+import { regenerateOrderTxt } from '../../../../lib/orderExportServer'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,16 +15,10 @@ const supabaseAdmin = createClient(
 
 export async function POST(req: NextRequest) {
   if (!isAdminRequest(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const { orderId, fileName, content } = await req.json()
-  if (!orderId || !fileName || typeof content !== 'string') {
-    return NextResponse.json({ error: 'Missing orderId, fileName or content' }, { status: 400 })
-  }
+  const { orderId } = await req.json()
+  if (!orderId) return NextResponse.json({ error: 'Missing orderId' }, { status: 400 })
 
-  const path = `orders/${orderId.slice(0, 8)}/${fileName}`
-  const { error } = await supabaseAdmin.storage
-    .from('order-photos')
-    .upload(path, content, { upsert: true, contentType: 'text/plain;charset=utf-8' })
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ ok: true })
+  const result = await regenerateOrderTxt(supabaseAdmin, orderId)
+  if ('error' in result) return NextResponse.json({ error: result.error }, { status: 500 })
+  return NextResponse.json(result)
 }

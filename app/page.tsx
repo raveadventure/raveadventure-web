@@ -417,6 +417,16 @@ export default function Home() {
         }),
       })
 
+      // Kopia zamówienia jako .txt w Storage (orders/{id8}/), obok zdjęcia — ten sam plik co
+      // ręczny eksport z panelu (patrz CLAUDE.md). Nie blokuje ani nie psuje potwierdzenia
+      // zamówienia, jeśli się nie uda — to wygoda dla panelu, nie krok krytyczny dla klienta.
+      if (!localMock && orderData?.id) {
+        fetch('/api/generate-order-txt', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId: orderData.id }),
+        }).catch(() => {})
+      }
+
       setSent(true)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : (lang === 'pl' ? 'Nieznany błąd' : 'Unknown error')

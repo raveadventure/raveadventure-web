@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { isSupabasePlaceholder, mockListOrders, mockUpdateOrder, mockDeleteOrder } from '../../lib/ordersLocalMock'
+import { buildOrderExportLines } from '../../lib/orderExportText'
 
 const STATUSES = [
   { id: 'new',        label: 'Nowe',         color: '#f59e0b' },
@@ -344,114 +345,33 @@ export default function AdminPage() {
 
   // Zrzut danych zlecenia do pliku .txt — Michał trzyma to otwarte obok Pixlra zamiast
   // przełączać się z powrotem do panelu za każdym razem, gdy potrzebuje sprawdzić atrybut.
+  // Budowanie treści (lib/orderExportText.ts, współdzielone z /api/admin/export-txt i
+  // /api/generate-order-txt) — tu tylko pobranie/wywołanie API i zapis na dysk. Na realnym
+  // Supabase treść buduje serwer (świeże dane, przy okazji wgrywa kopię do orders/{id8}/ —
+  // patrz CLAUDE.md); lokalny mock nie ma tego endpointu, więc buduje ją tak samo, ale w
+  // przeglądarce, z danych już wczytanych do panelu.
   const exportOrderAsText = async (order: Order) => {
-    const o = order as any
-    // THEMES (wyżej w pliku) nie pokrywa się z realnymi wartościami theme (techno_rave/festival/
-    // adventure/custom) — osobna mapa tylko na potrzeby eksportu, żeby nie pokazywać surowego id.
-    const THEME_EXPORT_LABELS: Record<string, string> = {
-      techno_rave: 'Techno / Rave', festival: 'Festiwal', adventure: 'Adventure', custom: 'Custom',
-    }
-    const backLabel = o.back_option === 'logo' ? 'Standard Logo'
-      : o.back_option === 'dedication' ? 'Dedykacja'
-      : o.back_option === 'custom_back' ? 'Custom Artwork'
-      : o.back_option === 'qr' ? 'QR Code' : (o.back_option || '—')
-    const frameLabel = FRAME_COLORS[o.frame_color]?.name || o.frame_color || '—'
-    const finishLabels: Record<string, string> = {
-      magnes: 'Magnes (wersja na lodówkę)',
-      top_holder: 'Top Holder',
-      top_holder_magnes: 'Top Holder + Magnes',
-      top_holder_stojak: 'Top Holder + Stojak',
-      zestaw_promocyjny: 'Zestaw Promocyjny (2 karty + Top Holder + stojak + naklejka magnetyczna)',
-    }
-    const finishLabel = o.card_finish === 'mixed' ? 'Mieszane (patrz sekcja niżej)' : (finishLabels[o.card_finish] || 'Standard (brak)')
-    const finishBreakdownForExport: { finish: string; qty: number; nfc_qty: number }[] = Array.isArray(o.card_finish_breakdown) ? o.card_finish_breakdown : []
+    let textContent: string
+    let fileName: string
 
-    const lines = [
-      `ZLECENIE #${order.id.slice(0, 8).toUpperCase()}`,
-      `Data: ${formatDate(order.created_at)}`,
-      `Klient: ${order.name} (${order.email})`,
-      '',
-      '--- KARTA ---',
-      `Typ: ${o.card_type === 'laminated' ? 'Wizytówka (100 szt.)' : 'PVC'}`,
-      `Motyw: ${THEME_EXPORT_LABELS[order.theme] || order.theme}`,
-      `Tył: ${backLabel}`,
-      `Ilość: ${o.quantity ?? '—'}`,
-      `NFC/RFID: ${o.nfc_enabled ? `Tak (+${o.nfc_price || 0} zł)` : 'Nie'}`,
-      `Wykończenie: ${finishLabel}`,
-      '',
-      '--- ATRYBUTY KARTY ---',
-      `① Lewy nagłówek: ${o.card_year || '—'}`,
-      `② Prawy nagłówek: ${o.card_rarity || '—'}`,
-      `③ Nazwa: ${o.card_name_custom || '—'}`,
-      `④ Atrybut 1: ${[o.attr1_label, o.attr1_value].filter(Boolean).join(' — ') || '—'}`,
-      `⑤ Umiejętność: ${o.card_skill || '—'}`,
-      `⑥ Atrybut 2: ${[o.attr2_label, o.attr2_value].filter(Boolean).join(' — ') || '—'}`,
-      `⑦ Napis w ramce: ${o.card_bottom_text || '—'}`,
-      `⑧ Kolor ramki: ${frameLabel}`,
-      `⑨ Efekt holo: ${o.holo_effect ? 'Tak' : 'Nie'}`,
-    ]
-
-    if (finishBreakdownForExport.length > 1) {
-      lines.push('', '--- WYKOŃCZENIE: ROZBICIE NA WARIANTY ---')
-      finishBreakdownForExport.forEach(l => {
-        const label = l.finish === 'standard' ? 'Standard' : finishLabels[l.finish] || l.finish
-        lines.push(`${label} × ${l.qty}${l.nfc_qty > 0 ? ` (${l.nfc_qty} z NFC)` : ''}`)
-      })
-    }
-    if (o.custom_desc) lines.push('', '--- OPIS (CUSTOM) ---', o.custom_desc)
-    if (o.qr_link) lines.push('', '--- QR LINK ---', o.qr_link)
-    if (order.notes) lines.push('', '--- UWAGI (PRZÓD) ---', order.notes)
-    const backNotes = order.card_text || o.notes_back
-    if (backNotes) lines.push('', '--- UWAGI / DEDYKACJA (TYŁ) ---', backNotes)
-    if (order.review_notes) lines.push('', '--- UWAGI Z KOREKTY PROJEKTU ---', order.review_notes)
-
-    // Dopisane na końcu (nigdy nie wstawiane w środku) — Cards Creator (osobna aplikacja Michała,
-    // patrz CLAUDE.md „Aplikacja towarzysząca") parsuje ten plik po znacznikach sekcji, nie po
-    // stałych numerach linii, ale dla pewności nowe informacje zawsze trafiają na sam koniec.
-    lines.push('', '--- KONTAKT I DOSTAWA ---')
-    lines.push(`Telefon: ${order.phone || '—'}`)
-    lines.push(o.delivery_method === 'paczkomat'
-      ? `Dostawa: Paczkomat InPost — ${o.paczkomat_id || '—'} (${order.address || '—'})`
-      : `Dostawa: Adres — ${order.address || '—'}`)
-    lines.push(`Język klienta: ${o.lang === 'en' ? 'EN' : 'PL'}`)
-
-    lines.push('', '--- PŁATNOŚĆ I STATUS ---')
-    const statusLabel = STATUSES.find(s => s.id === order.status)?.label || order.status
-    lines.push(`Status zlecenia: ${statusLabel}`)
-    lines.push(`Cena jednostkowa (śr.): ${o.unit_price ?? '—'} zł`)
-    lines.push(`Cena całkowita: ${order.total_price ?? '—'} zł`)
-    lines.push(`Rabat ilościowy: ${o.has_discount ? 'Tak' : 'Nie'}`)
-    if (o.discount_code) lines.push(`Kod rabatowy: ${o.discount_code} (-${o.discount_pct || 0}%)`)
-    lines.push(`Opłacone: ${order.paid ? 'Tak' : 'Nie'}`)
-
-    if (order.photo_url || order.design_url || order.design_url_2 || order.design_back_url) {
-      // Sama nazwa pliku w Storage (nie pełny URL) — wystarczy do odnalezienia w Supabase,
-      // pełny link to długi, nieczytelny ciąg znaków bez praktycznej wartości w tym eksporcie.
-      const storageFileName = (url: string) => url.split('/').pop()?.split('?')[0] || url
-      lines.push('', '--- ZAŁĄCZNIKI (NAZWY PLIKÓW W SUPABASE) ---')
-      if (order.photo_url) lines.push(`Zdjęcie klienta (front): ${storageFileName(order.photo_url)}`)
-      if (order.design_url) lines.push(`Projekt — wariant 1: ${storageFileName(order.design_url)}`)
-      if (order.design_url_2) lines.push(`Projekt — wariant 2: ${storageFileName(order.design_url_2)}`)
-      if (order.design_back_url) lines.push(`Projekt — tył: ${storageFileName(order.design_back_url)}`)
-    }
-
-    const textContent = lines.join('\n')
-    const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' })
-    const fileName = `zlecenie-${order.id.slice(0, 8)}.txt`
-
-    // Poza zwykłym pobraniem na dysk (niżej, bez zmian) — ta sama treść trafia też
-    // do folderu zamówienia w Supabase (orders/{id8}/), obok zdjęcia i projektów, żeby dało się
-    // ściągnąć jednym folderem zamiast szukać każdego pliku osobno (patrz CLAUDE.md). Idzie przez
-    // server-side route kluczem service-role — klucz anon nie ma uprawnienia UPDATE w Storage
-    // (blokada RLS), a ten plik trzeba umieć nadpisać przy kolejnych eksportach tego zamówienia.
-    if (!isSupabasePlaceholder()) {
-      const txtUploadRes = await fetch('/api/admin/export-txt', {
+    if (isSupabasePlaceholder()) {
+      fileName = `zlecenie-${order.id.slice(0, 8)}.txt`
+      textContent = buildOrderExportLines(order).join('\n')
+    } else {
+      const res = await fetch('/api/admin/export-txt', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: order.id, fileName, content: textContent }),
+        body: JSON.stringify({ orderId: order.id }),
       })
-      if (!txtUploadRes.ok) console.error('[export] Nie udało się wgrać .txt do Storage:', (await txtUploadRes.json().catch(() => ({}))).error)
+      const data = await res.json()
+      if (!res.ok) {
+        alert('Błąd eksportu: ' + (data.error || 'nieznany'))
+        return
+      }
+      textContent = data.content
+      fileName = data.fileName
     }
 
+    const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
