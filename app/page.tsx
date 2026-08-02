@@ -452,6 +452,23 @@ export default function Home() {
     } finally { setSending(false) }
   }
 
+  // Klasy Tailwind współdzielone przez wszystkie 5 kroków formularza zamówienia — trzymane jako
+  // stałe zamiast powtarzania tego samego długiego stringa w każdym kroku (patrz redesign Faza 2).
+  const formStepCls = 'flex flex-col gap-5'
+  const formStepTitleCls = 'font-heading text-[15px] font-bold text-primary tracking-[0.2px]'
+  const sectionEyebrowCls = 'font-mono text-[11px] text-primary tracking-[2px] mb-2.5'
+  const btnPrimaryCls = 'py-3 px-7 bg-[linear-gradient(135deg,var(--neon),#9433e0)] text-[#0a0014] text-sm font-bold rounded-[9px] transition-all duration-200 shadow-[0_3px_14px_-4px_rgba(180,77,255,0.5)] enabled:hover:shadow-[0_5px_20px_-4px_rgba(180,77,255,0.7)] enabled:hover:-translate-y-px enabled:active:translate-y-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none'
+  const btnSecondaryCls = 'py-3 px-6 bg-[var(--surface2)] border border-border text-muted-foreground text-sm font-medium rounded-[9px] transition-all duration-200 hover:border-primary hover:text-foreground hover:-translate-y-px active:translate-y-0'
+  const formButtonsCls = 'flex gap-3 justify-end mt-2'
+  const errorMsgCls = 'text-[13px] text-[var(--error)] py-2.5 px-3.5 border border-[rgba(255,77,109,0.3)] rounded-lg bg-[rgba(255,77,109,0.06)]'
+  const fieldCls = 'flex flex-col gap-1.5'
+  const fieldGridCls = 'grid grid-cols-2 gap-4 max-md:grid-cols-1'
+  const fieldFullCls = 'col-span-full'
+  const labelCls = 'text-[13px] text-muted-foreground font-medium'
+  const optionalCls = 'text-[var(--text-faint)] font-normal'
+  const summaryRowCls = 'flex justify-between text-sm text-muted-foreground [&>strong]:text-foreground'
+  const toggleBtnCls = 'flex-1 py-3 px-3.5 rounded-[var(--radius-lg)] cursor-pointer text-center border-[1.5px] border-border bg-[var(--surface2)] text-[13px] font-semibold text-foreground transition-all duration-200 hover:border-[color-mix(in_srgb,var(--neon)_50%,var(--border))] hover:-translate-y-px'
+
   const LangSwitch = () => (
     <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '20px', padding: '3px' }}>
       <button
@@ -733,63 +750,52 @@ export default function Home() {
         <p className={styles.sectionEye}>{t.order.eyebrow}</p>
         <h2 className={styles.sectionTitle}>{t.order.title}</h2>
 
-        <div style={{
-          maxWidth: '620px',
-          margin: '0 auto 24px',
-          background: 'rgba(0,229,160,0.08)',
-          border: '1px solid rgba(0,229,160,0.3)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '14px 20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '14px',
-          textAlign: 'left',
-        }}>
-          <div style={{ position: 'relative', width: '42px', height: '42px', borderRadius: '50%', border: '2.5px solid #00e5a0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <span style={{ fontSize: '13px', fontWeight: 800, color: '#fff', letterSpacing: '-1px' }}>$$</span>
-            <div style={{ position: 'absolute', top: '50%', left: '-3px', right: '-3px', height: '2.5px', background: '#00e5a0', transform: 'rotate(-35deg)' }} />
+        <div className="max-w-[620px] mx-auto mb-6 bg-[rgba(0,229,160,0.08)] border border-[rgba(0,229,160,0.3)] rounded-[var(--radius-lg)] py-3.5 px-5 flex items-center gap-3.5 text-left">
+          <div className="relative w-[42px] h-[42px] rounded-full border-[2.5px] border-[#00e5a0] flex items-center justify-center shrink-0">
+            <span className="text-[13px] font-extrabold text-white tracking-[-1px]">$$</span>
+            <div className="absolute top-1/2 -left-[3px] -right-[3px] h-[2.5px] bg-[#00e5a0] rotate-[-35deg]" />
           </div>
-          <p style={{ margin: 0, fontSize: '13px', color: '#00e5a0', lineHeight: '1.6', flex: 1 }}>
+          <p className="m-0 text-[13px] text-[#00e5a0] leading-[1.6] flex-1">
             {lang === 'pl' ? (
               <>
-                <span style={{ fontWeight: 700 }}>Przy zamówieniu nie ponosisz żadnej opłaty!</span><br />
+                <span className="font-bold">Przy zamówieniu nie ponosisz żadnej opłaty!</span><br />
                 Śmiało składaj zamówienie wraz ze swoim zdjęciem.
               </>
             ) : (
               <>
-                <span style={{ fontWeight: 700 }}>No payment is required to place your order!</span><br />
+                <span className="font-bold">No payment is required to place your order!</span><br />
                 Go ahead and order with your photo.
               </>
             )}
           </p>
         </div>
 
-        <div className={styles.progressWrap} ref={progressRef}>
+        <div className="flex flex-wrap gap-2 justify-center mb-7 max-w-[680px] mx-auto" ref={progressRef}>
           {t.order.steps.map((s, i) => {
             const n = (i + 1) as Step
             return (
-              <div key={n} className={`${styles.progressItem} ${step === n ? styles.progressItemActive : ''}`}>
-                <div className={`${styles.stepDot} ${step === n ? styles.stepDotActive : ''} ${step > n ? styles.stepDotDone : ''}`}>
+              <div key={n} className={`flex items-center gap-[7px] py-[5px] pl-[5px] pr-3.5 rounded-full flex-none bg-[var(--surface2)] border border-border transition-colors duration-200 ${step === n ? '!border-primary bg-[var(--neon-dim)]' : ''}`}>
+                <div className={`w-6 h-6 rounded-full border border-border bg-[var(--surface)] flex items-center justify-center text-[11px] font-bold text-muted-foreground shrink-0 transition-all duration-200 ${step === n ? 'border-primary text-primary bg-[var(--neon-dim)] shadow-[var(--glow-neon)]' : ''} ${step > n ? 'border-[var(--success)] text-primary-foreground bg-[var(--success)] shadow-[0_0_16px_rgba(0,229,160,0.4)]' : ''}`}>
                   {step > n ? '✓' : n}
                 </div>
-                <span className={styles.progressLabel}>{s}</span>
+                <span className="text-xs text-muted-foreground font-mono whitespace-nowrap">{s}</span>
               </div>
             )
           })}
         </div>
 
-        <div className={styles.formBox}>
+        <div className="glassPanel rounded-[var(--radius-lg)] p-8 max-w-[680px] mx-auto max-md:p-5">
           {step === 1 && (
-            <div className={styles.formStep}>
-              <p className={styles.formStepTitle}>{t.order.step1.title}</p>
-              <div className={styles.cardTypesGrid}>
+            <div className="flex flex-col gap-5">
+              <p className="font-heading text-[15px] font-bold text-primary tracking-[0.2px]">{t.order.step1.title}</p>
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-3">
                 {CARD_TYPES.map(c => (
                   <div key={c.id}
                     className={`${styles.cardTypeCard} ${cardType === c.id ? styles.themeSelected : ''}`}
                     style={{ '--accent': c.accent } as React.CSSProperties}
                     onClick={() => setCardType(c.id)} role="button" tabIndex={0}
                     onKeyDown={e => e.key === 'Enter' && setCardType(c.id)} aria-pressed={cardType === c.id}>
-                    <button type="button" className={styles.infoBtn} onClick={e => { e.stopPropagation(); jumpToOption(0) }} aria-label={lang === 'pl' ? 'Więcej informacji' : 'More info'}>i</button>
+                    <button type="button" className="absolute top-3.5 left-3.5 w-5 h-5 rounded-full bg-[var(--surface2)] border border-border text-muted-foreground flex items-center justify-center text-[11px] font-bold italic [font-family:Georgia,serif] cursor-pointer z-[2] transition-colors duration-150 hover:border-primary hover:text-primary hover:shadow-[0_0_10px_rgba(180,77,255,0.4)]" onClick={e => { e.stopPropagation(); jumpToOption(0) }} aria-label={lang === 'pl' ? 'Więcej informacji' : 'More info'}>i</button>
                     <div className={styles.themeAccentBar} />
                     <p className={styles.cardTypeName}>{c.label}</p>
                     <span className={styles.cardTypeDims}>{c.dims}</span>
@@ -801,59 +807,59 @@ export default function Home() {
               </div>
               {cardType === 'laminated' && (
                 <>
-                  <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '16px', marginTop: '12px' }}>
-                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+                  <div className="bg-[var(--surface2)] border border-border rounded-[var(--radius-lg)] p-4 mt-3">
+                    <p className="m-0 text-xs text-muted-foreground leading-[1.6]">
                       {lang === 'pl'
                         ? '💡 Dostępne rozmiary: 55 × 85 mm lub 90 × 50 mm. Wybrany rozmiar napisz w komentarzu do zdjęcia w następnym kroku — jeśli nic nie napiszesz, ustalimy to z Tobą przed realizacją.'
                         : '💡 Available sizes: 55 × 85 mm or 90 × 50 mm. Note your preferred size in the photo comment in the next step — if you don\'t, we\'ll confirm it with you before production.'}
                     </p>
                   </div>
-                  <div style={{ marginTop: '16px' }}>
-                    <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>
+                  <div className="mt-4">
+                    <p className={sectionEyebrowCls}>
                       {lang === 'pl' ? '// ile zestawów' : '// how many sets'}
                     </p>
-                    <div className={styles.quantityWrap} style={{ justifyContent: 'flex-start', margin: 0 }}>
-                      <button className={styles.qtyBtn} onClick={() => setLaminatedQty(q => Math.max(1, q - 1))}>−</button>
-                      <span className={styles.qtyValue}>{laminatedQty}</span>
-                      <button className={styles.qtyBtn} onClick={() => setLaminatedQty(q => q + 1)}>+</button>
+                    <div className="flex items-center gap-5 justify-start">
+                      <button className="w-11 h-11 rounded-full bg-[var(--surface2)] border border-border text-foreground text-[22px] cursor-pointer flex items-center justify-center transition-all duration-200 font-mono hover:border-primary hover:text-primary hover:shadow-[var(--glow-neon)] active:scale-[0.94]" onClick={() => setLaminatedQty(q => Math.max(1, q - 1))}>−</button>
+                      <span className="font-heading text-4xl font-bold text-foreground min-w-[60px] text-center">{laminatedQty}</span>
+                      <button className="w-11 h-11 rounded-full bg-[var(--surface2)] border border-border text-foreground text-[22px] cursor-pointer flex items-center justify-center transition-all duration-200 font-mono hover:border-primary hover:text-primary hover:shadow-[var(--glow-neon)] active:scale-[0.94]" onClick={() => setLaminatedQty(q => q + 1)}>+</button>
                     </div>
                   </div>
                 </>
               )}
               {cardType === 'pvc' && (
-                <div style={{ marginTop: '16px' }}>
-                  <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>
+                <div className="mt-4">
+                  <p className={sectionEyebrowCls}>
                     {lang === 'pl' ? '// ile kart i w jakim wykończeniu' : '// how many cards, and which finish'}
                   </p>
-                  <div className={styles.backGrid}>
+                  <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3 mb-5">
                     {CARD_FINISHES.map(f => {
                       const bd = finishBreakdown[f.id] ?? { qty: 0, nfcQty: 0 }
                       return (
-                        <div key={f.id} className={styles.backCard} style={{ cursor: 'default' }}>
-                          <div className={styles.backCardTop}>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                        <div key={f.id} className="glassPanel rounded-[var(--radius-lg)] p-4 relative transition-all duration-200 cursor-default hover:border-[rgba(180,77,255,0.45)] hover:-translate-y-[3px] hover:shadow-[var(--glass-shadow),var(--glow-neon)]">
+                          <div className="flex justify-between items-center mb-1.5">
+                            <span className="flex items-center gap-1.5 min-w-0">
                               {f.id !== 'standard' && (
-                                <button type="button" className={styles.infoBtnInline} onClick={() => jumpToOption(f.id === 'zestaw_promocyjny' ? 6 : 5)} aria-label={lang === 'pl' ? 'Więcej informacji' : 'More info'}>i</button>
+                                <button type="button" className="w-[18px] h-[18px] rounded-full shrink-0 bg-[var(--surface2)] border border-border text-muted-foreground inline-flex items-center justify-center text-[10px] font-bold italic [font-family:Georgia,serif] cursor-pointer transition-colors duration-150 hover:border-primary hover:text-primary hover:shadow-[0_0_8px_rgba(180,77,255,0.4)]" onClick={() => jumpToOption(f.id === 'zestaw_promocyjny' ? 6 : 5)} aria-label={lang === 'pl' ? 'Więcej informacji' : 'More info'}>i</button>
                               )}
-                              <p className={styles.backCardLabel} style={{ margin: 0 }}>{f.label}</p>
+                              <p className="m-0 text-sm font-semibold text-foreground">{f.label}</p>
                             </span>
-                            <span className={`${styles.backCardPrice} ${f.id === 'standard' ? styles.backCardPriceFree : ''}`}>
+                            <span className={`font-heading text-[13px] font-bold rounded-full py-[3px] px-3 whitespace-nowrap inline-block ${f.id === 'standard' ? 'text-[var(--success)] bg-[rgba(0,229,160,0.1)] border border-[rgba(0,229,160,0.35)]' : 'text-primary bg-[var(--neon-dim)] border border-[color-mix(in_srgb,var(--neon)_35%,transparent)]'}`}>
                               {f.id === 'standard' ? (lang === 'pl' ? 'Gratis' : 'Free')
                                 : f.id === 'zestaw_promocyjny' ? `${f.price} zł${lang === 'pl' ? '/kpl.' : '/set'}`
                                 : `+${f.price} zł`}
                             </span>
                           </div>
-                          <div className={styles.qtyWrapSm} style={{ marginTop: '10px' }}>
-                            <button className={styles.qtyBtnSm} onClick={() => updateFinishQty(f.id, -1)} disabled={bd.qty === 0}>−</button>
-                            <span className={styles.qtyValueSm}>{bd.qty}</span>
-                            <button className={styles.qtyBtnSm} onClick={() => updateFinishQty(f.id, 1)}>+</button>
+                          <div className="flex items-center gap-2.5 mt-2.5">
+                            <button className="w-7 h-7 rounded-full bg-[var(--surface2)] border border-border text-foreground text-[15px] cursor-pointer flex items-center justify-center transition-all duration-200 font-mono shrink-0 enabled:hover:border-primary enabled:hover:text-primary enabled:active:scale-[0.94] disabled:opacity-30 disabled:cursor-not-allowed" onClick={() => updateFinishQty(f.id, -1)} disabled={bd.qty === 0}>−</button>
+                            <span className="font-heading text-base font-bold text-foreground min-w-5 text-center">{bd.qty}</span>
+                            <button className="w-7 h-7 rounded-full bg-[var(--surface2)] border border-border text-foreground text-[15px] cursor-pointer flex items-center justify-center transition-all duration-200 font-mono shrink-0 enabled:hover:border-primary enabled:hover:text-primary enabled:active:scale-[0.94] disabled:opacity-30 disabled:cursor-not-allowed" onClick={() => updateFinishQty(f.id, 1)}>+</button>
                           </div>
                           {bd.qty > 0 && (
-                            <div className={styles.qtyWrapSm} style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
-                              <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>📲 NFC</span>
-                              <button className={styles.qtyBtnSm} onClick={() => updateFinishNfcQty(f.id, -1)} disabled={bd.nfcQty === 0}>−</button>
-                              <span className={styles.qtyValueSm}>{bd.nfcQty}</span>
-                              <button className={styles.qtyBtnSm} onClick={() => updateFinishNfcQty(f.id, 1)} disabled={bd.nfcQty >= maxNfcForBlock(f.id, bd.qty)}>+</button>
+                            <div className="flex items-center gap-2.5 mt-2 pt-2 border-t border-border">
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">📲 NFC</span>
+                              <button className="w-7 h-7 rounded-full bg-[var(--surface2)] border border-border text-foreground text-[15px] cursor-pointer flex items-center justify-center transition-all duration-200 font-mono shrink-0 enabled:hover:border-primary enabled:hover:text-primary enabled:active:scale-[0.94] disabled:opacity-30 disabled:cursor-not-allowed" onClick={() => updateFinishNfcQty(f.id, -1)} disabled={bd.nfcQty === 0}>−</button>
+                              <span className="font-heading text-base font-bold text-foreground min-w-5 text-center">{bd.nfcQty}</span>
+                              <button className="w-7 h-7 rounded-full bg-[var(--surface2)] border border-border text-foreground text-[15px] cursor-pointer flex items-center justify-center transition-all duration-200 font-mono shrink-0 enabled:hover:border-primary enabled:hover:text-primary enabled:active:scale-[0.94] disabled:opacity-30 disabled:cursor-not-allowed" onClick={() => updateFinishNfcQty(f.id, 1)} disabled={bd.nfcQty >= maxNfcForBlock(f.id, bd.qty)}>+</button>
                               <span className={styles.priceTagSm}>+{nfcUnitPrice} zł{lang === 'pl' ? '/kartę' : '/card'}</span>
                             </div>
                           )}
@@ -862,53 +868,53 @@ export default function Home() {
                     })}
                   </div>
                   {quantity === 0 && (
-                    <p className={styles.errorMsg} style={{ marginTop: '10px' }}>
+                    <p className={`${errorMsgCls} mt-2.5`}>
                       {lang === 'pl' ? 'Wybierz co najmniej jedną kartę (kliknij + przy dowolnym wariancie).' : 'Select at least one card (click + on any variant).'}
                     </p>
                   )}
                 </div>
               )}
-              <button className={styles.btnPrimary} onClick={() => setStep(2)} disabled={cardType === 'pvc' && quantity === 0} style={cardType === 'pvc' && quantity === 0 ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}>{t.order.step1.next}</button>
+              <button className={btnPrimaryCls} onClick={() => setStep(2)} disabled={cardType === 'pvc' && quantity === 0}>{t.order.step1.next}</button>
             </div>
           )}
 
           {step === 2 && (
-            <div className={styles.formStep}>
-              <p className={styles.formStepTitle}>{t.order.step2.title}</p>
-              <div className={styles.themesGrid}>
+            <div className={formStepCls}>
+              <p className={formStepTitleCls}>{t.order.step2.title}</p>
+              <div className="grid grid-cols-2 gap-4 mb-8">
                 {FRONT_THEMES.map(th => (
                   <div key={th.id}
                     className={`${styles.themeCard} ${frontTheme === th.id ? styles.themeSelected : ''}`}
                     style={{ '--accent': th.accent } as React.CSSProperties}
                     onClick={() => setFrontTheme(th.id)} role="button" tabIndex={0}
                     onKeyDown={e => e.key === 'Enter' && setFrontTheme(th.id)} aria-pressed={frontTheme === th.id}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '6px' }}>
-                      <button type="button" className={styles.infoBtnInline} style={{ marginTop: '2px' }} onClick={e => { e.stopPropagation(); jumpToOption(th.id === 'custom' ? 2 : 1) }} aria-label={lang === 'pl' ? 'Więcej informacji' : 'More info'}>i</button>
-                      <p className={styles.themeLabel} style={{ margin: 0 }}>{th.label}</p>
+                    <div className="flex items-start gap-2 mb-1.5">
+                      <button type="button" className="mt-0.5 w-[18px] h-[18px] rounded-full shrink-0 bg-[var(--surface2)] border border-border text-muted-foreground inline-flex items-center justify-center text-[10px] font-bold italic [font-family:Georgia,serif] cursor-pointer transition-colors duration-150 hover:border-primary hover:text-primary hover:shadow-[0_0_8px_rgba(180,77,255,0.4)]" onClick={e => { e.stopPropagation(); jumpToOption(th.id === 'custom' ? 2 : 1) }} aria-label={lang === 'pl' ? 'Więcej informacji' : 'More info'}>i</button>
+                      <p className="font-heading text-base font-bold text-foreground m-0 tracking-[-0.1px] pr-[26px] leading-[1.25]">{th.label}</p>
                     </div>
                     {frontTheme === th.id && <span className={styles.themeCheck}>✓</span>}
                   </div>
                 ))}
               </div>
 
-              <div style={{ marginTop: '16px' }}>
-                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>{t.order.step2.frameColorEyebrow}</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+              <div className="mt-4">
+                <p className={sectionEyebrowCls}>{t.order.step2.frameColorEyebrow}</p>
+                <div className="flex flex-wrap gap-2.5">
                   {FRAME_COLORS.map(c => (
                     <div key={c.id}
                       onClick={() => setFrameColor(c.id)} role="button" tabIndex={0}
                       onKeyDown={e => e.key === 'Enter' && setFrameColor(c.id)} aria-pressed={frameColor === c.id}
-                      className={styles.swatchPill}
+                      className="flex items-center gap-2 py-[7px] pr-3 pl-2 rounded-full cursor-pointer bg-[var(--surface2)] border-[1.5px] border-border transition-all duration-150 hover:-translate-y-px"
                       style={{
                         borderColor: frameColor === c.id ? c.hex : undefined,
                         background: frameColor === c.id ? `${c.hex}22` : undefined,
                       }}>
-                      <span className={styles.swatchDot} style={{
+                      <span className="w-5 h-5 rounded-full shrink-0 border-2 border-[rgba(255,255,255,0.15)]" style={{
                         background: c.hex,
                         boxShadow: `0 0 8px ${c.hex}aa`,
                         borderColor: frameColor === c.id ? '#fff' : undefined,
                       }} />
-                      <span style={{ fontSize: '12px', color: 'var(--text)', whiteSpace: 'nowrap' }}>{c.name}</span>
+                      <span className="text-xs text-foreground whitespace-nowrap">{c.name}</span>
                     </div>
                   ))}
                 </div>
@@ -916,24 +922,25 @@ export default function Home() {
                   onClick={() => setHoloEffect(v => !v)} role="button" tabIndex={0}
                   onKeyDown={e => e.key === 'Enter' && setHoloEffect(v => !v)}
                   aria-pressed={holoEffect}
-                  style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'var(--surface2)', border: `1px solid ${holoEffect ? 'var(--neon)' : 'var(--border)'}`, borderRadius: 'var(--radius-lg)', padding: '14px', marginTop: '10px', cursor: 'pointer' }}
+                  className="flex gap-3 items-start bg-[var(--surface2)] rounded-[var(--radius-lg)] p-3.5 mt-2.5 cursor-pointer"
+                  style={{ border: `1px solid ${holoEffect ? 'var(--neon)' : 'var(--border)'}` }}
                 >
-                  <div style={{ width: '20px', height: '20px', borderRadius: '4px', border: `2px solid ${holoEffect ? 'var(--neon)' : 'var(--border)'}`, background: holoEffect ? 'var(--neon)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>
-                    {holoEffect && <span style={{ color: '#0a0014', fontSize: '13px', fontWeight: 700 }}>✓</span>}
+                  <div className="w-5 h-5 rounded flex items-center justify-center shrink-0 mt-px" style={{ border: `2px solid ${holoEffect ? 'var(--neon)' : 'var(--border)'}`, background: holoEffect ? 'var(--neon)' : 'transparent' }}>
+                    {holoEffect && <span className="text-[#0a0014] text-[13px] font-bold">✓</span>}
                   </div>
                   <div>
-                    <p style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>
+                    <p className="mb-0.5 text-[13px] font-semibold text-foreground">
                       ✨ {lang === 'pl' ? 'Efekt holograficzny' : 'Holographic effect'}
                     </p>
-                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>
+                    <p className="m-0 text-xs text-muted-foreground">
                       {lang === 'pl' ? 'Ramka karty z połyskującym, holo wykończeniem' : "Card frame with a shimmering, holo finish"}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div style={{ marginTop: '16px' }}>
-                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>
+              <div className="mt-4">
+                <p className={sectionEyebrowCls}>
                   {lang === 'pl' ? '// podgląd karty' : '// card preview'}
                 </p>
                 <div
@@ -982,9 +989,9 @@ export default function Home() {
                   }} />
                 </div>
                 {frontTheme === 'custom' && (
-                  <div style={{ marginTop: '12px', background: 'rgba(245,158,11,0.1)', border: '1.5px solid rgba(245,158,11,0.4)', borderRadius: 'var(--radius-lg)', padding: '14px 18px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                    <span style={{ fontSize: '18px', flexShrink: 0 }}>⚠️</span>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#f59e0b', lineHeight: '1.6' }}>
+                  <div className="mt-3 bg-[rgba(245,158,11,0.1)] border-[1.5px] border-[rgba(245,158,11,0.4)] rounded-[var(--radius-lg)] py-3.5 px-[18px] flex gap-3 items-start">
+                    <span className="text-lg shrink-0">⚠️</span>
+                    <p className="m-0 text-xs text-[#f59e0b] leading-[1.6]">
                       {lang === 'pl' ? (
                         <>
                           <strong>To tylko przykład układu specjalnej karty</strong> — niestandardowy layout, sam pomysł na to, jak to może wyglądać. Twoja karta custom będzie inna, atrybuty niekoniecznie się pokryją. Dokładne wytyczne (co, gdzie, w jakim stylu) opisz w <strong>uwagach do zdjęcia / karty</strong> poniżej i dołącz opcjonalnie <strong>grafikę referencyjną</strong>.
@@ -999,90 +1006,90 @@ export default function Home() {
                 )}
               </div>
 
-              <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '20px', marginTop: '12px' }}>
-                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 16px' }}>{t.order.step2.attrsEyebrow}</p>
-                <div className={styles.fieldGrid}>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.yearLabel}</label><input value={form.cardYear} onChange={e => setForm({...form, cardYear: e.target.value})} placeholder={t.order.step2.yearPlaceholder} /></div>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.rarityLabel}</label><input value={form.cardRarity} onChange={e => setForm({...form, cardRarity: e.target.value})} placeholder={t.order.step2.rarityPlaceholder} /></div>
-                  <div className={`${styles.field} ${styles.fieldFull}`}><label className={styles.label}>{t.order.step2.nameLabel}</label><input value={form.cardName} onChange={e => setForm({...form, cardName: e.target.value})} placeholder={t.order.step2.namePlaceholder} /></div>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.attr1LabelLabel}</label><input value={form.attr1Label} onChange={e => setForm({...form, attr1Label: e.target.value})} placeholder={t.order.step2.attr1LabelPlaceholder} /></div>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.attr1ValueLabel}</label><input value={form.attr1Value} onChange={e => setForm({...form, attr1Value: e.target.value})} placeholder={t.order.step2.attr1ValuePlaceholder} /></div>
-                  <div className={`${styles.field} ${styles.fieldFull}`}><label className={styles.label}>{t.order.step2.skillLabel}</label><input value={form.cardSkill} onChange={e => setForm({...form, cardSkill: e.target.value})} placeholder={t.order.step2.skillPlaceholder} /></div>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.attr2LabelLabel}</label><input value={form.attr2Label} onChange={e => setForm({...form, attr2Label: e.target.value})} placeholder={t.order.step2.attr2LabelPlaceholder} /></div>
-                  <div className={styles.field}><label className={styles.label}>{t.order.step2.attr2ValueLabel}</label><input value={form.attr2Value} onChange={e => setForm({...form, attr2Value: e.target.value})} placeholder={t.order.step2.attr2ValuePlaceholder} /></div>
-                  <div className={`${styles.field} ${styles.fieldFull}`}><label className={styles.label}>{t.order.step2.bottomTextLabel}</label><input value={form.cardBottomText} onChange={e => setForm({...form, cardBottomText: e.target.value})} placeholder={t.order.step2.bottomTextPlaceholder} /></div>
+              <div className="bg-[var(--surface2)] border border-border rounded-[var(--radius-lg)] p-5 mt-3">
+                <p className="font-mono text-[11px] text-primary tracking-[2px] mb-4">{t.order.step2.attrsEyebrow}</p>
+                <div className={fieldGridCls}>
+                  <div className={fieldCls}><label className={labelCls}>{t.order.step2.yearLabel}</label><input value={form.cardYear} onChange={e => setForm({...form, cardYear: e.target.value})} placeholder={t.order.step2.yearPlaceholder} /></div>
+                  <div className={fieldCls}><label className={labelCls}>{t.order.step2.rarityLabel}</label><input value={form.cardRarity} onChange={e => setForm({...form, cardRarity: e.target.value})} placeholder={t.order.step2.rarityPlaceholder} /></div>
+                  <div className={`${fieldCls} ${fieldFullCls}`}><label className={labelCls}>{t.order.step2.nameLabel}</label><input value={form.cardName} onChange={e => setForm({...form, cardName: e.target.value})} placeholder={t.order.step2.namePlaceholder} /></div>
+                  <div className={fieldCls}><label className={labelCls}>{t.order.step2.attr1LabelLabel}</label><input value={form.attr1Label} onChange={e => setForm({...form, attr1Label: e.target.value})} placeholder={t.order.step2.attr1LabelPlaceholder} /></div>
+                  <div className={fieldCls}><label className={labelCls}>{t.order.step2.attr1ValueLabel}</label><input value={form.attr1Value} onChange={e => setForm({...form, attr1Value: e.target.value})} placeholder={t.order.step2.attr1ValuePlaceholder} /></div>
+                  <div className={`${fieldCls} ${fieldFullCls}`}><label className={labelCls}>{t.order.step2.skillLabel}</label><input value={form.cardSkill} onChange={e => setForm({...form, cardSkill: e.target.value})} placeholder={t.order.step2.skillPlaceholder} /></div>
+                  <div className={fieldCls}><label className={labelCls}>{t.order.step2.attr2LabelLabel}</label><input value={form.attr2Label} onChange={e => setForm({...form, attr2Label: e.target.value})} placeholder={t.order.step2.attr2LabelPlaceholder} /></div>
+                  <div className={fieldCls}><label className={labelCls}>{t.order.step2.attr2ValueLabel}</label><input value={form.attr2Value} onChange={e => setForm({...form, attr2Value: e.target.value})} placeholder={t.order.step2.attr2ValuePlaceholder} /></div>
+                  <div className={`${fieldCls} ${fieldFullCls}`}><label className={labelCls}>{t.order.step2.bottomTextLabel}</label><input value={form.cardBottomText} onChange={e => setForm({...form, cardBottomText: e.target.value})} placeholder={t.order.step2.bottomTextPlaceholder} /></div>
                 </div>
               </div>
 
-              <div style={{ marginTop: '12px' }}>
-                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>{t.order.step2.photoEyebrow} *</p>
+              <div className="mt-3">
+                <p className={sectionEyebrowCls}>{t.order.step2.photoEyebrow} *</p>
                 {!photo ? (
-                  <div className={styles.dropZone} style={error === t.order.step5.errPhotoRequired ? { borderColor: 'var(--error)' } : undefined} onClick={() => fileRef.current?.click()} onDragOver={e => e.preventDefault()} onDrop={handleDrop} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && fileRef.current?.click()}>
-                    <span className={styles.dropIcon}>↑</span>
-                    <p className={styles.dropTitle}>{t.order.step2.dropTitle}</p>
-                    <p className={styles.dropSub}>{t.order.step2.dropSub}</p>
+                  <div className="border-[1.5px] border-dashed border-border rounded-[var(--radius-lg)] py-10 px-5 text-center cursor-pointer transition-all duration-200 bg-[var(--surface2)] flex flex-col items-center gap-2.5 hover:border-primary hover:bg-[var(--neon-dim)] hover:shadow-[var(--glow-neon)]" style={error === t.order.step5.errPhotoRequired ? { borderColor: 'var(--error)' } : undefined} onClick={() => fileRef.current?.click()} onDragOver={e => e.preventDefault()} onDrop={handleDrop} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && fileRef.current?.click()}>
+                    <span className="text-[32px] text-muted-foreground">↑</span>
+                    <p className="text-sm font-medium text-foreground">{t.order.step2.dropTitle}</p>
+                    <p className="text-xs text-muted-foreground">{t.order.step2.dropSub}</p>
                   </div>
                 ) : (
-                  <div className={styles.fileAdded}>
-                    <span className={styles.fileIcon}>🖼</span>
-                    <div className={styles.fileInfo}>
-                      <p className={styles.fileAddedTitle}>{t.order.step2.fileAddedTitle}</p>
-                      <p className={styles.fileName}>{photo.name}</p>
+                  <div className="flex items-center gap-3.5 bg-[rgba(0,229,160,0.08)] border-[1.5px] border-[rgba(0,229,160,0.4)] rounded-[var(--radius-lg)] py-4 px-5">
+                    <span className="text-[28px] shrink-0">🖼</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] font-semibold text-[var(--success)] m-0 mb-[3px]">{t.order.step2.fileAddedTitle}</p>
+                      <p className="text-xs text-muted-foreground m-0 whitespace-nowrap overflow-hidden text-ellipsis">{photo.name}</p>
                     </div>
-                    <button className={styles.fileRemove} onClick={() => { setPhoto(null); setPhotoPreview(null) }}>✕</button>
+                    <button className="bg-transparent border border-[rgba(255,77,109,0.3)] text-[var(--error)] py-[5px] px-2.5 rounded-md text-xs cursor-pointer shrink-0 font-mono transition-colors duration-150 hover:bg-[rgba(255,77,109,0.1)]" onClick={() => { setPhoto(null); setPhotoPreview(null) }}>✕</button>
                   </div>
                 )}
                 {error === t.order.step5.errPhotoRequired && (
-                  <p className={styles.errorMsg} style={{ marginTop: '8px' }}>{error}</p>
+                  <p className={`${errorMsgCls} mt-2`}>{error}</p>
                 )}
                 <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handlePhoto(e.target.files[0]) }} />
-                <div className={styles.field} style={{ marginTop: '10px' }}>
-                  <label className={styles.label}>{t.order.step2.photoCommentLabel} <span className={styles.optional}>{t.order.step2.optional}</span></label>
+                <div className={`${fieldCls} mt-2.5`}>
+                  <label className={labelCls}>{t.order.step2.photoCommentLabel} <span className={optionalCls}>{t.order.step2.optional}</span></label>
                   <textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value.slice(0, 600)})} placeholder={t.order.step2.photoCommentPlaceholder} maxLength={600} />
-                  <p style={{ margin: '4px 0 0', fontSize: '11px', color: 'var(--text-faint)', textAlign: 'right' }}>{form.notes.length}/600</p>
+                  <p className="mt-1 mb-0 text-[11px] text-[var(--text-faint)] text-right">{form.notes.length}/600</p>
                 </div>
               </div>
 
               {frontTheme === 'custom' && (
-                <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '10px', padding: '16px', marginTop: '12px' }}>
-                  <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: '#f59e0b', letterSpacing: '2px', margin: '0 0 12px' }}>{t.order.step2.customEyebrow}</p>
-                  <button className={styles.btnSecondary} style={{ width: '100%', padding: '12px', fontSize: '13px' }} onClick={() => refFileFrontRef.current?.click()}>
+                <div className="bg-[rgba(245,158,11,0.06)] border border-[rgba(245,158,11,0.25)] rounded-[10px] p-4 mt-3">
+                  <p className="font-mono text-[11px] text-[#f59e0b] tracking-[2px] mb-3">{t.order.step2.customEyebrow}</p>
+                  <button className={`${btnSecondaryCls} w-full p-3 text-[13px]`} onClick={() => refFileFrontRef.current?.click()}>
                     {refFileFront ? `✓ ${refFileFront.name}` : t.order.step2.customBtnEmpty}
                   </button>
                   <input ref={refFileFrontRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) setRefFileFront(e.target.files[0]) }} />
-                  <div className={styles.field} style={{ marginTop: '10px' }}>
-                    <label className={styles.label}>{t.order.step2.customDescLabel}</label>
+                  <div className={`${fieldCls} mt-2.5`}>
+                    <label className={labelCls}>{t.order.step2.customDescLabel}</label>
                     <textarea value={form.customDesc} onChange={e => setForm({...form, customDesc: e.target.value.slice(0, 600)})} placeholder={t.order.step2.customDescPlaceholder} maxLength={600} />
-                    <p style={{ margin: '4px 0 0', fontSize: '11px', color: 'var(--text-faint)', textAlign: 'right' }}>{form.customDesc.length}/600</p>
+                    <p className="mt-1 mb-0 text-[11px] text-[var(--text-faint)] text-right">{form.customDesc.length}/600</p>
                   </div>
                 </div>
               )}
 
-              <div className={styles.formButtons}>
-                <button className={styles.btnSecondary} onClick={() => setStep(1)}>{t.order.step2.back}</button>
-                <button className={styles.btnPrimary} onClick={() => setStep(3)}>{t.order.step2.next}</button>
+              <div className={formButtonsCls}>
+                <button className={btnSecondaryCls} onClick={() => setStep(1)}>{t.order.step2.back}</button>
+                <button className={btnPrimaryCls} onClick={() => setStep(3)}>{t.order.step2.next}</button>
               </div>
             </div>
           )}
 
           {step === 3 && (
-            <div className={styles.formStep}>
-              <p className={styles.formStepTitle}>{t.order.step3.title}</p>
-              <div className={styles.backGrid}>
+            <div className={formStepCls}>
+              <p className={formStepTitleCls}>{t.order.step3.title}</p>
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3 mb-5">
                 {BACK_OPTIONS.map((b, i) => (
                   <div key={b.id}
-                    className={`${styles.backCard} ${backOption === b.id ? styles.backCardSelected : ''}`}
+                    className={`glassPanel rounded-[var(--radius-lg)] p-4 cursor-pointer relative transition-all duration-200 hover:border-[rgba(180,77,255,0.45)] hover:-translate-y-[3px] hover:shadow-[var(--glass-shadow),var(--glow-neon)] ${backOption === b.id ? '!border-primary bg-[linear-gradient(160deg,rgba(180,77,255,0.14),rgba(180,77,255,0.03))] [&::before]:!opacity-100 [&::after]:!opacity-100' : ''}`}
                     style={i === BACK_OPTIONS.length - 1 ? { gridColumn: '1 / -1' } : undefined}
                     onClick={() => setBackOption(b.id)} role="button" tabIndex={0}
                     onKeyDown={e => e.key === 'Enter' && setBackOption(b.id)} aria-pressed={backOption === b.id}>
-                    <div className={styles.backCardTop}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="flex items-center gap-1.5 min-w-0">
                         {(b.id === 'dedication' || b.id === 'qr') && (
-                          <button type="button" className={styles.infoBtnInline} onClick={e => { e.stopPropagation(); jumpToOption(b.id === 'dedication' ? 3 : 4) }} aria-label={lang === 'pl' ? 'Więcej informacji' : 'More info'}>i</button>
+                          <button type="button" className="w-[18px] h-[18px] rounded-full shrink-0 bg-[var(--surface2)] border border-border text-muted-foreground inline-flex items-center justify-center text-[10px] font-bold italic [font-family:Georgia,serif] cursor-pointer transition-colors duration-150 hover:border-primary hover:text-primary hover:shadow-[0_0_8px_rgba(180,77,255,0.4)]" onClick={e => { e.stopPropagation(); jumpToOption(b.id === 'dedication' ? 3 : 4) }} aria-label={lang === 'pl' ? 'Więcej informacji' : 'More info'}>i</button>
                         )}
-                        <p className={styles.backCardLabel} style={{ margin: 0 }}>{b.label}</p>
+                        <p className="m-0 text-sm font-semibold text-foreground">{b.label}</p>
                       </span>
-                      <span className={`${styles.backCardPrice} ${b.price === 0 ? styles.backCardPriceFree : ''}`}>{b.price === 0 ? t.order.step3.freeLabel : `+${b.price} zł`}</span>
+                      <span className={`font-heading text-[13px] font-bold rounded-full py-[3px] px-3 whitespace-nowrap inline-block ${b.price === 0 ? 'text-[var(--success)] bg-[rgba(0,229,160,0.1)] border border-[rgba(0,229,160,0.35)]' : 'text-primary bg-[var(--neon-dim)] border border-[color-mix(in_srgb,var(--neon)_35%,transparent)]'}`}>{b.price === 0 ? t.order.step3.freeLabel : `+${b.price} zł`}</span>
                     </div>
                     {backOption === b.id && <span className={styles.themeCheck}>✓</span>}
                   </div>
@@ -1090,104 +1097,104 @@ export default function Home() {
               </div>
 
               {backOption === 'logo' && (
-                <div className={styles.field} style={{ marginTop: '12px' }}>
-                  <label className={styles.label}>{lang === 'pl' ? 'Komentarz' : 'Comment'} <span className={styles.optional}>{t.order.step2.optional}</span></label>
+                <div className={`${fieldCls} mt-3`}>
+                  <label className={labelCls}>{lang === 'pl' ? 'Komentarz' : 'Comment'} <span className={optionalCls}>{t.order.step2.optional}</span></label>
                   <textarea value={form.notesBack} onChange={e => setForm({...form, notesBack: e.target.value})} placeholder={lang === 'pl' ? 'Dodatkowa uwaga do logo (opcjonalnie)' : 'Any extra note about the logo (optional)'} />
                 </div>
               )}
 
               {backOption === 'blank' && (
-                <div className={styles.field} style={{ marginTop: '12px' }}>
-                  <label className={styles.label}>{lang === 'pl' ? 'Komentarz' : 'Comment'} <span className={styles.optional}>{t.order.step2.optional}</span></label>
+                <div className={`${fieldCls} mt-3`}>
+                  <label className={labelCls}>{lang === 'pl' ? 'Komentarz' : 'Comment'} <span className={optionalCls}>{t.order.step2.optional}</span></label>
                   <textarea value={form.notesBack} onChange={e => setForm({...form, notesBack: e.target.value})} placeholder={lang === 'pl' ? 'np. zostawcie karty zupełnie czyste, zbieramy podpisy ekipy...' : 'e.g. keep it completely blank, we\'re collecting signatures from the crew...'} />
                 </div>
               )}
 
               {backOption === 'dedication' && (
-                <div className={styles.field} style={{ marginTop: '12px' }}>
-                  <label className={styles.label}>{t.order.step3.dedicationLabel}</label>
+                <div className={`${fieldCls} mt-3`}>
+                  <label className={labelCls}>{t.order.step3.dedicationLabel}</label>
                   <textarea value={form.notesBack} onChange={e => setForm({...form, notesBack: e.target.value})} placeholder={t.order.step3.dedicationPlaceholder} />
                 </div>
               )}
 
               {backOption === 'qr' && (
-                <div className={styles.field} style={{ marginTop: '12px' }}>
-                  <label className={styles.label}>{t.order.step3.qrLabel}</label>
+                <div className={`${fieldCls} mt-3`}>
+                  <label className={labelCls}>{t.order.step3.qrLabel}</label>
                   <textarea value={form.notesBack} onChange={e => setForm({...form, notesBack: e.target.value})} placeholder={t.order.step3.qrPlaceholder} />
-                  <p style={{ fontSize: '12px', color: 'var(--text-faint)', marginTop: '4px' }}>{t.order.step3.qrNote}</p>
+                  <p className="text-xs text-[var(--text-faint)] mt-1">{t.order.step3.qrNote}</p>
                 </div>
               )}
 
               {backOption === 'custom_back' && (
-                <div style={{ marginTop: '12px' }}>
-                  <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>{t.order.step3.customBackEyebrow}</p>
-                  <button className={styles.btnSecondary} style={{ width: '100%', padding: '12px', fontSize: '13px' }} onClick={() => refFileBackRef.current?.click()}>
+                <div className="mt-3">
+                  <p className={sectionEyebrowCls}>{t.order.step3.customBackEyebrow}</p>
+                  <button className={`${btnSecondaryCls} w-full p-3 text-[13px]`} onClick={() => refFileBackRef.current?.click()}>
                     {refFileBack ? `✓ ${refFileBack.name}` : t.order.step3.customBackBtnEmpty}
                   </button>
                   <input ref={refFileBackRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) setRefFileBack(e.target.files[0]) }} />
-                  <div className={styles.field} style={{ marginTop: '10px' }}>
-                    <label className={styles.label}>{t.order.step3.customBackCommentLabel}</label>
+                  <div className={`${fieldCls} mt-2.5`}>
+                    <label className={labelCls}>{t.order.step3.customBackCommentLabel}</label>
                     <textarea value={form.notesBack} onChange={e => setForm({...form, notesBack: e.target.value})} placeholder={t.order.step3.customBackCommentPlaceholder} />
                   </div>
                 </div>
               )}
 
-              <div className={styles.formButtons}>
-                <button className={styles.btnSecondary} onClick={() => setStep(2)}>{t.order.step3.back}</button>
-                <button className={styles.btnPrimary} onClick={() => setStep(4)}>{t.order.step3.next}</button>
+              <div className={formButtonsCls}>
+                <button className={btnSecondaryCls} onClick={() => setStep(2)}>{t.order.step3.back}</button>
+                <button className={btnPrimaryCls} onClick={() => setStep(4)}>{t.order.step3.next}</button>
               </div>
             </div>
           )}
 
           {step === 4 && (
-            <div className={styles.formStep}>
-              <p className={styles.formStepTitle}>{t.order.step4.title}</p>
-              <p style={{ margin: '0 0 10px', fontSize: '12px', color: 'var(--text-muted)' }}>
+            <div className={formStepCls}>
+              <p className={formStepTitleCls}>{t.order.step4.title}</p>
+              <p className="mb-2.5 text-xs text-muted-foreground">
                 {lang === 'pl' ? 'Ilość i wykończenie wybrałeś już w kroku 1 — tu tylko podsumowanie.' : 'You already picked quantity and finish in step 1 — this is just the summary.'}
               </p>
-              {hasDiscount && <div className={styles.discountBadge}>{t.order.step4.discountBadge(quantity)}</div>}
-              {quantity === 2 && <div className={styles.discountHint}>{t.order.step4.discountHint}</div>}
-              <div className={styles.priceSummary}>
-                <p className={styles.summaryRow}><span>{t.order.step4.cardTypeLabel}</span><strong>{cardObj.label}</strong></p>
+              {hasDiscount && <div className="bg-[rgba(0,229,160,0.1)] border border-[rgba(0,229,160,0.3)] rounded-lg py-2.5 px-4 text-sm text-[var(--success)] text-center mb-4">{t.order.step4.discountBadge(quantity)}</div>}
+              {quantity === 2 && <div className="bg-[rgba(245,158,11,0.08)] border border-[rgba(245,158,11,0.2)] rounded-lg py-2.5 px-4 text-[13px] text-[#f59e0b] text-center mb-4">{t.order.step4.discountHint}</div>}
+              <div className="border border-border rounded-[var(--radius-lg)] py-4 px-5 mb-5 flex flex-col gap-2.5">
+                <p className={summaryRowCls}><span>{t.order.step4.cardTypeLabel}</span><strong>{cardObj.label}</strong></p>
                 {cardType === 'pvc' ? activeFinishLines.map(l => (
-                  <p key={l.finish.id} className={styles.summaryRow}>
+                  <p key={l.finish.id} className={summaryRowCls}>
                     <span>{l.finish.label} × {l.qty}{l.nfcQty > 0 ? (lang === 'pl' ? ` (${l.nfcQty} z NFC)` : ` (${l.nfcQty} with NFC)`) : ''}</span>
                     <strong>{l.finish.id === 'standard' ? '—' : l.finish.id === 'zestaw_promocyjny' ? `${l.finish.price} zł${lang === 'pl' ? '/kpl.' : '/set'}` : `+${l.finish.price} zł/szt.`}</strong>
                   </p>
                 )) : (
-                  <p className={styles.summaryRow}><span>{t.order.step4.qtyLabel}</span><strong>× {quantity}</strong></p>
+                  <p className={summaryRowCls}><span>{t.order.step4.qtyLabel}</span><strong>× {quantity}</strong></p>
                 )}
-                <p className={styles.summaryRow}><span>{t.order.step4.themeLabel}</span><strong>{FRONT_THEMES.find(th=>th.id===frontTheme)?.label}</strong></p>
-                <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Kolor ramki' : 'Frame color'}</span><strong style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '12px', height: '12px', borderRadius: '50%', background: FRAME_COLORS.find(c=>c.id===frameColor)?.hex, flexShrink: 0 }} />{FRAME_COLORS.find(c=>c.id===frameColor)?.name}</strong></p>
-                {holoEffect && <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Efekt holograficzny' : 'Holographic effect'}</span><strong>✨ {lang === 'pl' ? 'Tak' : 'Yes'}</strong></p>}
-                <p className={styles.summaryRow}><span>{t.order.step4.backLabel}</span><strong>{backObj.label}</strong></p>
-                <p className={styles.summaryRow}><span>{t.order.step4.unitPriceLabel}</span><strong>{unitPrice} zł</strong></p>
-                {hasDiscount && <p className={styles.summaryRow}><span>{t.order.step4.discountLabel}</span><strong className={styles.discount}>−{savedAmount} zł</strong></p>}
-                {nfcActive && <p className={styles.summaryRow}><span>{lang === 'pl' ? `NFC/RFID (${nfcTotalQty} × ${nfcUnitPrice} zł)` : `NFC/RFID (${nfcTotalQty} × ${nfcUnitPrice} zł)`}</span><strong>{nfcTotal} zł</strong></p>}
-                {cardFinishAddonTotal > 0 && <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Dopłaty za wykończenie' : 'Finish add-ons'}</span><strong>{cardFinishAddonTotal} zł</strong></p>}
-                <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Wysyłka' : 'Shipping'}{shippingRegion === 'intl' ? (lang === 'pl' ? ' (zagranica)' : ' (abroad)') : ''}</span><strong>{SHIPPING_COST} zł</strong></p>
-                <div className={styles.summaryTotal}><span>{t.order.step4.totalLabel}</span><strong className={styles.totalPrice}>{totalPrice} zł</strong></div>
-                <p className={styles.summaryNote}>{t.order.step4.note}</p>
-                <p className={styles.summaryNote}>{t.order.step5.shippingCostNote(SHIPPING_COST)}</p>
+                <p className={summaryRowCls}><span>{t.order.step4.themeLabel}</span><strong>{FRONT_THEMES.find(th=>th.id===frontTheme)?.label}</strong></p>
+                <p className={summaryRowCls}><span>{lang === 'pl' ? 'Kolor ramki' : 'Frame color'}</span><strong className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full shrink-0" style={{ background: FRAME_COLORS.find(c=>c.id===frameColor)?.hex }} />{FRAME_COLORS.find(c=>c.id===frameColor)?.name}</strong></p>
+                {holoEffect && <p className={summaryRowCls}><span>{lang === 'pl' ? 'Efekt holograficzny' : 'Holographic effect'}</span><strong>✨ {lang === 'pl' ? 'Tak' : 'Yes'}</strong></p>}
+                <p className={summaryRowCls}><span>{t.order.step4.backLabel}</span><strong>{backObj.label}</strong></p>
+                <p className={summaryRowCls}><span>{t.order.step4.unitPriceLabel}</span><strong>{unitPrice} zł</strong></p>
+                {hasDiscount && <p className={summaryRowCls}><span>{t.order.step4.discountLabel}</span><strong className="!text-[var(--success)]">−{savedAmount} zł</strong></p>}
+                {nfcActive && <p className={summaryRowCls}><span>{lang === 'pl' ? `NFC/RFID (${nfcTotalQty} × ${nfcUnitPrice} zł)` : `NFC/RFID (${nfcTotalQty} × ${nfcUnitPrice} zł)`}</span><strong>{nfcTotal} zł</strong></p>}
+                {cardFinishAddonTotal > 0 && <p className={summaryRowCls}><span>{lang === 'pl' ? 'Dopłaty za wykończenie' : 'Finish add-ons'}</span><strong>{cardFinishAddonTotal} zł</strong></p>}
+                <p className={summaryRowCls}><span>{lang === 'pl' ? 'Wysyłka' : 'Shipping'}{shippingRegion === 'intl' ? (lang === 'pl' ? ' (zagranica)' : ' (abroad)') : ''}</span><strong>{SHIPPING_COST} zł</strong></p>
+                <div className="flex justify-between items-center pt-3 border-t border-border text-base"><span>{t.order.step4.totalLabel}</span><strong className="!text-[var(--success)] !text-[22px]">{totalPrice} zł</strong></div>
+                <p className="text-xs text-[var(--text-faint)]">{t.order.step4.note}</p>
+                <p className="text-xs text-[var(--text-faint)]">{t.order.step5.shippingCostNote(SHIPPING_COST)}</p>
               </div>
-              <div className={styles.formButtons}>
-                <button className={styles.btnSecondary} onClick={() => setStep(3)}>{t.order.step4.back}</button>
-                <button className={styles.btnPrimary} onClick={() => setStep(5)}>{t.order.step4.next}</button>
+              <div className={formButtonsCls}>
+                <button className={btnSecondaryCls} onClick={() => setStep(3)}>{t.order.step4.back}</button>
+                <button className={btnPrimaryCls} onClick={() => setStep(5)}>{t.order.step4.next}</button>
               </div>
             </div>
           )}
 
           {step === 5 && (
-            <div className={styles.formStep}>
-              <p className={styles.formStepTitle}>{t.order.step5.title}</p>
-              <p style={{ margin: '-6px 0 14px', fontSize: '12px', color: 'var(--text-muted)' }}>
+            <div className={formStepCls}>
+              <p className={formStepTitleCls}>{t.order.step5.title}</p>
+              <p className="-mt-1.5 mb-3.5 text-xs text-muted-foreground">
                 {lang === 'pl' ? '* pola wymagane' : '* required fields'}
               </p>
-              <div className={styles.fieldGrid}>
-                <div className={styles.field}><label className={styles.label}>{t.order.step5.nameLabel}</label><input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder={t.order.step5.namePlaceholder} /></div>
-                <div className={styles.field}><label className={styles.label}>{t.order.step5.emailLabel}</label><input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder={t.order.step5.emailPlaceholder} /></div>
-                <div className={styles.field}>
-                  <label className={styles.label}>{lang === 'pl' ? 'Powtórz adres email *' : 'Confirm email address *'}</label>
+              <div className={fieldGridCls}>
+                <div className={fieldCls}><label className={labelCls}>{t.order.step5.nameLabel}</label><input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder={t.order.step5.namePlaceholder} /></div>
+                <div className={fieldCls}><label className={labelCls}>{t.order.step5.emailLabel}</label><input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder={t.order.step5.emailPlaceholder} /></div>
+                <div className={fieldCls}>
+                  <label className={labelCls}>{lang === 'pl' ? 'Powtórz adres email *' : 'Confirm email address *'}</label>
                   <input
                     type="email"
                     value={form.emailConfirm}
@@ -1200,25 +1207,25 @@ export default function Home() {
                     }}
                   />
                   {form.emailConfirm && form.email.trim().toLowerCase() !== form.emailConfirm.trim().toLowerCase() && (
-                    <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--error)' }}>
+                    <p className="mt-0.5 mb-0 text-[11px] text-[var(--error)]">
                       {lang === 'pl' ? 'Adresy email nie są identyczne' : "Email addresses don't match"}
                     </p>
                   )}
                 </div>
-                <div className={styles.field}>
-                  <label className={styles.label}>{t.order.step5.phoneLabel}{deliveryMethod === 'paczkomat' ? ' *' : ''}</label>
+                <div className={fieldCls}>
+                  <label className={labelCls}>{t.order.step5.phoneLabel}{deliveryMethod === 'paczkomat' ? ' *' : ''}</label>
                   <input type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder={t.order.step5.phonePlaceholder} />
                   {deliveryMethod === 'paczkomat' && (
-                    <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--text-faint)' }}>
+                    <p className="mt-0.5 mb-0 text-[11px] text-[var(--text-faint)]">
                       {lang === 'pl' ? 'InPost wysyła SMS-em kod odbioru paczki.' : 'InPost sends the pickup code by SMS.'}
                     </p>
                   )}
                 </div>
               </div>
 
-              <div style={{ marginTop: '8px' }}>
-                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>{t.order.step5.shippingRegionEyebrow}</p>
-                <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+              <div className="mt-2">
+                <p className={sectionEyebrowCls}>{t.order.step5.shippingRegionEyebrow}</p>
+                <div className="flex gap-2.5 mb-4">
                   {(['pl', 'intl'] as const).map(r => (
                     <div key={r}
                       onClick={() => {
@@ -1228,68 +1235,68 @@ export default function Home() {
                         if (deliveryMethod === 'paczkomat') setForm({ ...form, address: '' })
                       }} role="button" tabIndex={0}
                       onKeyDown={e => e.key === 'Enter' && setShippingRegion(r)} aria-pressed={shippingRegion === r}
-                      className={`${styles.toggleBtn} ${shippingRegion === r ? styles.toggleBtnActive : ''}`}>
+                      className={`${toggleBtnCls} ${shippingRegion === r ? '!border-primary !bg-[var(--neon-dim)] shadow-[var(--glow-neon)]' : ''}`}>
                       {r === 'pl' ? `🇵🇱 ${t.order.step5.shippingRegionPl}` : `🇪🇺 ${t.order.step5.shippingRegionIntl}`}
                     </div>
                   ))}
                 </div>
 
-                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>{t.order.step5.deliveryEyebrow}</p>
-                <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
+                <p className={sectionEyebrowCls}>{t.order.step5.deliveryEyebrow}</p>
+                <div className="flex gap-2.5 mb-3">
                   {(['address', 'paczkomat'] as const).map(m => (
                     <div key={m}
                       onClick={() => setDeliveryMethod(m)} role="button" tabIndex={0}
                       onKeyDown={e => e.key === 'Enter' && setDeliveryMethod(m)} aria-pressed={deliveryMethod === m}
-                      className={`${styles.toggleBtn} ${deliveryMethod === m ? styles.toggleBtnActive : ''}`}>
+                      className={`${toggleBtnCls} ${deliveryMethod === m ? '!border-primary !bg-[var(--neon-dim)] shadow-[var(--glow-neon)]' : ''}`}>
                       {m === 'address' ? `📍 ${t.order.step5.deliveryAddressOption}` : `📦 ${t.order.step5.deliveryParcelOption}`}
                     </div>
                   ))}
                 </div>
 
                 {deliveryMethod === 'address' ? (
-                  <div className={styles.field}>
-                    <label className={styles.label}>{t.order.step5.addressLabel}</label>
+                  <div className={fieldCls}>
+                    <label className={labelCls}>{t.order.step5.addressLabel}</label>
                     <input value={form.address} onChange={e => setForm({...form, address: e.target.value})} placeholder={shippingRegion === 'intl' ? t.order.step5.addressIntlPlaceholder : t.order.step5.addressPlaceholder} />
-                    {shippingRegion === 'intl' && <p style={{ margin: '4px 0 0', fontSize: '11px', color: 'var(--text-faint)' }}>{t.order.step5.addressIntlNote}</p>}
+                    {shippingRegion === 'intl' && <p className="mt-1 mb-0 text-[11px] text-[var(--text-faint)]">{t.order.step5.addressIntlNote}</p>}
                   </div>
                 ) : shippingRegion === 'intl' ? (
                   // Darmowe, publiczne API InPost, którego używamy do podpowiedzi (patrz
                   // components/InpostAutocomplete.tsx), obejmuje tylko polskie paczkomaty — dla
                   // zagranicy klient wpisuje kod ręcznie (znajdzie go w aplikacji InPost/lokalnym
                   // odpowiedniku w swoim kraju).
-                  <div className={styles.field}>
-                    <label className={styles.label}>{t.order.step5.intlPaczkomatLabel}</label>
+                  <div className={fieldCls}>
+                    <label className={labelCls}>{t.order.step5.intlPaczkomatLabel}</label>
                     <input value={form.address} onChange={e => { setForm({...form, address: e.target.value}); setPaczkomatId(e.target.value) }} placeholder={t.order.step5.intlPaczkomatPlaceholder} />
-                    <p style={{ margin: '4px 0 0', fontSize: '11px', color: 'var(--text-faint)' }}>{t.order.step5.intlPaczkomatNote}</p>
+                    <p className="mt-1 mb-0 text-[11px] text-[var(--text-faint)]">{t.order.step5.intlPaczkomatNote}</p>
                     <a href="https://inpost.pl/znajdz-paczkomat" target="_blank" rel="noopener noreferrer"
-                      style={{ display: 'inline-block', marginTop: '8px', fontSize: '12px', color: 'var(--neon2)', textDecoration: 'none' }}>
+                      className="inline-block mt-2 text-xs text-[var(--neon2)] no-underline">
                       {t.order.step5.paczkomatMapLink}
                     </a>
                   </div>
                 ) : (
-                  <div className={styles.field}>
+                  <div className={fieldCls}>
                     {paczkomatConfirmed && form.address ? (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', background: 'var(--surface2)', border: '1px solid var(--neon)', borderRadius: 'var(--radius-lg)', padding: '12px 14px' }}>
+                      <div className="flex items-center justify-between gap-2.5 bg-[var(--surface2)] border border-primary rounded-[var(--radius-lg)] py-3 px-3.5">
                         <div>
-                          <p style={{ margin: '0 0 2px', fontSize: '11px', color: 'var(--text-muted)' }}>{t.order.step5.paczkomatSelected}</p>
-                          <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>📦 {form.address}</p>
+                          <p className="mb-0.5 text-[11px] text-muted-foreground">{t.order.step5.paczkomatSelected}</p>
+                          <p className="m-0 text-[13px] font-semibold text-foreground">📦 {form.address}</p>
                         </div>
-                        <button type="button" className={styles.btnSecondary} style={{ width: 'auto', padding: '8px 14px', fontSize: '12px', flexShrink: 0 }}
+                        <button type="button" className={`${btnSecondaryCls} w-auto py-2 px-3.5 text-xs shrink-0`}
                           onClick={() => { setPaczkomatConfirmed(false); setPaczkomatId(''); setForm({...form, address: ''}) }}>
                           {t.order.step5.paczkomatChange}
                         </button>
                       </div>
                     ) : process.env.NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN ? (
                       <>
-                        <label className={styles.label}>{t.order.step5.paczkomatPickLabel}</label>
+                        <label className={labelCls}>{t.order.step5.paczkomatPickLabel}</label>
                         <InpostGeowidget lang={lang} onSelect={p => { setPaczkomatId(p.id); setForm({...form, address: p.address}); setPaczkomatConfirmed(true) }} />
                       </>
                     ) : (
                       <>
-                        <label className={styles.label}>{t.order.step5.paczkomatManualLabel}</label>
+                        <label className={labelCls}>{t.order.step5.paczkomatManualLabel}</label>
                         <InpostAutocomplete lang={lang} onSelect={p => { setPaczkomatId(p.id); setForm({...form, address: p.address}); setPaczkomatConfirmed(true) }} />
                         <a href="https://inpost.pl/znajdz-paczkomat" target="_blank" rel="noopener noreferrer"
-                          style={{ display: 'inline-block', marginTop: '8px', fontSize: '12px', color: 'var(--neon2)', textDecoration: 'none' }}>
+                          className="inline-block mt-2 text-xs text-[var(--neon2)] no-underline">
                           {t.order.step5.paczkomatMapLink}
                         </a>
                       </>
@@ -1298,47 +1305,47 @@ export default function Home() {
                 )}
               </div>
 
-              <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '16px', marginTop: '8px' }}>
-                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>{t.order.step5.discountEyebrow}</p>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <input value={discountCode} onChange={e => { setDiscountCode(e.target.value.toUpperCase()); setDiscountMsg(null); setDiscountApplied(false); setDiscountPct(0) }} placeholder="" style={{ flex: 1, textTransform: 'uppercase', letterSpacing: '2px' }} disabled={discountApplied} />
-                  <button onClick={applyDiscount} disabled={!discountCode.trim() || discountApplied} className={styles.btnSecondary} style={{ width: 'auto', padding: '10px 18px', fontSize: '13px', flexShrink: 0 }}>{discountApplied ? t.order.step5.discountActive : t.order.step5.discountApply}</button>
+              <div className="bg-[var(--surface2)] border border-border rounded-[var(--radius-lg)] p-4 mt-2">
+                <p className={sectionEyebrowCls}>{t.order.step5.discountEyebrow}</p>
+                <div className="flex gap-2">
+                  <input value={discountCode} onChange={e => { setDiscountCode(e.target.value.toUpperCase()); setDiscountMsg(null); setDiscountApplied(false); setDiscountPct(0) }} placeholder="" className="flex-1 uppercase tracking-[2px]" disabled={discountApplied} />
+                  <button onClick={applyDiscount} disabled={!discountCode.trim() || discountApplied} className={`${btnSecondaryCls} w-auto py-2.5 px-[18px] text-[13px] shrink-0`}>{discountApplied ? t.order.step5.discountActive : t.order.step5.discountApply}</button>
                 </div>
-                {discountMsg && <p style={{ margin: '8px 0 0', fontSize: '12px', color: discountApplied ? 'var(--success)' : 'var(--error)' }}>{discountMsg}</p>}
+                {discountMsg && <p className={`mt-2 mb-0 text-xs ${discountApplied ? 'text-[var(--success)]' : 'text-[var(--error)]'}`}>{discountMsg}</p>}
               </div>
 
-              <div className={styles.priceSummary} style={{ marginTop: '8px' }}>
-                <p className={styles.summaryRow}><span>{cardObj.label}</span><strong>{t.order.step4.unitPriceLabel}: {unitPrice} zł</strong></p>
+              <div className="border border-border rounded-[var(--radius-lg)] py-4 px-5 mt-2 flex flex-col gap-2.5">
+                <p className={summaryRowCls}><span>{cardObj.label}</span><strong>{t.order.step4.unitPriceLabel}: {unitPrice} zł</strong></p>
                 {cardType === 'pvc' && activeFinishLines.map(l => (
-                  <p key={l.finish.id} className={styles.summaryRow}>
+                  <p key={l.finish.id} className={summaryRowCls}>
                     <span>{l.finish.label} × {l.qty}{l.nfcQty > 0 ? (lang === 'pl' ? ` (${l.nfcQty} z NFC)` : ` (${l.nfcQty} with NFC)`) : ''}</span>
                     <strong>{l.finish.id === 'standard' ? '—' : l.finish.id === 'zestaw_promocyjny' ? `${l.finish.price} zł${lang === 'pl' ? '/kpl.' : '/set'}` : `+${l.finish.price} zł/szt.`}</strong>
                   </p>
                 ))}
-                <p className={styles.summaryRow}><span>{t.order.step4.backLabel} — {backObj.label}</span><strong>{backObj.price === 0 ? t.order.step3.freeLabel : `+${backObj.price} zł`}</strong></p>
-                <p className={styles.summaryRow}><span>{t.order.step4.qtyLabel}</span><strong>× {quantity}</strong></p>
-                {hasDiscount && <p className={styles.summaryRow}><span>{t.order.step5.quantityDiscountLabel}</span><strong className={styles.discount}>−{savedAmount} zł</strong></p>}
-                {discountApplied && <p className={styles.summaryRow}><span>{t.order.step5.codeDiscountLabel(discountCode.toUpperCase(), discountPct)}</span><strong className={styles.discount}>−{discountSaved} zł</strong></p>}
-                {nfcActive && <p className={styles.summaryRow}><span>{lang === 'pl' ? `NFC/RFID (${nfcTotalQty} × ${nfcUnitPrice} zł)` : `NFC/RFID (${nfcTotalQty} × ${nfcUnitPrice} zł)`}</span><strong>{nfcTotal} zł</strong></p>}
-                {cardFinishAddonTotal > 0 && <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Dopłaty za wykończenie' : 'Finish add-ons'}</span><strong>{cardFinishAddonTotal} zł</strong></p>}
-                <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Wysyłka' : 'Shipping'}{shippingRegion === 'intl' ? (lang === 'pl' ? ' (zagranica)' : ' (abroad)') : ''}</span><strong>{SHIPPING_COST} zł</strong></p>
-                <div className={styles.summaryTotal}><span>{t.order.step5.payLabel}</span><strong className={styles.totalPrice}>{totalPrice} zł</strong></div>
-                <p className={styles.summaryNote}>{t.order.step5.payNote}</p>
+                <p className={summaryRowCls}><span>{t.order.step4.backLabel} — {backObj.label}</span><strong>{backObj.price === 0 ? t.order.step3.freeLabel : `+${backObj.price} zł`}</strong></p>
+                <p className={summaryRowCls}><span>{t.order.step4.qtyLabel}</span><strong>× {quantity}</strong></p>
+                {hasDiscount && <p className={summaryRowCls}><span>{t.order.step5.quantityDiscountLabel}</span><strong className="!text-[var(--success)]">−{savedAmount} zł</strong></p>}
+                {discountApplied && <p className={summaryRowCls}><span>{t.order.step5.codeDiscountLabel(discountCode.toUpperCase(), discountPct)}</span><strong className="!text-[var(--success)]">−{discountSaved} zł</strong></p>}
+                {nfcActive && <p className={summaryRowCls}><span>{lang === 'pl' ? `NFC/RFID (${nfcTotalQty} × ${nfcUnitPrice} zł)` : `NFC/RFID (${nfcTotalQty} × ${nfcUnitPrice} zł)`}</span><strong>{nfcTotal} zł</strong></p>}
+                {cardFinishAddonTotal > 0 && <p className={summaryRowCls}><span>{lang === 'pl' ? 'Dopłaty za wykończenie' : 'Finish add-ons'}</span><strong>{cardFinishAddonTotal} zł</strong></p>}
+                <p className={summaryRowCls}><span>{lang === 'pl' ? 'Wysyłka' : 'Shipping'}{shippingRegion === 'intl' ? (lang === 'pl' ? ' (zagranica)' : ' (abroad)') : ''}</span><strong>{SHIPPING_COST} zł</strong></p>
+                <div className="flex justify-between items-center pt-3 border-t border-border text-base"><span>{t.order.step5.payLabel}</span><strong className="!text-[var(--success)] !text-[22px]">{totalPrice} zł</strong></div>
+                <p className="text-xs text-[var(--text-faint)]">{t.order.step5.payNote}</p>
               </div>
 
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'var(--surface2)', border: `1px solid ${agreed ? 'rgba(0,229,160,0.3)' : 'var(--border)'}`, borderRadius: 'var(--radius)', padding: '14px', cursor: 'pointer' }} onClick={() => setAgreed(a => !a)}>
-                <div style={{ width: '20px', height: '20px', borderRadius: '4px', border: `2px solid ${agreed ? 'var(--success)' : 'var(--border)'}`, background: agreed ? 'var(--success)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px', transition: 'all .15s' }}>
-                  {agreed && <span style={{ color: '#0a0014', fontSize: '13px', fontWeight: 700 }}>✓</span>}
+              <div className="flex gap-3 items-start bg-[var(--surface2)] rounded-[var(--radius)] p-3.5 cursor-pointer" style={{ border: `1px solid ${agreed ? 'rgba(0,229,160,0.3)' : 'var(--border)'}` }} onClick={() => setAgreed(a => !a)}>
+                <div className="w-5 h-5 rounded flex items-center justify-center shrink-0 mt-px transition-all duration-150" style={{ border: `2px solid ${agreed ? 'var(--success)' : 'var(--border)'}`, background: agreed ? 'var(--success)' : 'transparent' }}>
+                  {agreed && <span className="text-[#0a0014] text-[13px] font-bold">✓</span>}
                 </div>
-                <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
-                  {t.order.step5.agreePrefix} <a href="/regulamin" target="_blank" style={{ color: 'var(--neon)' }} onClick={e => e.stopPropagation()}>{t.order.step5.agreeRegulamin}</a> {t.order.step5.agreeAnd} <a href="/polityka-prywatnosci" target="_blank" style={{ color: 'var(--neon)' }} onClick={e => e.stopPropagation()}>{t.order.step5.agreePrivacy}</a> {t.order.step5.agreeSuffix}
+                <p className="m-0 text-[13px] text-muted-foreground leading-[1.6]">
+                  {t.order.step5.agreePrefix} <a href="/regulamin" target="_blank" className="text-primary" onClick={e => e.stopPropagation()}>{t.order.step5.agreeRegulamin}</a> {t.order.step5.agreeAnd} <a href="/polityka-prywatnosci" target="_blank" className="text-primary" onClick={e => e.stopPropagation()}>{t.order.step5.agreePrivacy}</a> {t.order.step5.agreeSuffix}
                 </p>
               </div>
 
-              {error && <p className={styles.errorMsg}>{error}</p>}
-              <div className={styles.formButtons}>
-                <button className={styles.btnSecondary} onClick={() => setStep(4)}>{t.order.step5.back}</button>
-                <button className={styles.btnPrimary} onClick={handleSubmit} disabled={sending || !agreed} style={{ opacity: !agreed ? 0.5 : 1 }}>
+              {error && <p className={errorMsgCls}>{error}</p>}
+              <div className={formButtonsCls}>
+                <button className={btnSecondaryCls} onClick={() => setStep(4)}>{t.order.step5.back}</button>
+                <button className={btnPrimaryCls} onClick={handleSubmit} disabled={sending || !agreed}>
                   {sending ? t.order.step5.sending : t.order.step5.submit(totalPrice)}
                 </button>
               </div>
