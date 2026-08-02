@@ -6,7 +6,8 @@ import './globals.css'
 // brak dodatkowego round-tripu do fonts.googleapis.com. Trzeci font (Unbounded, tylko do nagłówków)
 // usunięty 2026-08-02 — brief marketingowy chciał max 2 fonty; wszystkie miejsca używające
 // --font-hero (patrz globals.css) już miały jawne font-weight:700, więc po podmianie na pogrubiony
-// Space Grotesk wygląd nagłówków zostaje mocny bez dodatkowych zmian w CSS.
+// Space Grotesk wygląd nagłówków zostaje mocny bez dodatkowych zmian w CSS. `shadcn init` (2026-08-02)
+// próbował dorzucić 3. font (Geist, przez --font-sans) — celowo usunięty, zostają te same 2 fonty.
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin', 'latin-ext'], weight: ['300', '400', '500', '700'], variable: '--font-body-raw', display: 'swap' })
 const spaceMono = Space_Mono({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-display-raw', display: 'swap' })
 

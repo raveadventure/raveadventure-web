@@ -1,10 +1,22 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   DESIGN TOKENS — architektura 3-warstwowa (primitive → semantic → component)
+   Marka jest CELOWO tylko ciemna (brak przełącznika jasny/ciemny, patrz
+   CLAUDE.md „Nienaruszalna paleta kolorów marki") — więc :root JEST już
+   docelowym (jedynym) motywem, bez osobnej klasy .dark.
+   ══════════════════════════════════════════════════════════════════════════ */
 :root {
+  /* ── PRIMITIVE — surowe wartości marki, nienaruszalne bez pytania Michała ── */
   --black: #080810;
   --surface: #0e0e1a;
   --surface2: #16162a;
-  --border: rgba(138, 92, 255, 0.18);
   --neon: #b44dff;
   --neon-dim: rgba(180, 77, 255, 0.15);
   --neon2: #00f0ff;
@@ -14,13 +26,19 @@
   --text-faint: rgba(240, 238, 255, 0.25);
   --success: #00e5a0;
   --error: #ff4d6d;
+  --warning: #f59e0b;
+  --border-raw: rgba(138, 92, 255, 0.18);
+
   /* next/font injects the actual font-family values as --font-*-raw via className on <html> (layout.tsx) */
   --font-display: var(--font-display-raw), 'Space Mono', monospace;
   --font-body: var(--font-body-raw), 'Space Grotesk', sans-serif;
   /* Było osobne 3. logo (Unbounded) tylko dla nagłówków — usunięte 2026-08-02, żeby zmieścić się
      w max 2 fontach z briefu marketingowego. --font-hero teraz = --font-body (Space Grotesk),
-     wszystkie miejsca które go używają już mają jawne font-weight:700, więc wygląd zostaje mocny. */
-  --font-hero: var(--font-body-raw), 'Space Grotesk', sans-serif;
+     wszystkie miejsca które go używają już mają jawne font-weight:700, więc wygląd zostaje mocny.
+     `shadcn init` chciał dorzucić Geist jako --font-sans (usunięte w layout.tsx) — --font-sans
+     mapowany tu z powrotem na --font-body, żeby klasa Tailwindowa `font-sans` (używana przez
+     wygenerowane komponenty shadcn) też renderowała się w Space Grotesk, nie w domyślnym systemowym. */
+  --font-sans: var(--font-body);
   --radius: 10px;
   --radius-lg: 16px;
 
@@ -31,6 +49,45 @@
   --glow-neon: 0 0 24px rgba(180,77,255,0.25);
   --glow-neon2: 0 0 24px rgba(0,240,255,0.22);
   --corner-size: 14px;
+
+  /* ── SEMANTIC — nazwy-po-przeznaczeniu shadcn/ui + Tailwind, mapowane na primitive wyżej.
+     Reguła: nowy kod (Tailwind/shadcn) sięga po te, nigdy po surowe hexy — patrz skill design-system. ── */
+  --background: var(--black);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface2);
+  --popover-foreground: var(--text);
+  --primary: var(--neon);
+  --primary-foreground: #0a0014;
+  --secondary: var(--surface2);
+  --secondary-foreground: var(--text);
+  --muted: var(--surface2);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--neon2);
+  --accent-foreground: #0a0014;
+  --destructive: var(--error);
+  --destructive-foreground: var(--text);
+  --border: var(--border-raw);
+  --input: var(--surface2);
+  --ring: var(--neon2);
+
+  /* Nieużywane jeszcze przez żaden realny komponent (brak wykresów/sidebara na stronie) —
+     zostają jako domyślne z `shadcn init`, do przetonowania pod markę dopiero gdy faktycznie
+     dojdzie komponent, który z nich korzysta (żeby nie zgadywać wartości na zapas). */
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--text);
+  --sidebar-primary: var(--neon);
+  --sidebar-primary-foreground: #0a0014;
+  --sidebar-accent: var(--surface2);
+  --sidebar-accent-foreground: var(--text);
+  --sidebar-border: var(--border-raw);
+  --sidebar-ring: var(--neon2);
 }
 
 html { scroll-behavior: smooth; }
@@ -96,3 +153,19 @@ button { font-family: var(--font-body); cursor: pointer; border: none; outline: 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* --radius-lg celowo POMINIĘTY tutaj — kolidowałby z istniejącym primitive --radius-lg: 16px
+   (:root wyżej), używanym w dziesiątkach miejsc w page.module.css/inline style ze starego kodu.
+   Reszta skali (sm/md/xl/2xl/3xl/4xl) to nowe nazwy, bez kolizji. */
+@theme inline { --font-heading: var(--font-sans); --font-sans: var(--font-sans); --color-sidebar-ring: var(--sidebar-ring); --color-sidebar-border: var(--sidebar-border); --color-sidebar-accent-foreground: var(--sidebar-accent-foreground); --color-sidebar-accent: var(--sidebar-accent); --color-sidebar-primary-foreground: var(--sidebar-primary-foreground); --color-sidebar-primary: var(--sidebar-primary); --color-sidebar-foreground: var(--sidebar-foreground); --color-sidebar: var(--sidebar); --color-chart-5: var(--chart-5); --color-chart-4: var(--chart-4); --color-chart-3: var(--chart-3); --color-chart-2: var(--chart-2); --color-chart-1: var(--chart-1); --color-ring: var(--ring); --color-input: var(--input); --color-border: var(--border); --color-destructive: var(--destructive); --color-accent-foreground: var(--accent-foreground); --color-accent: var(--accent); --color-muted-foreground: var(--muted-foreground); --color-muted: var(--muted); --color-secondary-foreground: var(--secondary-foreground); --color-secondary: var(--secondary); --color-primary-foreground: var(--primary-foreground); --color-primary: var(--primary); --color-popover-foreground: var(--popover-foreground); --color-popover: var(--popover); --color-card-foreground: var(--card-foreground); --color-card: var(--card); --color-foreground: var(--foreground); --color-background: var(--background); --radius-sm: calc(var(--radius) * 0.6); --radius-md: calc(var(--radius) * 0.8); --radius-xl: calc(var(--radius) * 1.4); --radius-2xl: calc(var(--radius) * 1.8); --radius-3xl: calc(var(--radius) * 2.2); --radius-4xl: calc(var(--radius) * 2.6); }
+
+/* Bez .dark — marka jest wyłącznie ciemna (patrz nagłówek sekcji tokenów wyżej), :root już jest
+   docelowym motywem, więc osobna klasa .dark z alternatywnymi wartościami byłaby martwym kodem. */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50; }
+  body {
+    @apply bg-background text-foreground; }
+  html {
+    @apply font-sans; } }
