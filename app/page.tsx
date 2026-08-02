@@ -492,11 +492,11 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <nav ref={navRef} className={styles.nav}>
-        <span className={styles.logo}>Rave<span>Adventure</span></span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+      <nav ref={navRef} className="fixed top-0 left-0 right-0 z-[100] flex justify-between items-center px-[5vw] py-4 max-md:px-[4vw] max-md:py-2.5 bg-[rgba(8,8,16,0.72)] backdrop-blur-[16px] border-b border-border shadow-[0_1px_0_rgba(180,77,255,0.08)]">
+        <span className="font-heading text-lg max-md:text-[15px] font-bold text-foreground tracking-[-0.3px]">Rave<span className="text-primary">Adventure</span></span>
+        <div className="flex items-center gap-3.5">
           <LangSwitch />
-          <a href="#order" className={styles.navCta}>{t.nav.orderCta}</a>
+          <a href="#order" className="text-[13px] max-md:text-xs font-semibold py-[9px] px-5 max-md:py-[7px] max-md:px-3.5 max-md:whitespace-nowrap border border-primary rounded-lg text-primary transition-all duration-200 hover:bg-[var(--neon-dim)] hover:shadow-[var(--glow-neon)] hover:-translate-y-px active:translate-y-0">{t.nav.orderCta}</a>
         </div>
       </nav>
 
@@ -530,39 +530,30 @@ export default function Home() {
       )}
 
       <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '14px',
-          flexWrap: 'wrap',
-          background: 'linear-gradient(90deg, rgba(180,77,255,0.14), rgba(0,240,255,0.10))',
-          borderBottom: '1px solid rgba(180,77,255,0.25)',
-          padding: '10px 5vw',
-          marginTop: SHOW_PROMO_BANNER ? undefined : `${navHeight}px`,
-        }}
+        className="flex items-center justify-center gap-3.5 flex-wrap bg-[linear-gradient(90deg,rgba(180,77,255,0.14),rgba(0,240,255,0.10))] border-b border-[rgba(180,77,255,0.25)] py-2.5 px-[5vw]"
+        style={{ marginTop: SHOW_PROMO_BANNER ? undefined : `${navHeight}px` }}
       >
-        <span style={{ fontSize: '13px', fontWeight: 600, color: '#f0eeff' }}>
+        <span className="text-[13px] font-semibold text-foreground">
           {lang === 'pl' ? 'Zapraszamy na nasze sociale' : 'Follow us on social media'}
         </span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <a href="https://www.instagram.com/rave_adventure_pl/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" style={{ display: 'inline-flex' }}>
+        <span className="flex items-center gap-2.5">
+          <a href="https://www.instagram.com/rave_adventure_pl/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="inline-flex">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b44dff" strokeWidth="2">
               <rect x="2" y="2" width="20" height="20" rx="5" />
               <circle cx="12" cy="12" r="4.2" />
               <circle cx="17.3" cy="6.7" r="1.1" fill="#b44dff" stroke="none" />
             </svg>
           </a>
-          <a href="https://www.facebook.com/raveadventurepl" target="_blank" rel="noopener noreferrer" aria-label="Facebook" style={{ display: 'inline-flex' }}>
+          <a href="https://www.facebook.com/raveadventurepl" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="inline-flex">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
               <path d="M13.8 21v-7.2h2.4l.4-2.8h-2.8v-1.8c0-.8.2-1.4 1.4-1.4h1.5V5.3C16.2 5.2 15.3 5 14.3 5c-2.1 0-3.5 1.3-3.5 3.6v2.4H8.4v2.8h2.4V21" fill="none" />
             </svg>
           </a>
         </span>
-        <span style={{ color: 'rgba(240,238,255,0.2)' }}>|</span>
-        <span style={{ fontSize: '12px', color: 'rgba(240,238,255,0.6)' }}>
-          ⏱ {lang === 'pl' ? 'Aktualny czas realizacji' : 'Current turnaround'}: <strong style={{ color: '#f0eeff' }}>{lang === 'pl' ? CURRENT_TURNAROUND_PL : CURRENT_TURNAROUND_EN}</strong>
+        <span className="text-[rgba(240,238,255,0.2)]">|</span>
+        <span className="text-xs text-[rgba(240,238,255,0.6)]">
+          ⏱ {lang === 'pl' ? 'Aktualny czas realizacji' : 'Current turnaround'}: <strong className="text-foreground">{lang === 'pl' ? CURRENT_TURNAROUND_PL : CURRENT_TURNAROUND_EN}</strong>
         </span>
       </div>
 
@@ -572,13 +563,23 @@ export default function Home() {
         <p className={`${styles.brandTagline} ${styles.shimmer}`}>The best memories from your adventure deserve a card</p>
       </div>
 
-      <nav className={styles.quickNav} aria-label={lang === 'pl' ? 'Szybka nawigacja' : 'Quick navigation'}>
-        <a href="#realizacje" className={styles.quickNavBtn}>{lang === 'pl' ? 'Realizacje' : 'Portfolio'}</a>
-        <a href="#prawdziwe-karty" className={styles.quickNavBtn}>{lang === 'pl' ? 'Prawdziwy produkt' : 'Real product'}</a>
-        <a href="#dlaczego-my" className={styles.quickNavBtn}>{lang === 'pl' ? 'Dlaczego my' : 'Why us'}</a>
-        <a href="#jak-zamowic" className={styles.quickNavBtn}>{lang === 'pl' ? 'Jak to działa' : 'How it works'}</a>
-        <a href="#order" className={styles.quickNavBtn}>{lang === 'pl' ? 'Zamówienie' : 'Order'}</a>
-        <a href="#faq-opinie" className={styles.quickNavBtn}>{lang === 'pl' ? 'FAQ i opinie' : 'FAQ & reviews'}</a>
+      <nav className="flex justify-center flex-wrap gap-2 py-3.5 px-[5vw] max-w-[1100px] mx-auto" aria-label={lang === 'pl' ? 'Szybka nawigacja' : 'Quick navigation'}>
+        {[
+          { href: '#realizacje', label: lang === 'pl' ? 'Realizacje' : 'Portfolio' },
+          { href: '#prawdziwe-karty', label: lang === 'pl' ? 'Prawdziwy produkt' : 'Real product' },
+          { href: '#dlaczego-my', label: lang === 'pl' ? 'Dlaczego my' : 'Why us' },
+          { href: '#jak-zamowic', label: lang === 'pl' ? 'Jak to działa' : 'How it works' },
+          { href: '#order', label: lang === 'pl' ? 'Zamówienie' : 'Order' },
+          { href: '#faq-opinie', label: lang === 'pl' ? 'FAQ i opinie' : 'FAQ & reviews' },
+        ].map(item => (
+          <a
+            key={item.href}
+            href={item.href}
+            className="text-[12.5px] font-bold text-primary py-[7px] px-4 rounded-full border border-[rgba(180,77,255,0.45)] bg-[var(--neon-dim)] no-underline whitespace-nowrap transition-all duration-150 hover:text-primary-foreground hover:border-primary hover:bg-primary hover:shadow-[0_0_16px_rgba(180,77,255,0.4)] active:scale-95"
+          >
+            {item.label}
+          </a>
+        ))}
       </nav>
 
       <section className={styles.hero}>
@@ -1348,21 +1349,21 @@ export default function Home() {
 
       <FaqReviews lang={lang} />
 
-      <footer className={styles.footer}>
-        <p className={styles.footerLogo}>RaveAdventure</p>
-        <p className={styles.footerSub}>kontakt@raveadventure.pl</p>
-        <div className={styles.footerLinks}>
-          <a href="https://www.instagram.com/rave_adventure_pl/" target="_blank" rel="noopener noreferrer" className={styles.footerLink}>Instagram</a>
-          <span className={styles.footerDot}>·</span>
-          <a href="https://www.facebook.com/raveadventurepl" target="_blank" rel="noopener noreferrer" className={styles.footerLink}>Facebook</a>
-          <span className={styles.footerDot}>·</span>
-          <a href="/regulamin" className={styles.footerLink}>{t.footer.regulamin}</a>
-          <span className={styles.footerDot}>·</span>
-          <a href="/polityka-prywatnosci" className={styles.footerLink}>{t.footer.polityka}</a>
-          <span className={styles.footerDot}>·</span>
-          <a href="/portfolio" className={styles.footerLink}>{t.footer.portfolio}</a>
+      <footer className="border-t border-border py-10 px-[5vw] text-center">
+        <p className="font-heading text-xl font-bold text-primary mb-1.5">RaveAdventure</p>
+        <p className="text-sm text-muted-foreground mb-4">kontakt@raveadventure.pl</p>
+        <div className="flex items-center justify-center gap-2.5 flex-wrap mb-3">
+          <a href="https://www.instagram.com/rave_adventure_pl/" target="_blank" rel="noopener noreferrer" className="text-[13px] text-muted-foreground no-underline transition-colors duration-150 hover:text-primary">Instagram</a>
+          <span className="text-[var(--text-faint)] text-xs">·</span>
+          <a href="https://www.facebook.com/raveadventurepl" target="_blank" rel="noopener noreferrer" className="text-[13px] text-muted-foreground no-underline transition-colors duration-150 hover:text-primary">Facebook</a>
+          <span className="text-[var(--text-faint)] text-xs">·</span>
+          <a href="/regulamin" className="text-[13px] text-muted-foreground no-underline transition-colors duration-150 hover:text-primary">{t.footer.regulamin}</a>
+          <span className="text-[var(--text-faint)] text-xs">·</span>
+          <a href="/polityka-prywatnosci" className="text-[13px] text-muted-foreground no-underline transition-colors duration-150 hover:text-primary">{t.footer.polityka}</a>
+          <span className="text-[var(--text-faint)] text-xs">·</span>
+          <a href="/portfolio" className="text-[13px] text-muted-foreground no-underline transition-colors duration-150 hover:text-primary">{t.footer.portfolio}</a>
         </div>
-        <p className={styles.footerCopy}>{t.footer.copy}</p>
+        <p className="text-xs text-[var(--text-faint)]">{t.footer.copy}</p>
       </footer>
     </main>
   )
