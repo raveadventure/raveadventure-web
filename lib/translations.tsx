@@ -71,6 +71,7 @@ export const T = {
     nav: { orderCta: 'Zamów kartę' },
     hero: {
       eyebrow: '// Wyjątkowa pamiątka',
+      brandTagline: 'Najlepsze wspomnienia z Twojej przygody zasługują na kartę.',
       title1: 'Zamień swoje zdjęcie z festiwalu',
       title2: 'w kolekcjonerską kartę.',
       sub: 'PVC jak karta bankomatowa, z Twoim zdjęciem, opisem i dodatkami (NFC, magnes, Top Holder).',
@@ -246,6 +247,7 @@ export const T = {
     nav: { orderCta: 'Order a card' },
     hero: {
       eyebrow: '// A unique keepsake',
+      brandTagline: 'The best memories from your adventure deserve a card.',
       title1: 'Turn your festival photo',
       title2: 'into a collectible card.',
       sub: 'PVC like an ATM card, with your photo, description, and add-ons (NFC, magnet, Top Holder).',

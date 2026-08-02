@@ -605,7 +605,7 @@ export default function Home() {
       <div className={styles.brandWrap}>
         <p className={`${styles.brandName} ${styles.shimmer}`}>Rave Adventure</p>
         <LogoEqualizer />
-        <p className={`${styles.brandTagline} ${styles.shimmer}`}>The best memories from your adventure deserve a card</p>
+        <p className={`${styles.brandTagline} ${styles.shimmer}`}>{t.hero.brandTagline}</p>
       </div>
 
       <nav className="flex justify-center flex-wrap gap-2 py-3.5 px-[5vw] max-w-[1100px] mx-auto" aria-label={lang === 'pl' ? 'Szybka nawigacja' : 'Quick navigation'}>
