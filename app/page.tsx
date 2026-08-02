@@ -602,12 +602,6 @@ export default function Home() {
         </span>
       </div>
 
-      <div className={styles.brandWrap}>
-        <p className={`${styles.brandName} ${styles.shimmer}`}>Rave Adventure</p>
-        <LogoEqualizer />
-        <p className={`${styles.brandTagline} ${styles.shimmer}`}>{t.hero.brandTagline}</p>
-      </div>
-
       <nav className="flex justify-center flex-wrap gap-2 py-3.5 px-[5vw] max-w-[1100px] mx-auto" aria-label={lang === 'pl' ? 'Szybka nawigacja' : 'Quick navigation'}>
         {[
           { href: '#realizacje', label: lang === 'pl' ? 'Realizacje' : 'Portfolio' },
@@ -694,6 +688,17 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Wordmark + LogoEqualizer + tagline — świadomie umieszczone PO Hero (nie przed nim),
+          żeby prawdziwy H1/CTA był pierwszą rzeczą, jaką widzi odwiedzający (priorytet #1 briefu
+          marketingowego), nie zablokowany przez dekoracyjny "billboard" z nazwą marki. Sama
+          treść/animacja LogoEqualizer zostaje nietknięta — to świadomy element z osobistym
+          znaczeniem (fale/equalizer/karta/strzałka), tylko zmieniona pozycja w kolejności strony. */}
+      <div className={styles.brandWrap}>
+        <p className={`${styles.brandName} ${styles.shimmer}`}>Rave Adventure</p>
+        <LogoEqualizer />
+        <p className={`${styles.brandTagline} ${styles.shimmer}`}>{t.hero.brandTagline}</p>
+      </div>
 
       <AdShowcase lang={lang} />
       <PortfolioCarousel lang={lang} />
