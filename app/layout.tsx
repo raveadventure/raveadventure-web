@@ -1,15 +1,19 @@
 import type { Metadata } from 'next'
-import { Space_Grotesk, Space_Mono } from 'next/font/google'
+import { Orbitron, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 
 // next/font self-hostuje fonty (bez blokującego @import z Google Fonts) — szybszy pierwszy render,
-// brak dodatkowego round-tripu do fonts.googleapis.com. Trzeci font (Unbounded, tylko do nagłówków)
-// usunięty 2026-08-02 — brief marketingowy chciał max 2 fonty; wszystkie miejsca używające
-// --font-hero (patrz globals.css) już miały jawne font-weight:700, więc po podmianie na pogrubiony
-// Space Grotesk wygląd nagłówków zostaje mocny bez dodatkowych zmian w CSS. `shadcn init` (2026-08-02)
-// próbował dorzucić 3. font (Geist, przez --font-sans) — celowo usunięty, zostają te same 2 fonty.
-const spaceGrotesk = Space_Grotesk({ subsets: ['latin', 'latin-ext'], weight: ['300', '400', '500', '700'], variable: '--font-body-raw', display: 'swap' })
-const spaceMono = Space_Mono({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-display-raw', display: 'swap' })
+// brak dodatkowego round-tripu do fonts.googleapis.com.
+//
+// Redesign 2026-08-02 (Faza 0, kierunek wizualny wg skilla frontend-design): Space Grotesk/Space
+// Mono zamienione na Orbitron (nagłówki — agresywny, geometryczny, bliżej estetyki flyerów
+// techno/HUD niż "tech startup", które sugerowała baza ui-ux-pro-max dla Space Grotesk) +
+// JetBrains Mono (WSZYSTKO inne — tekst, etykiety/eyebrow, przyciski). To zastępuje jednocześnie
+// dawną rolę Space Grotesk (body) i Space Mono (etykiety) jednym fontem, więc nadal dokładnie
+// 2 fonty łącznie, zgodnie z briefem. Mapowanie ról w app/globals.css (--font-hero/--font-body/
+// --font-display wszystkie teraz przez te dwie zmienne).
+const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '800', '900'], variable: '--font-heading-raw', display: 'swap' })
+const jetbrainsMono = JetBrains_Mono({ subsets: ['latin', 'latin-ext'], weight: ['400', '500', '700'], variable: '--font-mono-raw', display: 'swap' })
 
 // Ten sam fallback co w app/api/send-order i send-design — jedno źródło prawdy dla
 // produkcyjnego adresu, potrzebne żeby metadataBase poprawnie budował bezwzględne URL-e
@@ -57,7 +61,7 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pl" className={`${spaceGrotesk.variable} ${spaceMono.variable}`}>
+    <html lang="pl" className={`${orbitron.variable} ${jetbrainsMono.variable}`}>
       <head>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>

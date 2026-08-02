@@ -29,15 +29,18 @@
   --warning: #f59e0b;
   --border-raw: rgba(138, 92, 255, 0.18);
 
-  /* next/font injects the actual font-family values as --font-*-raw via className on <html> (layout.tsx) */
-  --font-display: var(--font-display-raw), 'Space Mono', monospace;
-  --font-body: var(--font-body-raw), 'Space Grotesk', sans-serif;
-  /* Było osobne 3. logo (Unbounded) tylko dla nagłówków — usunięte 2026-08-02, żeby zmieścić się
-     w max 2 fontach z briefu marketingowego. --font-hero teraz = --font-body (Space Grotesk),
-     wszystkie miejsca które go używają już mają jawne font-weight:700, więc wygląd zostaje mocny.
-     `shadcn init` chciał dorzucić Geist jako --font-sans (usunięte w layout.tsx) — --font-sans
-     mapowany tu z powrotem na --font-body, żeby klasa Tailwindowa `font-sans` (używana przez
-     wygenerowane komponenty shadcn) też renderowała się w Space Grotesk, nie w domyślnym systemowym. */
+  /* next/font injects the actual font-family values as --font-*-raw via className on <html> (layout.tsx).
+     Redesign 2026-08-02: Orbitron (nagłówki) + JetBrains Mono (dosłownie wszystko inne — body,
+     etykiety/eyebrow, przyciski) — świadomie zastępuje Space Grotesk/Space Mono, nadal dokładnie
+     2 fonty. --font-display (dawniej osobna rola dla "// eyebrow") i --font-body wskazują teraz na
+     ten sam JetBrains Mono — rozróżnienie zostaje przez rozmiar/kolor/letter-spacing w miejscach
+     użycia, nie przez osobny krój. */
+  --font-display: var(--font-mono-raw), 'JetBrains Mono', monospace;
+  --font-body: var(--font-mono-raw), 'JetBrains Mono', monospace;
+  --font-hero: var(--font-heading-raw), 'Orbitron', sans-serif;
+  /* `shadcn init` chciał dorzucić Geist jako --font-sans (usunięte w layout.tsx) — --font-sans
+     mapowany tu na --font-body (JetBrains Mono), żeby klasa Tailwindowa `font-sans` (używana przez
+     wygenerowane komponenty shadcn) też renderowała się w naszym foncie, nie domyślnym systemowym. */
   --font-sans: var(--font-body);
   --radius: 10px;
   --radius-lg: 16px;
