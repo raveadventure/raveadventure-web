@@ -105,7 +105,11 @@
 .lightboxTabs { display: flex; gap: 4px; margin-bottom: 18px; background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 4px; }
 .lightboxTab { flex: 1; padding: 10px 16px; border-radius: 10px; border: none; background: none; color: var(--text-muted); font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font-body); display: flex; align-items: center; justify-content: center; gap: 6px; transition: color .15s; }
 .lightboxTabActive { background: var(--neon); color: #0a0014 !important; box-shadow: 0 2px 12px rgba(180,77,255,0.45); }
-.lightboxImg { width: 100%; border-radius: 12px; display: block; }
+/* Ramka jak u karty (638:1011) — oryginalne zdjęcie referencyjne bywa dużo wyższe/szersze niż
+   karta, więc bez tego podgląd "Oryginał" rozciągał modal do ogromnej wysokości. object-fit:cover
+   przycina proporcjonalnie górę/dół (albo boki, dla szerokich zdjęć) do tego samego kadru co karta —
+   dla widoku "Karta" (już dokładnie w tej proporcji) to no-op, nic się nie przycina. */
+.lightboxImg { width: 100%; aspect-ratio: 638 / 1011; object-fit: cover; border-radius: 12px; display: block; }
 .lightboxName { font-size: 15px; font-weight: 600; color: var(--text); margin: 14px 0 4px; }
 .lightboxDesc { font-size: 13px; color: var(--text-muted); margin: 0; }
 
