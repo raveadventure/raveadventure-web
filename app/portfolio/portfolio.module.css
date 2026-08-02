@@ -39,14 +39,14 @@
 
 /* ── SIATKA KOMPAKTOWA (małe miniatury — kliknięcie od razu otwiera podgląd) ── */
 .compactGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; }
-.compactThumb { position: relative; aspect-ratio: 0.7; border-radius: 9px; overflow: hidden; cursor: pointer; border: 1px solid var(--border); transition: transform .15s, border-color .15s; background: var(--surface2); }
+.compactThumb { position: relative; aspect-ratio: 638 / 1011; border-radius: 9px; overflow: hidden; cursor: pointer; border: 1px solid var(--border); transition: transform .15s, border-color .15s; background: var(--surface2); }
 .compactThumb:hover { border-color: var(--neon); transform: translateY(-2px); }
 .compactThumb:active { transform: translateY(0) scale(0.97); }
 .compactThumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .compactName { position: absolute; bottom: 0; left: 0; right: 0; padding: 4px 6px; font-size: 10px; color: var(--text); background: linear-gradient(0deg, rgba(8,8,16,0.85), transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .cardPairWrap { display: flex; flex-direction: column; gap: 12px; }
-.cardPair { position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 0.7; background: var(--surface2); }
+.cardPair { position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 638 / 1011; background: var(--surface2); }
 
 .cardThumb { position: absolute; inset: 0; cursor: pointer; transition: opacity .3s, transform .3s; }
 .cardThumbMain { z-index: 1; }
