@@ -31,7 +31,7 @@ export default function WhyUs({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
   const t = TXT[lang]
 
   return (
-    <section id="dlaczego-my" style={{ padding: '32px 5vw 40px', maxWidth: '1100px', margin: '0 auto', textAlign: 'center', scrollMarginTop: 'var(--nav-height, 70px)' }}>
+    <section id="dlaczego-my" className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-10 text-center [scroll-margin-top:var(--nav-height,70px)]">
       <style>{`
         .whyUsGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; text-align: left; }
         @media (max-width: 640px) {
@@ -66,18 +66,18 @@ export default function WhyUs({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
           font-size: 20px;
         }
       `}</style>
-      <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: 'var(--neon)', letterSpacing: '2px', marginBottom: '12px' }}>{t.eyebrow}</p>
-      <h2 style={{ fontFamily: "'Space Mono', monospace", fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 700, color: 'var(--text)', margin: '0 0 28px' }}>{t.title}</h2>
+      <p className="font-mono text-xs tracking-[2px] text-primary mb-3">{t.eyebrow}</p>
+      <h2 className="font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground mb-7">{t.title}</h2>
 
       <div className="whyUsGrid">
         {t.items.map((item, i) => (
           <div key={i} className="whyUsCard" style={{ '--accent': ACCENTS[i % ACCENTS.length] } as React.CSSProperties}>
             <div className="whyUsBar" />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+            <div className="mb-2.5 flex items-center gap-3">
               <div className="whyUsIcon">{item.icon}</div>
-              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--text)' }}>{item.heading}</h3>
+              <h3 className="m-0 text-[15px] font-bold text-foreground">{item.heading}</h3>
             </div>
-            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{item.detail}</p>
+            <p className="m-0 text-[13px] leading-[1.6] text-muted-foreground">{item.detail}</p>
           </div>
         ))}
       </div>
