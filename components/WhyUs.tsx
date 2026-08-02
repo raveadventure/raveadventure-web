@@ -31,7 +31,7 @@ export default function WhyUs({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
   const t = TXT[lang]
 
   return (
-    <section id="dlaczego-my" className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-10 text-center [scroll-margin-top:var(--nav-height,70px)]">
+    <section id="dlaczego-my" data-reveal className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-10 text-center [scroll-margin-top:var(--nav-height,70px)]">
       <style>{`
         .whyUsGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; text-align: left; }
         @media (max-width: 640px) {

@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { isSupabasePlaceholder, mockListReviews, mockInsertReview, mockUploadReviewFile, compressReviewPhoto, ReviewItem } from '../lib/reviewsLocalMock'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion'
 
 const TXT = {
   pl: {
@@ -100,29 +101,19 @@ function Stars({ value, onChange }: { value: number; onChange?: (v: number) => v
 type FaqItem = { q: string; a: string }
 
 function FaqAccordion({ items }: { items: FaqItem[] }) {
-  const [openIdx, setOpenIdx] = useState<number | null>(null)
   return (
-    <div className="flex flex-col gap-2.5">
-      {items.map((item, i) => {
-        const open = openIdx === i
-        return (
-          <div key={i} className="overflow-hidden rounded-[var(--radius)] border border-border bg-card">
-            <button
-              onClick={() => setOpenIdx(open ? null : i)}
-              className="flex w-full items-center gap-3 bg-transparent border-none px-[18px] py-4 text-sm font-semibold text-left text-foreground cursor-pointer font-[inherit]"
-            >
-              <span className="flex-1">{item.q}</span>
-              <span className={`shrink-0 text-sm text-primary transition-transform duration-250 ease-[cubic-bezier(0.23,1,0.32,1)] ${open ? 'rotate-180' : ''}`}>▾</span>
-            </button>
-            <div className="grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]" style={{ gridTemplateRows: open ? '1fr' : '0fr' }}>
-              <div className="min-h-0 overflow-hidden">
-                <p className="m-0 px-[18px] pb-4 text-[13px] leading-[1.7] text-muted-foreground">{item.a}</p>
-              </div>
-            </div>
-          </div>
-        )
-      })}
-    </div>
+    <Accordion type="single" collapsible className="flex flex-col gap-2.5">
+      {items.map((item, i) => (
+        <AccordionItem key={i} value={String(i)} className="overflow-hidden rounded-[var(--radius)] border border-border bg-card px-[18px]">
+          <AccordionTrigger className="text-sm font-semibold text-foreground hover:no-underline focus-visible:ring-0 **:data-[slot=accordion-trigger-icon]:text-primary">
+            {item.q}
+          </AccordionTrigger>
+          <AccordionContent className="pb-4 text-[13px] leading-[1.7] text-muted-foreground">
+            {item.a}
+          </AccordionContent>
+        </AccordionItem>
+      ))}
+    </Accordion>
   )
 }
 
@@ -192,7 +183,7 @@ export default function FaqReviews({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
   }
 
   return (
-    <section id="faq-opinie" className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-14 [scroll-margin-top:var(--nav-height,70px)]">
+    <section id="faq-opinie" data-reveal className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-14 [scroll-margin-top:var(--nav-height,70px)]">
       <p className="mb-3 text-center font-mono text-xs tracking-[2px] text-primary">{t.eyebrow}</p>
       <h2 className="mb-8 text-center font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground">{t.title}</h2>
 

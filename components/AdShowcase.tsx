@@ -36,7 +36,7 @@ export default function AdShowcase({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
   }
 
   return (
-    <section className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-2 text-center">
+    <section data-reveal className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-2 text-center">
       <p className="font-mono text-xs tracking-[2px] text-primary mb-3">{t.eyebrow}</p>
       <h2 className="font-heading text-[clamp(20px,3vw,28px)] font-bold text-foreground mb-5">{t.title}</h2>
 

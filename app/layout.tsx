@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Orbitron, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
+import SmoothScrollProvider from '../components/SmoothScrollProvider'
 
 // next/font self-hostuje fonty (bez blokującego @import z Google Fonts) — szybszy pierwszy render,
 // brak dodatkowego round-tripu do fonts.googleapis.com.
@@ -65,7 +66,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>
-      <body>{children}</body>
+      <body>
+        <SmoothScrollProvider />
+        {children}
+      </body>
     </html>
   )
 }

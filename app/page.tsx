@@ -1,5 +1,8 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { supabase } from '../lib/supabase'
 import { isSupabasePlaceholder, mockInsertOrder, mockUpdateOrder } from '../lib/ordersLocalMock'
 import styles from './page.module.css'
@@ -13,6 +16,9 @@ import InpostAutocomplete from '../components/InpostAutocomplete'
 import HeroCardAnimation from '../components/HeroCardAnimation'
 import LogoEqualizer from '../components/LogoEqualizer'
 import { T, CARD_TYPES_I18N, FRONT_THEMES_I18N, BACK_OPTIONS_I18N, CARD_FINISH_I18N, Lang } from '../lib/translations'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../components/ui/accordion'
+
+gsap.registerPlugin(useGSAP, ScrollTrigger)
 
 // Baner promocyjny nad stroną — wyłączony między eventami. Włącz z powrotem (i zaktualizuj
 // tekst/kod/datę) gdy ruszy kolejna promocja powiązana z festiwalem.
@@ -220,6 +226,28 @@ export default function Home() {
   // Prosty licznik odwiedzin — jedno zdarzenie na wejście na stronę, do wglądu w panelu admina.
   useEffect(() => {
     fetch('/api/track-visit', { method: 'POST' }).catch(() => {})
+  }, [])
+
+  // Spójny reveal przy scrollu dla wszystkich głównych sekcji strony (każda oznaczona atrybutem
+  // data-reveal) — zastępuje pojedynczy, ręczny IntersectionObserver, który wcześniej istniał
+  // tylko w PortfolioCarousel.tsx (przeniesiony tam na osobny ScrollTrigger, bo dotyczy tylko
+  // jednej karty, nie pasuje do batch()). useGSAP (nie zwykły useEffect) celowo — działa w
+  // useLayoutEffect pod spodem, więc gsap.set() poniżej chowa sekcje PRZED pierwszym malowaniem
+  // (bez tego byłby widoczny błysk w pełni widocznej treści przed ukryciem jej przez JS).
+  useGSAP(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const targets = gsap.utils.toArray<HTMLElement>('[data-reveal]')
+    gsap.set(targets, { opacity: 0, y: 28 })
+    ScrollTrigger.batch(targets, {
+      start: 'top 85%',
+      onEnter: batch => gsap.to(batch, { opacity: 1, y: 0, duration: 0.7, stagger: 0.12, ease: 'power2.out', overwrite: true }),
+    })
+    // Sekcje niżej (portfolio, opinie...) doczytują dane z Supabase asynchronicznie i mogą
+    // zmienić wysokość po pierwszym pomiarze — odśwież progi triggerów, gdy strona w pełni
+    // doładuje (obrazki, fetch), żeby "top 85%" nie było liczone względem nieaktualnego layoutu.
+    const onLoad = () => ScrollTrigger.refresh()
+    window.addEventListener('load', onLoad)
+    return () => window.removeEventListener('load', onLoad)
   }, [])
 
   // Po zmianie kroku formularza przewiń do paska postępu (nie zostawiaj klienta na dole
@@ -673,7 +701,7 @@ export default function Home() {
 
       <WhyUs lang={lang} />
 
-      <section className={styles.section} id="jak-zamowic">
+      <section className={styles.section} id="jak-zamowic" data-reveal>
         <div className={styles.mobileCollapse}>
           <button type="button" className={styles.mobileCollapseSummary} onClick={() => setHowItWorksOpen(o => !o)}>
             <p className={styles.sectionEye} style={{ margin: 0 }}>{t.howItWorks.eyebrow}</p>
@@ -696,7 +724,13 @@ export default function Home() {
 
         <div>
           <p className={styles.sectionEye} style={{ margin: '0 0 12px' }}>{t.options.eyebrow}</p>
-          <div className="flex flex-col gap-2">
+          <Accordion
+            type="single"
+            collapsible
+            className="flex flex-col gap-2"
+            value={openOptionIdx !== null ? String(openOptionIdx) : ''}
+            onValueChange={v => setOpenOptionIdx(v === '' ? null : Number(v))}
+          >
             {[
               ...t.options.cards,
               {
@@ -708,36 +742,29 @@ export default function Home() {
                 tags: ['NFC', 'RFID'],
                 priceTag: '+15 zł',
               },
-            ].map((o, i) => {
-              const isOpen = openOptionIdx === i
-              return (
-                <div key={i} id={`option-item-${i}`} className="glassPanel rounded-[10px] overflow-hidden [scroll-margin-top:var(--nav-height,70px)]">
-                  <button
-                    type="button"
-                    onClick={() => setOpenOptionIdx(isOpen ? null : i)}
-                    className="w-full flex items-center gap-2.5 bg-transparent border-0 py-3 px-3.5 cursor-pointer text-left [font-family:inherit]"
-                  >
-                    <span className="text-[17px] shrink-0">{o.icon}</span>
-                    <p className="m-0 text-[13px] font-semibold text-foreground flex-1">{o.title}</p>
-                    <span className="text-[13px] text-primary shrink-0 transition-transform duration-[250ms] ease-[cubic-bezier(0.23,1,0.32,1)]" style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }}>▾</span>
-                  </button>
-                  <div style={{ display: 'grid', gridTemplateRows: isOpen ? '1fr' : '0fr', transition: 'grid-template-rows 300ms cubic-bezier(0.23, 1, 0.32, 1)' }}>
-                    <div className="overflow-hidden min-h-0">
-                      <div className="px-3.5 pb-3.5">
-                        <p className="mb-2 text-xs text-muted-foreground leading-[1.6]">{o.desc}</p>
-                        <div className="flex flex-wrap gap-1">
-                          {o.tags.map(tag => (
-                            <span key={tag} className="text-[10px] py-[3px] px-2.5 rounded-full bg-white/5 border border-border text-muted-foreground">{tag}</span>
-                          ))}
-                          {'priceTag' in o && o.priceTag && <span className={styles.priceTagSm}>{o.priceTag}</span>}
-                        </div>
-                      </div>
-                    </div>
+            ].map((o, i) => (
+              <AccordionItem
+                key={i}
+                id={`option-item-${i}`}
+                value={String(i)}
+                className="glassPanel rounded-[10px] overflow-hidden [scroll-margin-top:var(--nav-height,70px)] px-3.5"
+              >
+                <AccordionTrigger className="gap-2.5 text-[13px] font-semibold text-foreground hover:no-underline focus-visible:ring-0 **:data-[slot=accordion-trigger-icon]:text-primary">
+                  <span className="text-[17px] shrink-0">{o.icon}</span>
+                  <span className="flex-1">{o.title}</span>
+                </AccordionTrigger>
+                <AccordionContent className="pb-3.5 text-xs text-muted-foreground leading-[1.6]">
+                  <p className="mb-2 text-xs text-muted-foreground leading-[1.6]">{o.desc}</p>
+                  <div className="flex flex-wrap gap-1">
+                    {o.tags.map(tag => (
+                      <span key={tag} className="text-[10px] py-[3px] px-2.5 rounded-full bg-white/5 border border-border text-muted-foreground">{tag}</span>
+                    ))}
+                    {'priceTag' in o && o.priceTag && <span className={styles.priceTagSm}>{o.priceTag}</span>}
                   </div>
-                </div>
-              )
-            })}
-          </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
 
           <div className="glassPanel rounded-[10px] mt-2.5 px-3.5 py-3 flex gap-2.5 items-start">
             <span className="text-sm shrink-0">⚙</span>
@@ -746,7 +773,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className={styles.section} id="order">
+      <section className={styles.section} id="order" data-reveal>
         <p className={styles.sectionEye}>{t.order.eyebrow}</p>
         <h2 className={styles.sectionTitle}>{t.order.title}</h2>
 

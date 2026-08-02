@@ -1,6 +1,10 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { isSupabasePlaceholder, PORTFOLIO_LOCAL_MOCK } from '../lib/portfolioLocalMock'
+
+gsap.registerPlugin(ScrollTrigger)
 
 type Item = { id: string; name: string; card_url: string; theme: string }
 
@@ -87,17 +91,19 @@ export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' 
 
   useEffect(() => {
     if (!sectionRef.current) return
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) { setGlowIn(true); observer.disconnect() }
-    }, { threshold: 0.3 })
-    observer.observe(sectionRef.current)
-    return () => observer.disconnect()
+    const trigger = ScrollTrigger.create({
+      trigger: sectionRef.current,
+      start: 'top 80%',
+      once: true,
+      onEnter: () => setGlowIn(true),
+    })
+    return () => trigger.kill()
   }, [])
 
   if (items.length === 0) return null
 
   return (
-    <section ref={sectionRef} id="realizacje" className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-10 [scroll-margin-top:var(--nav-height,70px)]">
+    <section ref={sectionRef} id="realizacje" data-reveal className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-10 [scroll-margin-top:var(--nav-height,70px)]">
       <style>{`
         @keyframes raPortfolioGlowIn {
           0% { box-shadow: 0 0 0px rgba(180,77,255,0); }

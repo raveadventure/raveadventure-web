@@ -28,7 +28,7 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
   const [lightbox, setLightbox] = useState<string | null>(null)
 
   return (
-    <section id="prawdziwe-karty" className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-10 text-center [scroll-margin-top:var(--nav-height,70px)]">
+    <section id="prawdziwe-karty" data-reveal className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-10 text-center [scroll-margin-top:var(--nav-height,70px)]">
       <p className="font-mono text-xs tracking-[2px] text-primary mb-3">{t.eyebrow}</p>
       <h2 className="font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground mb-2.5">{t.title}</h2>
       <p className="mx-auto mb-7 max-w-[560px] text-sm leading-[1.7] text-muted-foreground">{t.sub}</p>

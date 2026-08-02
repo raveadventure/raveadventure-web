@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { isSupabasePlaceholder, PORTFOLIO_LOCAL_MOCK } from '../../lib/portfolioLocalMock'
 import styles from './portfolio.module.css'
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../../components/ui/dialog'
+import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs'
 
 const THEMES = [
   { id: 'all',       label: 'Wszystkie' },
@@ -83,12 +85,6 @@ export default function PortfolioPage() {
       setLoading(false)
     }
     fetchPortfolio()
-  }, [])
-
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightbox(null) }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
   }, [])
 
   const filtered = filter === 'all' ? items : items.filter(i => i.theme === filter)
@@ -208,34 +204,26 @@ export default function PortfolioPage() {
 
       {/* LIGHTBOX */}
       {lightbox && (
-        <div className={styles.lightboxOverlay} onClick={() => setLightbox(null)}>
-          <div className={styles.lightboxContent} onClick={e => e.stopPropagation()}>
+        <Dialog open onOpenChange={open => { if (!open) setLightbox(null) }}>
+          <DialogContent className={`${styles.lightboxContent} block !fixed !top-1/2 !left-1/2 !-translate-x-1/2 !-translate-y-1/2`} showCloseButton={false}>
             <button className={styles.lightboxClose} onClick={() => setLightbox(null)} aria-label="Zamknij">✕</button>
-            <div className={styles.lightboxTabs}>
-              {lightbox.item.original_url && (
-                <button
-                  className={`${styles.lightboxTab} ${lightbox.view === 'original' ? styles.lightboxTabActive : ''}`}
-                  onClick={() => setLightbox({ ...lightbox, view: 'original' })}
-                >
-                  📷 Oryginał
-                </button>
-              )}
-              <button
-                className={`${styles.lightboxTab} ${lightbox.view === 'card' ? styles.lightboxTabActive : ''}`}
-                onClick={() => setLightbox({ ...lightbox, view: 'card' })}
-              >
-                🎴 Karta
-              </button>
-            </div>
+            <Tabs value={lightbox.view} onValueChange={v => setLightbox({ ...lightbox, view: v as 'original' | 'card' })}>
+              <TabsList className={`${styles.lightboxTabs} h-auto w-full bg-[var(--surface2)] p-1`}>
+                {lightbox.item.original_url && (
+                  <TabsTrigger value="original" className={`${styles.lightboxTab} ${lightbox.view === 'original' ? styles.lightboxTabActive : ''}`}>📷 Oryginał</TabsTrigger>
+                )}
+                <TabsTrigger value="card" className={`${styles.lightboxTab} ${lightbox.view === 'card' ? styles.lightboxTabActive : ''}`}>🎴 Karta</TabsTrigger>
+              </TabsList>
+            </Tabs>
             <img
               src={lightbox.view === 'card' ? lightbox.item.card_url : (lightbox.item.original_url || lightbox.item.card_url)}
               alt={lightbox.item.name}
               className={styles.lightboxImg}
             />
-            <p className={styles.lightboxName}>{lightbox.item.name}</p>
-            {lightbox.item.description && <p className={styles.lightboxDesc}>{lightbox.item.description}</p>}
-          </div>
-        </div>
+            <DialogTitle className={styles.lightboxName}>{lightbox.item.name}</DialogTitle>
+            {lightbox.item.description && <DialogDescription className={styles.lightboxDesc}>{lightbox.item.description}</DialogDescription>}
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   )
