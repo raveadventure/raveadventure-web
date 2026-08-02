@@ -663,12 +663,12 @@ export default function Home() {
           </button>
           <div className={`${styles.mobileCollapseBody} ${howItWorksOpen ? styles.mobileCollapseBodyOpen : ''}`}>
             <div className={styles.mobileCollapseBodyInner}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px', marginBottom: '24px' }}>
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-2.5 mb-6">
                 {t.howItWorks.steps.map(s => (
-                  <div key={s.n} className={styles.infoBlock}>
-                    <span style={{ fontFamily: 'var(--font-hero)', fontSize: '11px', fontWeight: 700, color: 'var(--neon)', letterSpacing: '1px' }}>{s.n}</span>
-                    <p style={{ margin: '5px 0 2px', fontSize: '12px', fontWeight: 600, color: 'var(--text)' }}>{s.t}</p>
-                    <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.5' }}>{s.d}</p>
+                  <div key={s.n} className="glassPanel rounded-[10px] px-3.5 py-3">
+                    <span className="font-heading text-[11px] font-bold text-primary tracking-[1px]">{s.n}</span>
+                    <p className="mt-[5px] mb-0.5 text-xs font-semibold text-foreground">{s.t}</p>
+                    <p className="m-0 text-[11px] text-muted-foreground leading-[1.5]">{s.d}</p>
                   </div>
                 ))}
               </div>
@@ -678,7 +678,7 @@ export default function Home() {
 
         <div>
           <p className={styles.sectionEye} style={{ margin: '0 0 12px' }}>{t.options.eyebrow}</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div className="flex flex-col gap-2">
             {[
               ...t.options.cards,
               {
@@ -693,23 +693,23 @@ export default function Home() {
             ].map((o, i) => {
               const isOpen = openOptionIdx === i
               return (
-                <div key={i} id={`option-item-${i}`} className={styles.infoBlock} style={{ borderRadius: '10px', padding: 0, overflow: 'hidden', scrollMarginTop: 'var(--nav-height, 70px)' }}>
+                <div key={i} id={`option-item-${i}`} className="glassPanel rounded-[10px] overflow-hidden [scroll-margin-top:var(--nav-height,70px)]">
                   <button
                     type="button"
                     onClick={() => setOpenOptionIdx(isOpen ? null : i)}
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', background: 'transparent', border: 'none', padding: '12px 14px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}
+                    className="w-full flex items-center gap-2.5 bg-transparent border-0 py-3 px-3.5 cursor-pointer text-left [font-family:inherit]"
                   >
-                    <span style={{ fontSize: '17px', flexShrink: 0 }}>{o.icon}</span>
-                    <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text)', flex: 1 }}>{o.title}</p>
-                    <span style={{ fontSize: '13px', color: 'var(--neon)', flexShrink: 0, transition: 'transform 250ms cubic-bezier(0.23, 1, 0.32, 1)', transform: isOpen ? 'rotate(180deg)' : 'none' }}>▾</span>
+                    <span className="text-[17px] shrink-0">{o.icon}</span>
+                    <p className="m-0 text-[13px] font-semibold text-foreground flex-1">{o.title}</p>
+                    <span className="text-[13px] text-primary shrink-0 transition-transform duration-[250ms] ease-[cubic-bezier(0.23,1,0.32,1)]" style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }}>▾</span>
                   </button>
                   <div style={{ display: 'grid', gridTemplateRows: isOpen ? '1fr' : '0fr', transition: 'grid-template-rows 300ms cubic-bezier(0.23, 1, 0.32, 1)' }}>
-                    <div style={{ overflow: 'hidden', minHeight: 0 }}>
-                      <div style={{ padding: '0 14px 14px' }}>
-                        <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{o.desc}</p>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                    <div className="overflow-hidden min-h-0">
+                      <div className="px-3.5 pb-3.5">
+                        <p className="mb-2 text-xs text-muted-foreground leading-[1.6]">{o.desc}</p>
+                        <div className="flex flex-wrap gap-1">
                           {o.tags.map(tag => (
-                            <span key={tag} className={styles.tagPill}>{tag}</span>
+                            <span key={tag} className="text-[10px] py-[3px] px-2.5 rounded-full bg-white/5 border border-border text-muted-foreground">{tag}</span>
                           ))}
                           {'priceTag' in o && o.priceTag && <span className={styles.priceTagSm}>{o.priceTag}</span>}
                         </div>
@@ -721,9 +721,9 @@ export default function Home() {
             })}
           </div>
 
-          <div className={styles.infoBlock} style={{ marginTop: '10px', borderRadius: '10px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-            <span style={{ fontSize: '14px', flexShrink: 0 }}>⚙</span>
-            <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{t.options.attrNote}</p>
+          <div className="glassPanel rounded-[10px] mt-2.5 px-3.5 py-3 flex gap-2.5 items-start">
+            <span className="text-sm shrink-0">⚙</span>
+            <p className="m-0 text-[11px] text-muted-foreground leading-[1.6]">{t.options.attrNote}</p>
           </div>
         </div>
       </section>
