@@ -134,6 +134,12 @@ export default function Home() {
   // stąd rozbicie per wariant zamiast jednej wspólnej ilości. Wizytówka nie ma wykończeń, więc
   // zostaje przy prostym liczniku.
   const [finishBreakdown, setFinishBreakdown] = useState<Record<string, { qty: number; nfcQty: number }>>({ standard: { qty: 1, nfcQty: 0 } })
+  // Krok 1 domyślnie pokazuje tylko "Standard" — 5 dodatkowych wykończeń chowa się za
+  // "Dodaj inne wykończenie", żeby nie serwować 6 równoczesnych decyzji + sub-decyzji NFC
+  // zanim klient zdąży się w ogóle zaangażować (patrz $impeccable critique, P2). Klient, który
+  // wraca do kroku 1 z już wybranym dodatkowym wykończeniem (np. po cofnięciu się z kroku 2),
+  // od razu widzi pełną listę — nic nie chowamy, co już wybrał.
+  const [showMoreFinishes, setShowMoreFinishes] = useState(false)
   const [laminatedQty, setLaminatedQty] = useState(1)
 
   // Zestaw Promocyjny to 1 "sztuka" w koszyku, ale fizycznie 2 karty (jedna luzem + jedna w Top
@@ -863,8 +869,8 @@ export default function Home() {
                   <p className={sectionEyebrowCls}>
                     {lang === 'pl' ? '// ile kart i w jakim wykończeniu' : '// how many cards, and which finish'}
                   </p>
-                  <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3 mb-5">
-                    {CARD_FINISHES.map(f => {
+                  <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3 mb-3">
+                    {CARD_FINISHES.filter(f => f.id === 'standard' || showMoreFinishes || (finishBreakdown[f.id]?.qty ?? 0) > 0).map(f => {
                       const bd = finishBreakdown[f.id] ?? { qty: 0, nfcQty: 0 }
                       return (
                         <div key={f.id} className="glassPanel rounded-[var(--radius-lg)] p-4 relative transition-all duration-200 cursor-default hover:border-[rgba(180,77,255,0.45)] hover:-translate-y-[3px] hover:shadow-[var(--glass-shadow),var(--glow-neon)]">
@@ -899,6 +905,15 @@ export default function Home() {
                       )
                     })}
                   </div>
+                  {!showMoreFinishes && (
+                    <button
+                      type="button"
+                      onClick={() => setShowMoreFinishes(true)}
+                      className="mb-5 text-[13px] font-semibold text-primary bg-transparent border-0 cursor-pointer p-0 hover:underline"
+                    >
+                      {lang === 'pl' ? '+ Dodaj inne wykończenie' : '+ Add another finish'}
+                    </button>
+                  )}
                   {quantity === 0 && (
                     <p className={`${errorMsgCls} mt-2.5`}>
                       {lang === 'pl' ? 'Wybierz co najmniej jedną kartę (kliknij + przy dowolnym wariancie).' : 'Select at least one card (click + on any variant).'}
