@@ -59,7 +59,7 @@
 }
 .btnHero {
   display: inline-block; padding: 15px 34px;
-  background: linear-gradient(135deg, var(--neon), #9433e0);
+  background: linear-gradient(135deg, var(--neon), #a855f7);
   color: #0a0014;
   font-size: 15px; font-weight: 700; border-radius: 10px;
   transition: box-shadow 0.25s, transform 0.15s;
@@ -206,7 +206,7 @@
 
 .formButtons { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
 .btnPrimary {
-  padding: 12px 28px; background: linear-gradient(135deg, var(--neon), #9433e0); color: #0a0014;
+  padding: 12px 28px; background: linear-gradient(135deg, var(--neon), #a855f7); color: #0a0014;
   font-size: 14px; font-weight: 700; border-radius: 9px;
   transition: box-shadow 0.2s, transform 0.15s, opacity 0.2s;
   box-shadow: 0 3px 14px -4px rgba(180,77,255,0.5);

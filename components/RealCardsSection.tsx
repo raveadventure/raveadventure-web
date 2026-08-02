@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Image from 'next/image'
 
 const TXT = {
   pl: {
@@ -25,7 +26,7 @@ const PHOTOS = [
 
 export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
   const t = TXT[lang]
-  const [lightbox, setLightbox] = useState<string | null>(null)
+  const [lightbox, setLightbox] = useState<{ src: string; caption: string } | null>(null)
 
   return (
     <section id="prawdziwe-karty" data-reveal className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-10 text-center [scroll-margin-top:var(--nav-height,70px)]">
@@ -38,10 +39,10 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
         {PHOTOS.map(photo => (
           <div key={photo.id}>
             <div
-              onClick={() => setLightbox(`/real-cards/${photo.id}.jpg`)}
+              onClick={() => setLightbox({ src: `/real-cards/${photo.id}.jpg`, caption: lang === 'pl' ? photo.captionPl : photo.captionEn })}
               className="relative aspect-[0.8] cursor-pointer overflow-hidden rounded-2xl border border-border"
             >
-              <img src={`/real-cards/${photo.id}.jpg`} alt="" className="h-full w-full object-cover block" loading="lazy" />
+              <Image src={`/real-cards/${photo.id}.jpg`} alt={lang === 'pl' ? photo.captionPl : photo.captionEn} fill sizes="(max-width: 640px) 45vw, 220px" className="object-cover" loading="lazy" />
             </div>
             <p className="mt-2 text-xs leading-[1.5] text-muted-foreground">{lang === 'pl' ? photo.captionPl : photo.captionEn}</p>
           </div>
@@ -72,7 +73,7 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
           onClick={() => setLightbox(null)}
           className="fixed inset-0 z-[1000] flex cursor-pointer items-center justify-center bg-[rgba(8,8,16,0.92)] p-5"
         >
-          <img src={lightbox} alt="" className="max-h-[90vh] max-w-[90vw] rounded-xl" />
+          <img src={lightbox.src} alt={lightbox.caption} className="max-h-[90vh] max-w-[90vw] rounded-xl" />
         </div>
       )}
     </section>

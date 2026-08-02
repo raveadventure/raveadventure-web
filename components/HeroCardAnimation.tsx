@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { Observer } from 'gsap/Observer'
@@ -174,7 +175,7 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
   useEffect(() => {
     const allSrcs = Array.from(new Set(CARDS.flatMap(c => [c.photo, c.card, ...('real' in c && c.real ? [c.real] : [])])))
     allSrcs.forEach(src => {
-      const img = new Image()
+      const img = new window.Image()
       img.onload = () => {
         if (img.naturalWidth && img.naturalHeight) {
           const real = img.naturalWidth / img.naturalHeight
@@ -232,15 +233,14 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
   const CardLayer = ({ clip, show, anim, z = 2 }: { clip: string; show: boolean; anim?: string; z?: number }) => {
     if (!show) return null
     return (
-      <img
+      <Image
         src={current.card}
         alt=""
         aria-hidden="true"
+        fill
+        sizes="280px"
+        priority
         style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
           objectFit: 'cover',
           clipPath: clip,
           animation: anim,
@@ -345,14 +345,13 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
           }}
         >
           {idx <= 1 && (
-            <img
+            <Image
               src={current.photo}
               alt={t.photoAlt}
+              fill
+              sizes="280px"
+              priority
               style={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
                 objectFit: 'cover',
                 animation: isPhoto ? 'raZoom 2.2s ease-out forwards' : undefined,
               }}
@@ -384,21 +383,27 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
           )}
 
           {showCard && (
-            <img
+            <Image
               src={current.card}
               alt={t.finalAlt}
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 2, transform: 'translateZ(0)' }}
+              fill
+              sizes="280px"
+              priority
+              style={{ objectFit: 'cover', zIndex: 2, transform: 'translateZ(0)' }}
             />
           )}
 
           {/* Crossfade z cyfrowego projektu do zdjęcia prawdziwej, wydrukowanej karty — dowód
               namacalny, że to nie tylko plik JPG (patrz WhyUs.tsx, "fizyczny produkt, nie plik JPG"). */}
           {(isReal || isFade) && realSrc && (
-            <img
+            <Image
               src={realSrc}
               alt={t.realAlt}
+              fill
+              sizes="280px"
+              priority
               style={{
-                position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+                objectFit: 'cover',
                 zIndex: 2, transform: 'translateZ(0)',
                 animation: isReal ? 'raArtIn 0.9s ease-out both' : undefined,
               }}

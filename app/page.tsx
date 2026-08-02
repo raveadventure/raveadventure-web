@@ -485,7 +485,7 @@ export default function Home() {
   const formStepCls = 'flex flex-col gap-5'
   const formStepTitleCls = 'font-heading text-[15px] font-bold text-primary tracking-[0.2px]'
   const sectionEyebrowCls = 'font-mono text-[11px] text-primary tracking-[2px] mb-2.5'
-  const btnPrimaryCls = 'py-3 px-7 bg-[linear-gradient(135deg,var(--neon),#9433e0)] text-[#0a0014] text-sm font-bold rounded-[9px] transition-all duration-200 shadow-[0_3px_14px_-4px_rgba(180,77,255,0.5)] enabled:hover:shadow-[0_5px_20px_-4px_rgba(180,77,255,0.7)] enabled:hover:-translate-y-px enabled:active:translate-y-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none'
+  const btnPrimaryCls = 'py-3 px-7 bg-[linear-gradient(135deg,var(--neon),#a855f7)] text-[#0a0014] text-sm font-bold rounded-[9px] transition-all duration-200 shadow-[0_3px_14px_-4px_rgba(180,77,255,0.5)] enabled:hover:shadow-[0_5px_20px_-4px_rgba(180,77,255,0.7)] enabled:hover:-translate-y-px enabled:active:translate-y-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none'
   const btnSecondaryCls = 'py-3 px-6 bg-[var(--surface2)] border border-border text-muted-foreground text-sm font-medium rounded-[9px] transition-all duration-200 hover:border-primary hover:text-foreground hover:-translate-y-px active:translate-y-0'
   const formButtonsCls = 'flex gap-3 justify-end mt-2'
   const errorMsgCls = 'text-[13px] text-[var(--error)] py-2.5 px-3.5 border border-[rgba(255,77,109,0.3)] rounded-lg bg-[rgba(255,77,109,0.06)]'
@@ -498,17 +498,17 @@ export default function Home() {
   const toggleBtnCls = 'flex-1 py-3 px-3.5 rounded-[var(--radius-lg)] cursor-pointer text-center border-[1.5px] border-border bg-[var(--surface2)] text-[13px] font-semibold text-foreground transition-all duration-200 hover:border-[color-mix(in_srgb,var(--neon)_50%,var(--border))] hover:-translate-y-px'
 
   const LangSwitch = () => (
-    <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '20px', padding: '3px' }}>
+    <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '22px', padding: '3px' }}>
       <button
         onClick={() => setLang('pl')}
-        style={{ padding: '4px 10px', borderRadius: '16px', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '12px', fontWeight: 600, background: lang === 'pl' ? '#b44dff' : 'transparent', color: lang === 'pl' ? '#0a0014' : 'rgba(240,238,255,0.5)' }}
+        style={{ minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '18px', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '12px', fontWeight: 600, background: lang === 'pl' ? '#b44dff' : 'transparent', color: lang === 'pl' ? '#0a0014' : 'rgba(240,238,255,0.5)' }}
         aria-pressed={lang === 'pl'}
       >
         PL
       </button>
       <button
         onClick={() => setLang('en')}
-        style={{ padding: '4px 10px', borderRadius: '16px', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '12px', fontWeight: 600, background: lang === 'en' ? '#b44dff' : 'transparent', color: lang === 'en' ? '#0a0014' : 'rgba(240,238,255,0.5)' }}
+        style={{ minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '18px', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '12px', fontWeight: 600, background: lang === 'en' ? '#b44dff' : 'transparent', color: lang === 'en' ? '#0a0014' : 'rgba(240,238,255,0.5)' }}
         aria-pressed={lang === 'en'}
       >
         EN
@@ -582,14 +582,14 @@ export default function Home() {
           {lang === 'pl' ? 'Zapraszamy na nasze sociale' : 'Follow us on social media'}
         </span>
         <span className="flex items-center gap-2.5">
-          <a href="https://www.instagram.com/rave_adventure_pl/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="inline-flex">
+          <a href="https://www.instagram.com/rave_adventure_pl/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="inline-flex items-center justify-center w-11 h-11">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b44dff" strokeWidth="2">
               <rect x="2" y="2" width="20" height="20" rx="5" />
               <circle cx="12" cy="12" r="4.2" />
               <circle cx="17.3" cy="6.7" r="1.1" fill="#b44dff" stroke="none" />
             </svg>
           </a>
-          <a href="https://www.facebook.com/raveadventurepl" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="inline-flex">
+          <a href="https://www.facebook.com/raveadventurepl" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="inline-flex items-center justify-center w-11 h-11">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
               <path d="M13.8 21v-7.2h2.4l.4-2.8h-2.8v-1.8c0-.8.2-1.4 1.4-1.4h1.5V5.3C16.2 5.2 15.3 5 14.3 5c-2.1 0-3.5 1.3-3.5 3.6v2.4H8.4v2.8h2.4V21" fill="none" />
@@ -603,7 +603,7 @@ export default function Home() {
       </div>
 
       <div className={styles.brandWrap}>
-        <h2 className={`${styles.brandName} ${styles.shimmer}`}>Rave Adventure</h2>
+        <p className={`${styles.brandName} ${styles.shimmer}`}>Rave Adventure</p>
         <LogoEqualizer />
         <p className={`${styles.brandTagline} ${styles.shimmer}`}>The best memories from your adventure deserve a card</p>
       </div>
@@ -747,7 +747,7 @@ export default function Home() {
                 key={i}
                 id={`option-item-${i}`}
                 value={String(i)}
-                className="glassPanel rounded-[10px] overflow-hidden [scroll-margin-top:var(--nav-height,70px)] px-3.5"
+                className="glassPanel rounded-[10px] overflow-hidden [scroll-margin-top:var(--nav-height,70px)] px-3.5 py-1 not-last:border-b-0"
               >
                 <AccordionTrigger className="gap-2.5 text-[13px] font-semibold text-foreground hover:no-underline focus-visible:ring-0 **:data-[slot=accordion-trigger-icon]:text-primary">
                   <span className="text-[17px] shrink-0">{o.icon}</span>
@@ -811,7 +811,7 @@ export default function Home() {
           })}
         </div>
 
-        <div className="glassPanel rounded-[var(--radius-lg)] p-8 max-w-[680px] mx-auto max-md:p-5">
+        <div className="bg-[var(--glass-bg)] backdrop-blur-[14px] rounded-[var(--radius-lg)] p-8 max-w-[680px] mx-auto max-md:p-5">
           {step === 1 && (
             <div className="flex flex-col gap-5">
               <p className="font-heading text-[15px] font-bold text-primary tracking-[0.2px]">{t.order.step1.title}</p>

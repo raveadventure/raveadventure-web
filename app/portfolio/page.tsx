@@ -114,8 +114,6 @@ export default function PortfolioPage() {
 
   return (
     <div className={styles.page}>
-      <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
-
       {/* NAV */}
       <nav className={styles.nav}>
         <a href="/" className={styles.logo}>Rave<span>Adventure</span></a>

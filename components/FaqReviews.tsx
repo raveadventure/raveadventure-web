@@ -104,7 +104,7 @@ function FaqAccordion({ items }: { items: FaqItem[] }) {
   return (
     <Accordion type="single" collapsible className="flex flex-col gap-2.5">
       {items.map((item, i) => (
-        <AccordionItem key={i} value={String(i)} className="overflow-hidden rounded-[var(--radius)] border border-border bg-card px-[18px]">
+        <AccordionItem key={i} value={String(i)} className="overflow-hidden rounded-[var(--radius)] border border-border bg-card px-[18px] py-1.5 not-last:border-b-0">
           <AccordionTrigger className="text-sm font-semibold text-foreground hover:no-underline focus-visible:ring-0 **:data-[slot=accordion-trigger-icon]:text-primary">
             {item.q}
           </AccordionTrigger>
