@@ -202,7 +202,7 @@ export default function PortfolioPage() {
 
       {/* CTA */}
       <div className={styles.cta}>
-        <p className={styles.ctaText}>Chcesz mieć swoją kartę?</p>
+        <p className={styles.ctaText}>Chcesz mieć swoją kartę z kolejnego eventu?</p>
         <a href="/#order" className={styles.ctaBtn}>Zamów teraz →</a>
       </div>
 

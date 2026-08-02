@@ -16,7 +16,12 @@ const TXT = {
   },
 }
 
-const PHOTOS = ['card-1', 'card-2', 'card-3', 'card-4']
+const PHOTOS = [
+  { id: 'card-1', captionPl: 'Ekipa z ulubionego setu — zawsze pod ręką, w jednej karcie.', captionEn: 'Your crew from that one set — always close, in a single card.' },
+  { id: 'card-2', captionPl: 'Karta-hołd dla Twojego ulubionego artysty z line-upu.', captionEn: 'A tribute card for your favorite artist from the lineup.' },
+  { id: 'card-3', captionPl: 'Noc w Amsterdamie, zamknięta w kolekcjonerskiej karcie.', captionEn: 'A night in Amsterdam, sealed into a collectible card.' },
+  { id: 'card-4', captionPl: 'Cały festiwal z lotu ptaka — pamiątka, którą masz zawsze przy sobie.', captionEn: 'The whole festival from above — a keepsake you always carry.' },
+]
 
 export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
   const t = TXT[lang]
@@ -30,13 +35,15 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
 
       {/* GALERIA ZDJĘĆ PRAWDZIWYCH KART */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '14px', marginBottom: '28px', textAlign: 'left' }}>
-        {PHOTOS.map(id => (
-          <div
-            key={id}
-            onClick={() => setLightbox(`/real-cards/${id}.jpg`)}
-            style={{ position: 'relative', aspectRatio: '0.8', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }}
-          >
-            <img src={`/real-cards/${id}.jpg`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} loading="lazy" />
+        {PHOTOS.map(photo => (
+          <div key={photo.id}>
+            <div
+              onClick={() => setLightbox(`/real-cards/${photo.id}.jpg`)}
+              style={{ position: 'relative', aspectRatio: '0.8', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }}
+            >
+              <img src={`/real-cards/${photo.id}.jpg`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} loading="lazy" />
+            </div>
+            <p style={{ margin: '8px 0 0', fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>{lang === 'pl' ? photo.captionPl : photo.captionEn}</p>
           </div>
         ))}
       </div>

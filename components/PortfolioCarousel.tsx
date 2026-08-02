@@ -5,16 +5,43 @@ import { isSupabasePlaceholder, PORTFOLIO_LOCAL_MOCK } from '../lib/portfolioLoc
 type Item = { id: string; name: string; card_url: string; theme: string }
 
 const TXT = {
-  pl: { eyebrow: '// realizacje', title: 'Nasze karty', viewAll: 'Zobacz wszystkie →', prev: 'Poprzednia karta', next: 'Następna karta', card: (i: number) => `Karta ${i}` },
-  en: { eyebrow: '// our work', title: 'Our cards', viewAll: 'View all →', prev: 'Previous card', next: 'Next card', card: (i: number) => `Card ${i}` },
+  pl: {
+    eyebrow: '// realizacje', title: 'Nasze karty', viewAll: 'Zobacz wszystkie →', prev: 'Poprzednia karta', next: 'Następna karta', card: (i: number) => `Karta ${i}`,
+    filters: [
+      { id: 'all', label: 'Wszystkie' },
+      { id: 'techno_rave', label: 'Rave' },
+      { id: 'festival', label: 'Festiwal' },
+      { id: 'adventure', label: 'Podróże' },
+      { id: 'custom', label: 'Custom' },
+    ],
+    ctaBelow: 'Zamów swoją kartę z kolejnego eventu →',
+  },
+  en: {
+    eyebrow: '// our work', title: 'Our cards', viewAll: 'View all →', prev: 'Previous card', next: 'Next card', card: (i: number) => `Card ${i}`,
+    filters: [
+      { id: 'all', label: 'All' },
+      { id: 'techno_rave', label: 'Rave' },
+      { id: 'festival', label: 'Festival' },
+      { id: 'adventure', label: 'Travel' },
+      { id: 'custom', label: 'Custom' },
+    ],
+    ctaBelow: 'Order your card from your next event →',
+  },
 }
 
 export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
   const t = TXT[lang]
   const [items, setItems] = useState<Item[]>([])
+  const [filter, setFilter] = useState('all')
   const [current, setCurrent] = useState(0)
   const [paused, setPaused] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  const filteredItems = filter === 'all' ? items : items.filter(i => i.theme === filter)
+
+  // Filtr zmienia pulę kart w karuzeli — wracamy na pierwszą, żeby "current" nie wskazywał
+  // poza nową, krótszą listę (np. przy przejściu z "Wszystkie" na kategorię z 2 kartami).
+  useEffect(() => { setCurrent(0) }, [filter])
 
   useEffect(() => {
     if (isSupabasePlaceholder()) {
@@ -40,16 +67,16 @@ export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' 
   }, [])
 
   useEffect(() => {
-    if (items.length <= 1 || paused) return
+    if (filteredItems.length <= 1 || paused) return
     intervalRef.current = setInterval(() => {
-      setCurrent(c => (c + 1) % items.length)
+      setCurrent(c => (c + 1) % filteredItems.length)
     }, 3500)
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
-  }, [items.length, paused])
+  }, [filteredItems.length, paused])
 
   const go = (dir: number) => {
     setPaused(true)
-    setCurrent(c => (c + dir + items.length) % items.length)
+    setCurrent(c => (c + dir + filteredItems.length) % filteredItems.length)
     setTimeout(() => setPaused(false), 5000)
   }
 
@@ -63,6 +90,25 @@ export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' 
         <a href="/portfolio" style={{ fontSize: '13px', color: 'var(--neon)', textDecoration: 'none', whiteSpace: 'nowrap' }}>{t.viewAll}</a>
       </div>
 
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
+        {t.filters.map(f => (
+          <button key={f.id} onClick={() => setFilter(f.id)}
+            style={{
+              padding: '6px 14px', borderRadius: '999px', fontSize: '12px', fontFamily: "'Space Mono', monospace",
+              cursor: 'pointer', transition: 'all .2s',
+              border: filter === f.id ? '1px solid var(--neon)' : '1px solid var(--border)',
+              background: filter === f.id ? 'color-mix(in srgb, var(--neon) 15%, transparent)' : 'transparent',
+              color: filter === f.id ? 'var(--neon)' : 'var(--text-muted)',
+            }}>
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {filteredItems.length === 0 ? (
+        <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px', padding: '32px 0' }}>—</p>
+      ) : (
+      <>
       <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', gap: '16px' }}>
         <button onClick={() => go(-1)} aria-label={t.prev}
           style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -71,11 +117,11 @@ export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' 
 
         <div style={{ display: 'flex', gap: '16px', overflow: 'hidden', justifyContent: 'center', alignItems: 'center' }}>
           {[-2, -1, 0, 1, 2].map(offset => {
-            const idx = (current + offset + items.length * 5) % items.length
-            const item = items[idx]
+            const idx = (current + offset + filteredItems.length * 5) % filteredItems.length
+            const item = filteredItems[idx]
             const isCenter = offset === 0
             const dist = Math.abs(offset)
-            if (dist > 1 && items.length < 3) return null
+            if (dist > 1 && filteredItems.length < 3) return null
             return (
               <div key={`${offset}`}
                 onClick={() => isCenter ? (window.location.href = '/portfolio') : go(offset > 0 ? 1 : -1)}
@@ -105,14 +151,20 @@ export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' 
       </div>
 
       <div style={{ textAlign: 'center', marginTop: '20px' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)', margin: '0 0 12px' }}>{items[current]?.name}</p>
+        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)', margin: '0 0 12px' }}>{filteredItems[current]?.name}</p>
         <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-          {items.map((_, i) => (
+          {filteredItems.map((_, i) => (
             <button key={i} onClick={() => { setPaused(true); setCurrent(i); setTimeout(() => setPaused(false), 5000) }}
               aria-label={t.card(i + 1)}
               style={{ width: i === current ? '20px' : '6px', height: '6px', borderRadius: '3px', border: 'none', background: i === current ? 'var(--neon)' : 'var(--border)', cursor: 'pointer', padding: 0, transition: 'all .3s' }} />
           ))}
         </div>
+      </div>
+      </>
+      )}
+
+      <div style={{ textAlign: 'center', marginTop: '28px' }}>
+        <a href="#order" style={{ fontSize: '14px', fontWeight: 600, color: 'var(--neon)', textDecoration: 'none' }}>{t.ctaBelow}</a>
       </div>
     </section>
   )
