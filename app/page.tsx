@@ -197,6 +197,18 @@ export default function Home() {
   const [navHeight, setNavHeight] = useState(64)
   const progressRef = useRef<HTMLDivElement>(null)
   const prevStepRef = useRef(step)
+  // Kierunkowe przejście Dalej/Wstecz między krokami formularza ($impeccable animate) — jedyna
+  // luka w ciągłości nawigacji na całej stronie (krok zmieniał się dotąd błyskawicznie, bez
+  // żadnego przejścia). stepContentRef wskazuje na WSPÓLNY panel formularza (ta sama karta dla
+  // wszystkich 5 kroków, tylko zawartość się podmienia przez React) — animujemy WCHODZĄCĄ
+  // zawartość, kierunek liczony z porównania numerów kroków.
+  const stepContentRef = useRef<HTMLDivElement>(null)
+  const prevStepForAnimRef = useRef(step)
+  // Puls na cenie łącznej (kroki 4 i 5 dzielą ten sam ref — w danej chwili zamontowany jest
+  // tylko jeden z nich) przy KAŻDEJ zmianie totalPrice — potwierdza klientowi, że jego akcja
+  // (ilość, NFC, wykończenie, kod rabatowy) realnie przeliczyła sumę, nie tylko odświeżyła tekst.
+  const totalPriceRef = useRef<HTMLElement>(null)
+  const prevTotalPriceRef = useRef<number | null>(null)
   const [howItWorksOpen, setHowItWorksOpen] = useState(false)
   // "co możesz zamówić" — akordeon per-pozycja (nie sekcja jako całość): każda opcja to tylko
   // ikonka + napis, dopóki klient jej nie kliknie — docelowo dojdą tam też zdjęcia/modele
@@ -269,6 +281,21 @@ export default function Home() {
     window.scrollTo({ top: y, behavior: 'smooth' })
   }, [step, navHeight])
 
+  // Wchodzący krok wjeżdża z kierunku zgodnego z Dalej (z prawej) / Wstecz (z lewej) — pierwszy
+  // render (mount) nie animuje nic, bo prevStepForAnimRef startuje już na aktualnym kroku.
+  useGSAP(() => {
+    if (!stepContentRef.current) return
+    const prevStep = prevStepForAnimRef.current
+    prevStepForAnimRef.current = step
+    if (prevStep === step) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const dir = step > prevStep ? 1 : -1
+    gsap.fromTo(stepContentRef.current,
+      { opacity: 0, x: dir * 28 },
+      { opacity: 1, x: 0, duration: 0.4, ease: 'power2.out' }
+    )
+  }, { dependencies: [step] })
+
   const cardObj = CARD_TYPES.find(c => c.id === cardType)!
   const backObj = BACK_OPTIONS.find(b => b.id === backOption)!
   // Wysyłka za granicę (kraje UE) — ustalone z Michałem 2026-08-02: cena ZASTĘPUJE, nie dolicza
@@ -329,6 +356,19 @@ export default function Home() {
   const savedAmount = hasDiscount ? Math.round(rawBaseTotal * QUANTITY_DISCOUNT_RATE) : 0
   const discountSaved = discountApplied ? Math.round(baseTotal * discountPct / 100) : 0
   const totalPrice = baseTotal - discountSaved + SHIPPING_COST + nfcTotal + cardFinishAddonTotal
+
+  useGSAP(() => {
+    // prevTotalPriceRef śledzi wartość ZAWSZE (nawet gdy totalPriceRef nie jest zamontowany,
+    // np. totalPrice zmienia się w kroku 1) — inaczej powrót na krok 4/5 po zmianie ilości w
+    // kroku 1 fałszywie pulsowałby przy samym wejściu, zamiast tylko przy realnej zmianie ceny
+    // PODCZAS gdy klient już na nią patrzy (np. przełącznik kraju wysyłki w kroku 5).
+    const prevTotal = prevTotalPriceRef.current
+    prevTotalPriceRef.current = totalPrice
+    if (!totalPriceRef.current) return
+    if (prevTotal === null || prevTotal === totalPrice) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    gsap.fromTo(totalPriceRef.current, { scale: 1.15 }, { scale: 1, duration: 0.3, ease: 'power3.out' })
+  }, { dependencies: [totalPrice] })
 
   const handlePhoto = (file: File) => {
     setPhoto(file)
@@ -822,7 +862,7 @@ export default function Home() {
           })}
         </div>
 
-        <div className="bg-[var(--glass-bg)] backdrop-blur-[14px] rounded-[var(--radius-lg)] p-8 max-w-[680px] mx-auto max-md:p-5">
+        <div ref={stepContentRef} className="bg-[var(--glass-bg)] backdrop-blur-[14px] rounded-[var(--radius-lg)] p-8 max-w-[680px] mx-auto max-md:p-5">
           {step === 1 && (
             <div className="flex flex-col gap-5">
               <p className="font-heading text-[15px] font-bold text-primary tracking-[0.2px]">{t.order.step1.title}</p>
@@ -1220,7 +1260,7 @@ export default function Home() {
                 {nfcActive && <p className={summaryRowCls}><span>{lang === 'pl' ? `NFC/RFID (${nfcTotalQty} × ${nfcUnitPrice} zł)` : `NFC/RFID (${nfcTotalQty} × ${nfcUnitPrice} zł)`}</span><strong>{nfcTotal} zł</strong></p>}
                 {cardFinishAddonTotal > 0 && <p className={summaryRowCls}><span>{lang === 'pl' ? 'Dopłaty za wykończenie' : 'Finish add-ons'}</span><strong>{cardFinishAddonTotal} zł</strong></p>}
                 <p className={summaryRowCls}><span>{lang === 'pl' ? 'Wysyłka' : 'Shipping'}{shippingRegion === 'intl' ? (lang === 'pl' ? ' (zagranica)' : ' (abroad)') : ''}</span><strong>{SHIPPING_COST} zł</strong></p>
-                <div className="flex justify-between items-center pt-3 border-t border-border text-base"><span>{t.order.step4.totalLabel}</span><strong className="!text-[var(--success)] !text-[22px]">{totalPrice} zł</strong></div>
+                <div className="flex justify-between items-center pt-3 border-t border-border text-base"><span>{t.order.step4.totalLabel}</span><strong ref={totalPriceRef} className="!text-[var(--success)] !text-[22px] inline-block">{totalPrice} zł</strong></div>
                 <p className="text-xs text-[var(--text-faint)]">{t.order.step4.note}</p>
                 <p className="text-xs text-[var(--text-faint)]">{t.order.step5.shippingCostNote(SHIPPING_COST)}</p>
               </div>
@@ -1376,7 +1416,7 @@ export default function Home() {
                 {nfcActive && <p className={summaryRowCls}><span>{lang === 'pl' ? `NFC/RFID (${nfcTotalQty} × ${nfcUnitPrice} zł)` : `NFC/RFID (${nfcTotalQty} × ${nfcUnitPrice} zł)`}</span><strong>{nfcTotal} zł</strong></p>}
                 {cardFinishAddonTotal > 0 && <p className={summaryRowCls}><span>{lang === 'pl' ? 'Dopłaty za wykończenie' : 'Finish add-ons'}</span><strong>{cardFinishAddonTotal} zł</strong></p>}
                 <p className={summaryRowCls}><span>{lang === 'pl' ? 'Wysyłka' : 'Shipping'}{shippingRegion === 'intl' ? (lang === 'pl' ? ' (zagranica)' : ' (abroad)') : ''}</span><strong>{SHIPPING_COST} zł</strong></p>
-                <div className="flex justify-between items-center pt-3 border-t border-border text-base"><span>{t.order.step5.payLabel}</span><strong className="!text-[var(--success)] !text-[22px]">{totalPrice} zł</strong></div>
+                <div className="flex justify-between items-center pt-3 border-t border-border text-base"><span>{t.order.step5.payLabel}</span><strong ref={totalPriceRef} className="!text-[var(--success)] !text-[22px] inline-block">{totalPrice} zł</strong></div>
                 <p className="text-xs text-[var(--text-faint)]">{t.order.step5.payNote}</p>
               </div>
 
