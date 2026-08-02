@@ -84,12 +84,13 @@ const TXT = {
 
 function Stars({ value, onChange }: { value: number; onChange?: (v: number) => void }) {
   return (
-    <div style={{ display: 'flex', gap: '4px' }}>
+    <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map(n => (
         <span
           key={n}
           onClick={() => onChange?.(n)}
-          style={{ fontSize: '20px', cursor: onChange ? 'pointer' : 'default', color: n <= value ? '#f59e0b' : 'var(--text-faint)', lineHeight: 1 }}
+          className={`text-xl leading-none ${onChange ? 'cursor-pointer' : 'cursor-default'}`}
+          style={{ color: n <= value ? '#f59e0b' : 'var(--text-faint)' }}
         >★</span>
       ))}
     </div>
@@ -101,21 +102,21 @@ type FaqItem = { q: string; a: string }
 function FaqAccordion({ items }: { items: FaqItem[] }) {
   const [openIdx, setOpenIdx] = useState<number | null>(null)
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+    <div className="flex flex-col gap-2.5">
       {items.map((item, i) => {
         const open = openIdx === i
         return (
-          <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+          <div key={i} className="overflow-hidden rounded-[var(--radius)] border border-border bg-card">
             <button
               onClick={() => setOpenIdx(open ? null : i)}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', background: 'transparent', border: 'none', color: 'var(--text)', padding: '16px 18px', fontSize: '14px', fontWeight: 600, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}
+              className="flex w-full items-center gap-3 bg-transparent border-none px-[18px] py-4 text-sm font-semibold text-left text-foreground cursor-pointer font-[inherit]"
             >
-              <span style={{ flex: 1 }}>{item.q}</span>
-              <span style={{ color: 'var(--neon)', fontSize: '14px', transition: 'transform 250ms cubic-bezier(0.23, 1, 0.32, 1)', transform: open ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>▾</span>
+              <span className="flex-1">{item.q}</span>
+              <span className={`shrink-0 text-sm text-primary transition-transform duration-250 ease-[cubic-bezier(0.23,1,0.32,1)] ${open ? 'rotate-180' : ''}`}>▾</span>
             </button>
-            <div style={{ display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: 'grid-template-rows 300ms cubic-bezier(0.23, 1, 0.32, 1)' }}>
-              <div style={{ overflow: 'hidden', minHeight: 0 }}>
-                <p style={{ margin: 0, padding: '0 18px 16px', fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.7' }}>{item.a}</p>
+            <div className="grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]" style={{ gridTemplateRows: open ? '1fr' : '0fr' }}>
+              <div className="min-h-0 overflow-hidden">
+                <p className="m-0 px-[18px] pb-4 text-[13px] leading-[1.7] text-muted-foreground">{item.a}</p>
               </div>
             </div>
           </div>
@@ -191,79 +192,90 @@ export default function FaqReviews({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
   }
 
   return (
-    <section id="faq-opinie" style={{ padding: '32px 5vw 60px', maxWidth: '1100px', margin: '0 auto', scrollMarginTop: 'var(--nav-height, 70px)' }}>
-      <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: 'var(--neon)', letterSpacing: '2px', marginBottom: '12px', textAlign: 'center' }}>{t.eyebrow}</p>
-      <h2 style={{ fontFamily: "'Space Mono', monospace", fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 700, color: 'var(--text)', margin: '0 0 32px', textAlign: 'center' }}>{t.title}</h2>
+    <section id="faq-opinie" className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-14 [scroll-margin-top:var(--nav-height,70px)]">
+      <p className="mb-3 text-center font-mono text-xs tracking-[2px] text-primary">{t.eyebrow}</p>
+      <h2 className="mb-8 text-center font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground">{t.title}</h2>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '40px', alignItems: 'start' }}>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] items-start gap-10">
         {/* FAQ */}
         <div>
-          <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)', margin: '0 0 16px' }}>{t.faqTitle}</h3>
+          <h3 className="mb-4 text-base font-bold text-foreground">{t.faqTitle}</h3>
           <FaqAccordion items={t.faq} />
         </div>
 
         {/* OPINIE */}
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', gap: '12px', flexWrap: 'wrap' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)', margin: 0 }}>{t.reviewsTitle}</h3>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-base font-bold text-foreground">{t.reviewsTitle}</h3>
             <button
               onClick={() => setFormOpen(o => !o)}
-              style={{ background: formOpen ? 'transparent' : 'var(--neon)', color: formOpen ? 'var(--text-muted)' : '#0a0014', border: formOpen ? '1px solid var(--border)' : 'none', borderRadius: 'var(--radius)', padding: '8px 16px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+              className={`rounded-[var(--radius)] px-4 py-2 text-[13px] font-bold cursor-pointer font-[inherit] ${
+                formOpen ? 'bg-transparent border border-border text-muted-foreground' : 'bg-primary border-none text-[#0a0014]'
+              }`}
             >
               {formOpen ? t.closeBtn : t.addReviewBtn}
             </button>
           </div>
 
           {formOpen && (
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '18px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-border bg-card p-[18px]">
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '5px' }}>{t.form.name}</label>
-                <input value={name} onChange={e => setName(e.target.value)} placeholder={t.form.namePh} style={{ width: '100%', boxSizing: 'border-box' }} />
+                <label className="mb-1.5 block text-xs text-muted-foreground">{t.form.name}</label>
+                <input value={name} onChange={e => setName(e.target.value)} placeholder={t.form.namePh} className="box-border w-full" />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '5px' }}>{t.form.rating}</label>
+                <label className="mb-1.5 block text-xs text-muted-foreground">{t.form.rating}</label>
                 <Stars value={rating} onChange={setRating} />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '5px' }}>{t.form.content}</label>
-                <textarea value={content} onChange={e => setContent(e.target.value)} placeholder={t.form.contentPh} rows={4} style={{ width: '100%', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }} />
+                <label className="mb-1.5 block text-xs text-muted-foreground">{t.form.content}</label>
+                <textarea value={content} onChange={e => setContent(e.target.value)} placeholder={t.form.contentPh} rows={4} className="box-border w-full resize-y font-[inherit]" />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '5px' }}>{t.form.quote}</label>
-                <input value={quote} onChange={e => setQuote(e.target.value.slice(0, 200))} placeholder={t.form.quotePh} maxLength={200} style={{ width: '100%', boxSizing: 'border-box' }} />
+                <label className="mb-1.5 block text-xs text-muted-foreground">{t.form.quote}</label>
+                <input value={quote} onChange={e => setQuote(e.target.value.slice(0, 200))} placeholder={t.form.quotePh} maxLength={200} className="box-border w-full" />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '5px' }}>{t.form.photo}</label>
-                <button onClick={() => photoRef.current?.click()} style={{ background: photoFile ? 'rgba(0,229,160,0.08)' : 'var(--surface2)', border: `1px ${photoFile ? 'solid rgba(0,229,160,0.4)' : 'dashed var(--border)'}`, borderRadius: 'var(--radius)', color: photoFile ? 'var(--success)' : 'var(--text-muted)', padding: '10px 14px', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                <label className="mb-1.5 block text-xs text-muted-foreground">{t.form.photo}</label>
+                <button onClick={() => photoRef.current?.click()}
+                  className="cursor-pointer rounded-[var(--radius)] px-3.5 py-2.5 text-[13px] font-[inherit] border"
+                  style={{
+                    background: photoFile ? 'rgba(0,229,160,0.08)' : 'var(--surface2)',
+                    borderStyle: photoFile ? 'solid' : 'dashed',
+                    borderColor: photoFile ? 'rgba(0,229,160,0.4)' : 'var(--border)',
+                    color: photoFile ? 'var(--success)' : 'var(--text-muted)',
+                  }}>
                   {photoFile ? `✓ ${photoFile.name}` : t.form.photoAdd}
                 </button>
-                <input ref={photoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && setPhotoFile(e.target.files[0])} />
+                <input ref={photoRef} type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && setPhotoFile(e.target.files[0])} />
               </div>
-              <button onClick={handleSubmit} disabled={sending} style={{ background: sending ? 'rgba(180,77,255,0.3)' : 'var(--neon)', color: '#0a0014', border: 'none', borderRadius: 'var(--radius)', padding: '12px', fontSize: '14px', fontWeight: 700, cursor: sending ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+              <button onClick={handleSubmit} disabled={sending}
+                className={`rounded-[var(--radius)] border-none p-3 text-sm font-bold font-[inherit] ${sending ? 'cursor-not-allowed bg-primary/30' : 'cursor-pointer bg-primary'}`}
+                style={{ color: '#0a0014' }}>
                 {sending ? t.form.sending : t.form.submit}
               </button>
-              {status && <p style={{ margin: 0, fontSize: '13px', color: status.type === 'ok' ? 'var(--success)' : 'var(--error)' }}>{status.text}</p>}
+              {status && <p className="m-0 text-[13px]" style={{ color: status.type === 'ok' ? 'var(--success)' : 'var(--error)' }}>{status.text}</p>}
             </div>
           )}
 
           {loading ? (
-            <p style={{ color: 'var(--text-faint)', fontSize: '13px' }}>...</p>
+            <p className="text-[13px] text-[var(--text-faint)]">...</p>
           ) : reviews.length === 0 ? (
-            <p style={{ color: 'var(--text-faint)', fontSize: '13px' }}>{t.noReviews}</p>
+            <p className="text-[13px] text-[var(--text-faint)]">{t.noReviews}</p>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div className="flex flex-col gap-3">
               {reviews.map(r => (
-                <div key={r.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '16px 18px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', gap: '10px' }}>
-                    <strong style={{ fontSize: '14px', color: 'var(--text)' }}>{r.name}</strong>
+                <div key={r.id} className="rounded-[var(--radius)] border border-border bg-card px-[18px] py-4">
+                  <div className="mb-2 flex items-center justify-between gap-2.5">
+                    <strong className="text-sm text-foreground">{r.name}</strong>
                     <Stars value={r.rating} />
                   </div>
                   {r.quote && (
-                    <p style={{ margin: '0 0 8px', fontSize: '14px', fontStyle: 'italic', color: 'var(--neon)', lineHeight: '1.6', borderLeft: '2px solid var(--neon)', paddingLeft: '10px' }}>„{r.quote}"</p>
+                    <p className="mb-2 border-l-2 border-primary pl-2.5 text-sm italic leading-[1.6] text-primary">„{r.quote}"</p>
                   )}
-                  <p style={{ margin: '0 0 10px', fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.7' }}>{r.content}</p>
+                  <p className="mb-2.5 text-[13px] leading-[1.7] text-muted-foreground">{r.content}</p>
                   {r.photo_url && (
-                    <img src={r.photo_url} alt="" style={{ maxWidth: '160px', borderRadius: '8px', display: 'block' }} loading="lazy" />
+                    <img src={r.photo_url} alt="" className="block max-w-[160px] rounded-lg" loading="lazy" />
                   )}
                 </div>
               ))}
