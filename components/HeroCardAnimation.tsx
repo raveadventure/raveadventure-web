@@ -372,7 +372,7 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
                   zIndex: 3, ...pos,
                 } as React.CSSProperties} />
               ))}
-              <div style={{ position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)', fontSize: '9px', color: '#fff', fontFamily: 'monospace', letterSpacing: '2px', background: 'rgba(0,0,0,0.4)', padding: '2px 8px', borderRadius: '4px', zIndex: 3 }}>
+              <div style={{ position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: '#fff', fontFamily: 'monospace', letterSpacing: '2px', background: 'rgba(0,0,0,0.4)', padding: '2px 8px', borderRadius: '4px', zIndex: 3 }}>
                 ● REC
               </div>
             </>
@@ -483,22 +483,22 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
       {/* ETYKIETY PROCESU */}
       <div style={{ display: 'flex', gap: '6px', minHeight: '26px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
         {isPhoto && (
-          <span style={{ fontSize: '11px', fontFamily: 'monospace', letterSpacing: '1px', color: 'rgba(240,238,255,0.5)', animation: 'raPop 0.3s ease-out' }}>
+          <span style={{ fontSize: '12px', fontFamily: 'monospace', letterSpacing: '1px', color: 'rgba(240,238,255,0.5)', animation: 'raPop 0.3s ease-out' }}>
             {t.photo}
           </span>
         )}
         {isFlash && (
-          <span style={{ fontSize: '13px', fontFamily: 'monospace', fontWeight: 700, letterSpacing: '2px', color: '#fff', animation: 'raPop 0.2s ease-out' }}>
+          <span style={{ fontSize: '14px', fontFamily: 'monospace', fontWeight: 700, letterSpacing: '2px', color: '#fff', animation: 'raPop 0.2s ease-out' }}>
             {t.click}
           </span>
         )}
         {isArtwork && (
-          <span style={{ fontSize: '11px', fontFamily: 'monospace', letterSpacing: '1px', color: '#00f0ff', animation: 'raPop 0.3s ease-out' }}>
+          <span style={{ fontSize: '12px', fontFamily: 'monospace', letterSpacing: '1px', color: '#00f0ff', animation: 'raPop 0.3s ease-out' }}>
             {t.artwork}
           </span>
         )}
         {phase === 'frame' && (
-          <span style={{ fontSize: '11px', fontFamily: 'monospace', letterSpacing: '1px', color: '#b44dff', animation: 'raPop 0.3s ease-out' }}>
+          <span style={{ fontSize: '12px', fontFamily: 'monospace', letterSpacing: '1px', color: '#b44dff', animation: 'raPop 0.3s ease-out' }}>
             {t.frame}
           </span>
         )}
@@ -506,7 +506,7 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
           <>
             {attrsLabels.map((label, i) => (
               <span key={label} style={{
-                fontSize: '10px', fontFamily: 'monospace', letterSpacing: '1px',
+                fontSize: '11px', fontFamily: 'monospace', letterSpacing: '1px',
                 color: '#00e5a0', background: 'rgba(0,229,160,0.08)',
                 border: '1px solid rgba(0,229,160,0.3)', padding: '3px 10px',
                 borderRadius: '20px',
@@ -518,16 +518,16 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
           </>
         )}
         {isFinal && (
-          <span style={{ fontSize: '11px', fontFamily: 'monospace', letterSpacing: '1px', color: '#b44dff', fontWeight: 700, animation: 'raPop 0.3s ease-out' }}>
+          <span style={{ fontSize: '12px', fontFamily: 'monospace', letterSpacing: '1px', color: '#b44dff', fontWeight: 700, animation: 'raPop 0.3s ease-out' }}>
             {t.final}
           </span>
         )}
         {isReal && (
-          <span style={{ fontSize: '11px', fontFamily: 'monospace', letterSpacing: '1px', color: '#00e5a0', fontWeight: 700, animation: 'raPop 0.3s ease-out' }}>
+          <span style={{ fontSize: '12px', fontFamily: 'monospace', letterSpacing: '1px', color: '#00e5a0', fontWeight: 700, animation: 'raPop 0.3s ease-out' }}>
             {t.real}
           </span>
         )}
-        {isFade && <span style={{ fontSize: '11px' }}>&nbsp;</span>}
+        {isFade && <span style={{ fontSize: '12px' }}>&nbsp;</span>}
       </div>
     </div>
   )
