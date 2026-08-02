@@ -97,7 +97,7 @@ export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' 
   if (items.length === 0) return null
 
   return (
-    <section ref={sectionRef} id="realizacje" style={{ padding: '32px 5vw 40px', maxWidth: '1100px', margin: '0 auto', scrollMarginTop: 'var(--nav-height, 70px)' }}>
+    <section ref={sectionRef} id="realizacje" className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-10 [scroll-margin-top:var(--nav-height,70px)]">
       <style>{`
         @keyframes raPortfolioGlowIn {
           0% { box-shadow: 0 0 0px rgba(180,77,255,0); }
@@ -105,38 +105,36 @@ export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' 
           100% { box-shadow: 0 0 28px rgba(180,77,255,0.25); }
         }
       `}</style>
-      <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: 'var(--neon)', letterSpacing: '2px', marginBottom: '12px' }}>{t.eyebrow}</p>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
-        <h2 style={{ fontFamily: "'Space Mono', monospace", fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 700, color: 'var(--text)', margin: 0 }}>{t.title}</h2>
-        <a href="/portfolio" style={{ fontSize: '13px', color: 'var(--neon)', textDecoration: 'none', whiteSpace: 'nowrap' }}>{t.viewAll}</a>
+      <p className="font-mono text-xs tracking-[2px] text-primary mb-3">{t.eyebrow}</p>
+      <div className="flex items-end justify-between mb-8">
+        <h2 className="font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground">{t.title}</h2>
+        <a href="/portfolio" className="text-sm text-primary whitespace-nowrap hover:underline">{t.viewAll}</a>
       </div>
 
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
+      <div className="flex flex-wrap gap-2 mb-6">
         {t.filters.map(f => (
           <button key={f.id} onClick={() => setFilter(f.id)}
-            style={{
-              padding: '6px 14px', borderRadius: '999px', fontSize: '12px', fontFamily: "'Space Mono', monospace",
-              cursor: 'pointer', transition: 'all .2s',
-              border: filter === f.id ? '1px solid var(--neon)' : '1px solid var(--border)',
-              background: filter === f.id ? 'color-mix(in srgb, var(--neon) 15%, transparent)' : 'transparent',
-              color: filter === f.id ? 'var(--neon)' : 'var(--text-muted)',
-            }}>
+            className={`rounded-full px-3.5 py-1.5 font-mono text-xs cursor-pointer transition-all duration-200 border ${
+              filter === f.id
+                ? 'border-primary text-primary bg-primary/15'
+                : 'border-border text-muted-foreground bg-transparent'
+            }`}>
             {f.label}
           </button>
         ))}
       </div>
 
       {filteredItems.length === 0 ? (
-        <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px', padding: '32px 0' }}>—</p>
+        <p className="text-center text-muted-foreground text-sm py-8">—</p>
       ) : (
       <>
-      <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', gap: '16px' }}>
+      <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4">
         <button onClick={() => go(-1)} aria-label={t.prev}
-          style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground text-lg cursor-pointer bg-transparent">
           ←
         </button>
 
-        <div style={{ display: 'flex', gap: '16px', overflow: 'hidden', justifyContent: 'center', alignItems: 'center' }}>
+        <div className="flex items-center justify-center gap-4 overflow-hidden">
           {[-2, -1, 0, 1, 2].map(offset => {
             const idx = (current + offset + filteredItems.length * 5) % filteredItems.length
             const item = filteredItems[idx]
@@ -146,47 +144,43 @@ export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' 
             return (
               <div key={`${offset}`}
                 onClick={() => isCenter ? (window.location.href = '/portfolio') : go(offset > 0 ? 1 : -1)}
+                className="shrink-0 overflow-hidden rounded-[10px] cursor-pointer transition-all duration-400 ease-[cubic-bezier(.4,0,.2,1)]"
                 style={{
-                  flexShrink: 0,
                   width: isCenter ? '180px' : dist === 1 ? '130px' : '90px',
                   aspectRatio: '638 / 1011',
-                  borderRadius: '10px',
-                  overflow: 'hidden',
                   opacity: isCenter ? 1 : dist === 1 ? 0.55 : 0.25,
                   transform: `scale(${isCenter ? 1 : dist === 1 ? 0.9 : 0.8})`,
-                  transition: 'all .4s cubic-bezier(.4,0,.2,1)',
-                  cursor: 'pointer',
                   border: isCenter ? '1.5px solid var(--neon)' : '1px solid var(--border)',
                   boxShadow: isCenter ? '0 0 28px rgba(180,77,255,0.25)' : 'none',
                   animation: isCenter && glowIn ? 'raPortfolioGlowIn 1.3s ease-out' : undefined,
                 }}>
-                <img src={item.card_url} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                <img src={item.card_url} alt={item.name} className="h-full w-full object-cover block" />
               </div>
             )
           })}
         </div>
 
         <button onClick={() => go(1)} aria-label={t.next}
-          style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground text-lg cursor-pointer bg-transparent">
           →
         </button>
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: '20px' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)', margin: '0 0 12px' }}>{filteredItems[current]?.name}</p>
-        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+      <div className="mt-5 text-center">
+        <p className="mb-3 text-sm font-semibold text-foreground">{filteredItems[current]?.name}</p>
+        <div className="flex justify-center gap-1.5">
           {filteredItems.map((_, i) => (
             <button key={i} onClick={() => { setPaused(true); setCurrent(i); setTimeout(() => setPaused(false), 5000) }}
               aria-label={t.card(i + 1)}
-              style={{ width: i === current ? '20px' : '6px', height: '6px', borderRadius: '3px', border: 'none', background: i === current ? 'var(--neon)' : 'var(--border)', cursor: 'pointer', padding: 0, transition: 'all .3s' }} />
+              className={`h-1.5 rounded-[3px] border-none cursor-pointer p-0 transition-all duration-300 ${i === current ? 'w-5 bg-primary' : 'w-1.5 bg-border'}`} />
           ))}
         </div>
       </div>
       </>
       )}
 
-      <div style={{ textAlign: 'center', marginTop: '28px' }}>
-        <a href="#order" style={{ fontSize: '14px', fontWeight: 600, color: 'var(--neon)', textDecoration: 'none' }}>{t.ctaBelow}</a>
+      <div className="mt-7 text-center">
+        <a href="#order" className="text-sm font-semibold text-primary hover:underline">{t.ctaBelow}</a>
       </div>
     </section>
   )
