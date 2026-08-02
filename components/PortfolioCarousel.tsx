@@ -117,10 +117,10 @@ export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' 
         <a href="/portfolio" className="text-sm text-primary whitespace-nowrap hover:underline">{t.viewAll}</a>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap justify-center gap-2 mb-6">
         {t.filters.map(f => (
           <button key={f.id} onClick={() => setFilter(f.id)}
-            className={`rounded-full px-3.5 py-1.5 font-mono text-xs cursor-pointer transition-all duration-200 border ${
+            className={`rounded-full px-3.5 py-1.5 font-mono text-xs cursor-pointer transition-all duration-200 border text-center max-md:basis-[30%] ${
               filter === f.id
                 ? 'border-primary text-primary bg-primary/15'
                 : 'border-border text-muted-foreground bg-transparent'

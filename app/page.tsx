@@ -711,14 +711,12 @@ export default function Home() {
                 {lang === 'pl' ? (
                   <>
                     <span style={{ fontWeight: 700 }}>Przy zamówieniu nie ponosisz żadnej opłaty!</span><br />
-                    Śmiało składaj zamówienie wraz ze swoim zdjęciem.<br />
-                    Opłata dopiero po zatwierdzeniu projektu.
+                    Śmiało składaj zamówienie!
                   </>
                 ) : (
                   <>
                     <span style={{ fontWeight: 700 }}>No payment is required to place your order!</span><br />
-                    Go ahead and order with your photo.<br />
-                    Payment is only due after the design is approved.
+                    Go ahead and order!
                   </>
                 )}
               </p>
@@ -837,12 +835,12 @@ export default function Home() {
             {lang === 'pl' ? (
               <>
                 <span className="font-bold">Przy zamówieniu nie ponosisz żadnej opłaty!</span><br />
-                Śmiało składaj zamówienie wraz ze swoim zdjęciem.
+                Śmiało składaj zamówienie!
               </>
             ) : (
               <>
                 <span className="font-bold">No payment is required to place your order!</span><br />
-                Go ahead and order with your photo.
+                Go ahead and order!
               </>
             )}
           </p>

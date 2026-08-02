@@ -269,6 +269,9 @@
   .fieldGrid { grid-template-columns: 1fr; }
   .formBox { padding: 20px; }
   .stepDot { margin-right: 36px; }
+  /* Opis pod H1 mieści się w 3 linijkach na telefonie zamiast 4-5 (zgłoszone przez Michała) —
+     mniejsza czcionka + ciaśniejszy line-height, sam tekst zostaje bez zmian. */
+  .heroSub { font-size: 14.5px; line-height: 1.55; }
 }
 
 /* ── FILE ADDED ── */
