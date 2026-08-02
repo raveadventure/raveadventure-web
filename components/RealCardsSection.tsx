@@ -28,30 +28,30 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
   const [lightbox, setLightbox] = useState<string | null>(null)
 
   return (
-    <section id="prawdziwe-karty" style={{ padding: '32px 5vw 40px', maxWidth: '1100px', margin: '0 auto', textAlign: 'center', scrollMarginTop: 'var(--nav-height, 70px)' }}>
-      <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: 'var(--neon)', letterSpacing: '2px', marginBottom: '12px' }}>{t.eyebrow}</p>
-      <h2 style={{ fontFamily: "'Space Mono', monospace", fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 700, color: 'var(--text)', margin: '0 0 10px' }}>{t.title}</h2>
-      <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: '1.7', maxWidth: '560px', margin: '0 auto 28px' }}>{t.sub}</p>
+    <section id="prawdziwe-karty" className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-10 text-center [scroll-margin-top:var(--nav-height,70px)]">
+      <p className="font-mono text-xs tracking-[2px] text-primary mb-3">{t.eyebrow}</p>
+      <h2 className="font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground mb-2.5">{t.title}</h2>
+      <p className="mx-auto mb-7 max-w-[560px] text-sm leading-[1.7] text-muted-foreground">{t.sub}</p>
 
       {/* GALERIA ZDJĘĆ PRAWDZIWYCH KART */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '14px', marginBottom: '28px', textAlign: 'left' }}>
+      <div className="mb-7 grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3.5 text-left">
         {PHOTOS.map(photo => (
           <div key={photo.id}>
             <div
               onClick={() => setLightbox(`/real-cards/${photo.id}.jpg`)}
-              style={{ position: 'relative', aspectRatio: '0.8', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }}
+              className="relative aspect-[0.8] cursor-pointer overflow-hidden rounded-2xl border border-border"
             >
-              <img src={`/real-cards/${photo.id}.jpg`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} loading="lazy" />
+              <img src={`/real-cards/${photo.id}.jpg`} alt="" className="h-full w-full object-cover block" loading="lazy" />
             </div>
-            <p style={{ margin: '8px 0 0', fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>{lang === 'pl' ? photo.captionPl : photo.captionEn}</p>
+            <p className="mt-2 text-xs leading-[1.5] text-muted-foreground">{lang === 'pl' ? photo.captionPl : photo.captionEn}</p>
           </div>
         ))}
       </div>
 
       {/* WIDEO: karty w portfelu — wyśrodkowane, węższy blok niż cała sekcja */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', marginBottom: '14px', maxWidth: '640px', margin: '0 auto 14px' }}>
+      <div className="mx-auto mb-3.5 grid max-w-[640px] grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3.5">
         {['wallet-1', 'wallet-2'].map(id => (
-          <div key={id} style={{ position: 'relative', aspectRatio: '2 / 3', borderRadius: '14px', overflow: 'hidden', border: '1px solid var(--border)' }}>
+          <div key={id} className="relative aspect-[2/3] overflow-hidden rounded-2xl border border-border">
             <video
               src={`/real-cards/${id}.mp4`}
               poster={`/real-cards/${id}-poster.jpg`}
@@ -59,20 +59,20 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
               loop
               autoPlay
               playsInline
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              className="h-full w-full object-cover block"
             />
           </div>
         ))}
       </div>
-      <p style={{ fontSize: '11px', color: 'var(--text-faint)', margin: 0 }}>{t.walletCaption}</p>
+      <p className="text-[11px] text-[var(--text-faint)]">{t.walletCaption}</p>
 
       {/* LIGHTBOX ZDJĘĆ */}
       {lightbox && (
         <div
           onClick={() => setLightbox(null)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(8,8,16,0.92)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', cursor: 'pointer' }}
+          className="fixed inset-0 z-[1000] flex cursor-pointer items-center justify-center bg-[rgba(8,8,16,0.92)] p-5"
         >
-          <img src={lightbox} alt="" style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: '12px' }} />
+          <img src={lightbox} alt="" className="max-h-[90vh] max-w-[90vw] rounded-xl" />
         </div>
       )}
     </section>
