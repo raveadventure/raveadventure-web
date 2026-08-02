@@ -36,11 +36,11 @@ export default function AdShowcase({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
   }
 
   return (
-    <section style={{ padding: '32px 5vw 8px', maxWidth: '1100px', margin: '0 auto', textAlign: 'center' }}>
-      <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: 'var(--neon)', letterSpacing: '2px', marginBottom: '12px' }}>{t.eyebrow}</p>
-      <h2 style={{ fontFamily: "'Space Mono', monospace", fontSize: 'clamp(20px, 3vw, 28px)', fontWeight: 700, color: 'var(--text)', margin: '0 0 20px' }}>{t.title}</h2>
+    <section className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-2 text-center">
+      <p className="font-mono text-xs tracking-[2px] text-primary mb-3">{t.eyebrow}</p>
+      <h2 className="font-heading text-[clamp(20px,3vw,28px)] font-bold text-foreground mb-5">{t.title}</h2>
 
-      <div style={{ position: 'relative', maxWidth: '380px', aspectRatio: '9/16', margin: '0 auto', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border)', background: '#000' }}>
+      <div className="relative mx-auto aspect-[9/16] max-w-[380px] overflow-hidden rounded-2xl border border-border bg-black">
         {CLIPS.map((src, i) => (
           <video
             key={src}
@@ -51,24 +51,15 @@ export default function AdShowcase({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
             playsInline
             autoPlay={i === 0}
             onEnded={active === i ? handleEnded : undefined}
-            style={{
-              position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
-              opacity: active === i && !fading ? 1 : 0,
-              transition: 'opacity 0.5s ease',
-            }}
+            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-in-out"
+            style={{ opacity: active === i && !fading ? 1 : 0 }}
           />
         ))}
 
         <button
           onClick={() => setMuted(m => !m)}
           aria-label={muted ? (lang === 'pl' ? 'Włącz dźwięk' : 'Unmute') : (lang === 'pl' ? 'Wyłącz dźwięk' : 'Mute')}
-          style={{
-            position: 'absolute', bottom: '14px', right: '14px', zIndex: 2,
-            width: '38px', height: '38px', borderRadius: '50%',
-            background: 'rgba(8,8,16,0.65)', border: '1px solid rgba(255,255,255,0.25)',
-            color: '#fff', fontSize: '16px', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
+          className="absolute bottom-3.5 right-3.5 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-black/65 text-base text-white cursor-pointer"
         >
           {muted ? '🔇' : '🔊'}
         </button>

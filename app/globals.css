@@ -4,7 +4,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* @layer base (nie goły CSS) — inaczej ten bardzo stary reset, jako CSS spoza warstw, bije
+   KAŻDĄ klasę narzędziową Tailwinda niezależnie od specyficzności selektora (CSS Cascade Layers:
+   nie-warstwowe zawsze wygrywa z warstwowym) — złapane 2026-08-02 przy migracji AdShowcase na
+   Tailwind: `mx-auto` przestawało centrować, bo ten reset zerował margin już PO tym, jak Tailwind
+   go ustawił. Dokładnie tak samo działa oficjalny Preflight Tailwinda — stąd @layer base, nie
+   przeniesienie w inne miejsce. */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+}
 
 /* ══════════════════════════════════════════════════════════════════════════
    DESIGN TOKENS — architektura 3-warstwowa (primitive → semantic → component)
@@ -95,37 +103,45 @@
 
 html { scroll-behavior: smooth; }
 
-body {
-  background: var(--black);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
+/* @layer base — patrz uzasadnienie przy resecie *, wyżej: bez tego każda z tych reguł (celuje
+   w te same elementy co shadcn Input/Button/Form, dodawane dalej w Fazie 2 redesignu) bije
+   Tailwindowe klasy narzędziowe niezależnie od specyficzności. Stare, OPCJONALNE style dla
+   zwykłych <input>/<button> (jeszcze nieprzepisanych na komponenty shadcn) — te wciąż tu
+   działają, tylko teraz poprawnie w kolejce za Tailwindem, nie przed nim. */
+@layer base {
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  input, textarea, select {
+    font-family: var(--font-body);
+    font-size: 15px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    padding: 12px 16px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--neon); box-shadow: 0 0 0 3px rgba(180,77,255,0.12); }
+  input::placeholder, textarea::placeholder { color: var(--text-faint); }
+  textarea { resize: vertical; min-height: 100px; }
+  button { font-family: var(--font-body); cursor: pointer; border: none; outline: none; }
 }
 
-a { color: inherit; text-decoration: none; }
 ::selection { background: rgba(180, 77, 255, 0.3); }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--black); }
 ::-webkit-scrollbar-thumb { background: rgba(180,77,255,0.3); border-radius: 3px; }
-
-input, textarea, select {
-  font-family: var(--font-body);
-  font-size: 15px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text);
-  padding: 12px 16px;
-  width: 100%;
-  outline: none;
-  transition: border-color 0.2s;
-}
-input:focus, textarea:focus, select:focus { border-color: var(--neon); box-shadow: 0 0 0 3px rgba(180,77,255,0.12); }
-input::placeholder, textarea::placeholder { color: var(--text-faint); }
-textarea { resize: vertical; min-height: 100px; }
-button { font-family: var(--font-body); cursor: pointer; border: none; outline: none; }
 
 /* Widoczny fokus dla klawiatury (dostępność) — nie odpala się przy kliknięciu myszą */
 :focus-visible { outline: 2px solid var(--neon2); outline-offset: 2px; border-radius: 4px; }
@@ -160,7 +176,7 @@ button { font-family: var(--font-body); cursor: pointer; border: none; outline: 
 /* --radius-lg celowo POMINIĘTY tutaj — kolidowałby z istniejącym primitive --radius-lg: 16px
    (:root wyżej), używanym w dziesiątkach miejsc w page.module.css/inline style ze starego kodu.
    Reszta skali (sm/md/xl/2xl/3xl/4xl) to nowe nazwy, bez kolizji. */
-@theme inline { --font-heading: var(--font-sans); --font-sans: var(--font-sans); --color-sidebar-ring: var(--sidebar-ring); --color-sidebar-border: var(--sidebar-border); --color-sidebar-accent-foreground: var(--sidebar-accent-foreground); --color-sidebar-accent: var(--sidebar-accent); --color-sidebar-primary-foreground: var(--sidebar-primary-foreground); --color-sidebar-primary: var(--sidebar-primary); --color-sidebar-foreground: var(--sidebar-foreground); --color-sidebar: var(--sidebar); --color-chart-5: var(--chart-5); --color-chart-4: var(--chart-4); --color-chart-3: var(--chart-3); --color-chart-2: var(--chart-2); --color-chart-1: var(--chart-1); --color-ring: var(--ring); --color-input: var(--input); --color-border: var(--border); --color-destructive: var(--destructive); --color-accent-foreground: var(--accent-foreground); --color-accent: var(--accent); --color-muted-foreground: var(--muted-foreground); --color-muted: var(--muted); --color-secondary-foreground: var(--secondary-foreground); --color-secondary: var(--secondary); --color-primary-foreground: var(--primary-foreground); --color-primary: var(--primary); --color-popover-foreground: var(--popover-foreground); --color-popover: var(--popover); --color-card-foreground: var(--card-foreground); --color-card: var(--card); --color-foreground: var(--foreground); --color-background: var(--background); --radius-sm: calc(var(--radius) * 0.6); --radius-md: calc(var(--radius) * 0.8); --radius-xl: calc(var(--radius) * 1.4); --radius-2xl: calc(var(--radius) * 1.8); --radius-3xl: calc(var(--radius) * 2.2); --radius-4xl: calc(var(--radius) * 2.6); }
+@theme inline { --font-heading: var(--font-hero); --font-mono: var(--font-display); --font-sans: var(--font-sans); --color-sidebar-ring: var(--sidebar-ring); --color-sidebar-border: var(--sidebar-border); --color-sidebar-accent-foreground: var(--sidebar-accent-foreground); --color-sidebar-accent: var(--sidebar-accent); --color-sidebar-primary-foreground: var(--sidebar-primary-foreground); --color-sidebar-primary: var(--sidebar-primary); --color-sidebar-foreground: var(--sidebar-foreground); --color-sidebar: var(--sidebar); --color-chart-5: var(--chart-5); --color-chart-4: var(--chart-4); --color-chart-3: var(--chart-3); --color-chart-2: var(--chart-2); --color-chart-1: var(--chart-1); --color-ring: var(--ring); --color-input: var(--input); --color-border: var(--border); --color-destructive: var(--destructive); --color-accent-foreground: var(--accent-foreground); --color-accent: var(--accent); --color-muted-foreground: var(--muted-foreground); --color-muted: var(--muted); --color-secondary-foreground: var(--secondary-foreground); --color-secondary: var(--secondary); --color-primary-foreground: var(--primary-foreground); --color-primary: var(--primary); --color-popover-foreground: var(--popover-foreground); --color-popover: var(--popover); --color-card-foreground: var(--card-foreground); --color-card: var(--card); --color-foreground: var(--foreground); --color-background: var(--background); --radius-sm: calc(var(--radius) * 0.6); --radius-md: calc(var(--radius) * 0.8); --radius-xl: calc(var(--radius) * 1.4); --radius-2xl: calc(var(--radius) * 1.8); --radius-3xl: calc(var(--radius) * 2.2); --radius-4xl: calc(var(--radius) * 2.6); }
 
 /* Bez .dark — marka jest wyłącznie ciemna (patrz nagłówek sekcji tokenów wyżej), :root już jest
    docelowym motywem, więc osobna klasa .dark z alternatywnymi wartościami byłaby martwym kodem. */
