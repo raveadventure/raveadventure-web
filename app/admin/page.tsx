@@ -789,6 +789,9 @@ export default function AdminPage() {
                         {(order as any).nfc_enabled && (
                           <span style={{ fontSize: '11px', fontWeight: 700, color: '#00e5a0', fontFamily: 'monospace' }}>(NFC)</span>
                         )}
+                        {(order as any).shipping_region === 'intl' && (
+                          <span title={`Wysyłka za granicę — ${(order as any).shipping_cost ?? 40} zł`} style={{ fontSize: '11px', fontWeight: 700, color: '#f59e0b', fontFamily: 'monospace' }}>🌍 UE</span>
+                        )}
                         <LangBadge lang={order.lang} size="small" />
                       </p>
                       <p style={{ margin: 0, fontSize: '12px', color: 'rgba(240,238,255,0.4)' }}>

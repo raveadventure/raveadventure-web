@@ -1,13 +1,14 @@
 import type { Metadata } from 'next'
-import { Space_Grotesk, Space_Mono, Unbounded } from 'next/font/google'
+import { Space_Grotesk, Space_Mono } from 'next/font/google'
 import './globals.css'
 
 // next/font self-hostuje fonty (bez blokującego @import z Google Fonts) — szybszy pierwszy render,
-// brak dodatkowego round-tripu do fonts.googleapis.com. Unbounded to nowy, mocniejszy font
-// nagłówkowy (duże napisy hero/sekcji), Space Grotesk/Mono zostają jak dotąd (tekst/etykiety UI).
+// brak dodatkowego round-tripu do fonts.googleapis.com. Trzeci font (Unbounded, tylko do nagłówków)
+// usunięty 2026-08-02 — brief marketingowy chciał max 2 fonty; wszystkie miejsca używające
+// --font-hero (patrz globals.css) już miały jawne font-weight:700, więc po podmianie na pogrubiony
+// Space Grotesk wygląd nagłówków zostaje mocny bez dodatkowych zmian w CSS.
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin', 'latin-ext'], weight: ['300', '400', '500', '700'], variable: '--font-body-raw', display: 'swap' })
 const spaceMono = Space_Mono({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-display-raw', display: 'swap' })
-const unbounded = Unbounded({ subsets: ['latin', 'latin-ext'], weight: ['500', '700', '900'], variable: '--font-hero-raw', display: 'swap' })
 
 // Ten sam fallback co w app/api/send-order i send-design — jedno źródło prawdy dla
 // produkcyjnego adresu, potrzebne żeby metadataBase poprawnie budował bezwzględne URL-e
@@ -55,7 +56,7 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pl" className={`${spaceGrotesk.variable} ${spaceMono.variable} ${unbounded.variable}`}>
+    <html lang="pl" className={`${spaceGrotesk.variable} ${spaceMono.variable}`}>
       <head>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>

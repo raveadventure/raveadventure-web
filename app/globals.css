@@ -17,7 +17,10 @@
   /* next/font injects the actual font-family values as --font-*-raw via className on <html> (layout.tsx) */
   --font-display: var(--font-display-raw), 'Space Mono', monospace;
   --font-body: var(--font-body-raw), 'Space Grotesk', sans-serif;
-  --font-hero: var(--font-hero-raw), 'Space Grotesk', sans-serif;
+  /* Było osobne 3. logo (Unbounded) tylko dla nagłówków — usunięte 2026-08-02, żeby zmieścić się
+     w max 2 fontach z briefu marketingowego. --font-hero teraz = --font-body (Space Grotesk),
+     wszystkie miejsca które go używają już mają jawne font-weight:700, więc wygląd zostaje mocny. */
+  --font-hero: var(--font-body-raw), 'Space Grotesk', sans-serif;
   --radius: 10px;
   --radius-lg: 16px;
 

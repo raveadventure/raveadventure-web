@@ -18,6 +18,12 @@ import { T, CARD_TYPES_I18N, FRONT_THEMES_I18N, BACK_OPTIONS_I18N, CARD_FINISH_I
 // tekst/kod/datę) gdy ruszy kolejna promocja powiązana z festiwalem.
 const SHOW_PROMO_BANNER = false
 
+// "Pasek transparentności" (brief marketingowy) — aktualny czas przygotowania projektu,
+// aktualizowany RĘCZNIE przez Michała w miarę zmian w kolejce (patrz FAQ „Ile czasu zajmuje
+// realizacja?" w components/FaqReviews.tsx — te dwie liczby powinny być spójne).
+const CURRENT_TURNAROUND_PL = '1–3 dni'
+const CURRENT_TURNAROUND_EN = '1–3 days'
+
 type Step = 1 | 2 | 3 | 4 | 5
 
 // Kolorystyka ramek karty — nazwy są już marketingowe/neutralne językowo, więc nie idą przez
@@ -109,6 +115,10 @@ export default function Home() {
   const [holoEffect, setHoloEffect] = useState(false)
   const [backOption, setBackOption] = useState('logo')
   const [deliveryMethod, setDeliveryMethod] = useState<'address' | 'paczkomat'>('address')
+  // Kraj wysyłki — dodane 2026-08-02 na wyraźną prośbę Michała (wcześniej wysyłka tylko PL).
+  // Wpływa na SHIPPING_COST niżej; przy zmianie na 'intl' czyścimy ewentualnie już wybrany polski
+  // paczkomat (wyszukiwarka InPost, patrz niżej, obsługuje tylko polskie punkty).
+  const [shippingRegion, setShippingRegion] = useState<'pl' | 'intl'>('pl')
   const [paczkomatId, setPaczkomatId] = useState('')
   // Osobna flaga potwierdzenia — inaczej "wybrany paczkomat" pokazywał się już po wpisaniu
   // pierwszej litery w polu tekstowym (form.address i paczkomatId były prawdziwe po 1 znaku).
@@ -227,7 +237,14 @@ export default function Home() {
 
   const cardObj = CARD_TYPES.find(c => c.id === cardType)!
   const backObj = BACK_OPTIONS.find(b => b.id === backOption)!
-  const SHIPPING_COST = 15
+  // Wysyłka za granicę (kraje UE) — ustalone z Michałem 2026-08-02: cena ZASTĘPUJE, nie dolicza
+  // się do, standardowych 15 zł. Paczkomat 40 zł / adres 80 zł — to najtańsze realne stawki, jakie
+  // znalazł, więc nie są dowolne do zmiany bez konsultacji.
+  const SHIPPING_COST_INTL_PACZKOMAT = 40
+  const SHIPPING_COST_INTL_ADDRESS = 80
+  const SHIPPING_COST = shippingRegion === 'intl'
+    ? (deliveryMethod === 'paczkomat' ? SHIPPING_COST_INTL_PACZKOMAT : SHIPPING_COST_INTL_ADDRESS)
+    : 15
   const NFC_PRICE_STANDARD = 15
   const NFC_PRICE_BULK = 8
 
@@ -298,7 +315,7 @@ export default function Home() {
   const handleSubmit = async () => {
     if (!photo) { setError(t.order.step5.errPhotoRequired); setStep(2); return }
     if (!form.name || !form.email || !form.address) { setError(t.order.step5.errRequired); return }
-    if (deliveryMethod === 'paczkomat' && !form.phone.trim()) { setError(t.order.step5.errPhoneRequired); return }
+    if ((deliveryMethod === 'paczkomat' || shippingRegion === 'intl') && !form.phone.trim()) { setError(t.order.step5.errPhoneRequired); return }
     if (!isValidEmail(form.email)) {
       setError(lang === 'pl' ? 'Podaj prawidłowy adres email (musi zawierać znak @ i domenę).' : 'Please enter a valid email address (must include @ and a domain).')
       return
@@ -324,6 +341,7 @@ export default function Home() {
         discount_code: discountApplied ? discountCode.trim().toUpperCase() : null, discount_pct: discountPct,
         photo_url: null, status: 'new', lang,
         delivery_method: deliveryMethod, paczkomat_id: deliveryMethod === 'paczkomat' ? paczkomatId : null,
+        shipping_region: shippingRegion, shipping_cost: SHIPPING_COST,
       }
       const localMock = isSupabasePlaceholder()
       let orderData: { id: string } | null = null
@@ -407,7 +425,7 @@ export default function Home() {
       await fetch('/api/send-order', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: form.name, email: form.email, phone: form.phone, address: form.address, deliveryMethod, paczkomatId, cardText: form.notesBack, notes: form.notes,
+          name: form.name, email: form.email, phone: form.phone, address: form.address, deliveryMethod, paczkomatId, shippingRegion, shippingCost: SHIPPING_COST, cardText: form.notesBack, notes: form.notes,
           theme: frontTheme, orderId: orderData?.id, cardType, backOption, quantity, unitPrice, totalPrice, hasDiscount, savedAmount,
           nfcEnabled: nfcActive, nfcPrice: nfcUnitPrice, nfcQty: nfcTotalQty, cardFinish: cardFinishSummary, cardFinishBreakdown: cardFinishBreakdownForDb,
           cardYear: form.cardYear, cardRarity: form.cardRarity, cardName: form.cardName,
@@ -542,6 +560,10 @@ export default function Home() {
             </svg>
           </a>
         </span>
+        <span style={{ color: 'rgba(240,238,255,0.2)' }}>|</span>
+        <span style={{ fontSize: '12px', color: 'rgba(240,238,255,0.6)' }}>
+          ⏱ {lang === 'pl' ? 'Aktualny czas realizacji' : 'Current turnaround'}: <strong style={{ color: '#f0eeff' }}>{lang === 'pl' ? CURRENT_TURNAROUND_PL : CURRENT_TURNAROUND_EN}</strong>
+        </span>
       </div>
 
       <div className={styles.brandWrap}>
@@ -553,6 +575,7 @@ export default function Home() {
       <nav className={styles.quickNav} aria-label={lang === 'pl' ? 'Szybka nawigacja' : 'Quick navigation'}>
         <a href="#realizacje" className={styles.quickNavBtn}>{lang === 'pl' ? 'Realizacje' : 'Portfolio'}</a>
         <a href="#prawdziwe-karty" className={styles.quickNavBtn}>{lang === 'pl' ? 'Prawdziwy produkt' : 'Real product'}</a>
+        <a href="#dlaczego-my" className={styles.quickNavBtn}>{lang === 'pl' ? 'Dlaczego my' : 'Why us'}</a>
         <a href="#jak-zamowic" className={styles.quickNavBtn}>{lang === 'pl' ? 'Jak to działa' : 'How it works'}</a>
         <a href="#order" className={styles.quickNavBtn}>{lang === 'pl' ? 'Zamówienie' : 'Order'}</a>
         <a href="#faq-opinie" className={styles.quickNavBtn}>{lang === 'pl' ? 'FAQ i opinie' : 'FAQ & reviews'}</a>
@@ -1014,7 +1037,8 @@ export default function Home() {
                 <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handlePhoto(e.target.files[0]) }} />
                 <div className={styles.field} style={{ marginTop: '10px' }}>
                   <label className={styles.label}>{t.order.step2.photoCommentLabel} <span className={styles.optional}>{t.order.step2.optional}</span></label>
-                  <textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} placeholder={t.order.step2.photoCommentPlaceholder} />
+                  <textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value.slice(0, 600)})} placeholder={t.order.step2.photoCommentPlaceholder} maxLength={600} />
+                  <p style={{ margin: '4px 0 0', fontSize: '11px', color: 'var(--text-faint)', textAlign: 'right' }}>{form.notes.length}/600</p>
                 </div>
               </div>
 
@@ -1027,7 +1051,8 @@ export default function Home() {
                   <input ref={refFileFrontRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) setRefFileFront(e.target.files[0]) }} />
                   <div className={styles.field} style={{ marginTop: '10px' }}>
                     <label className={styles.label}>{t.order.step2.customDescLabel}</label>
-                    <textarea value={form.customDesc} onChange={e => setForm({...form, customDesc: e.target.value})} placeholder={t.order.step2.customDescPlaceholder} />
+                    <textarea value={form.customDesc} onChange={e => setForm({...form, customDesc: e.target.value.slice(0, 600)})} placeholder={t.order.step2.customDescPlaceholder} maxLength={600} />
+                    <p style={{ margin: '4px 0 0', fontSize: '11px', color: 'var(--text-faint)', textAlign: 'right' }}>{form.customDesc.length}/600</p>
                   </div>
                 </div>
               )}
@@ -1139,10 +1164,10 @@ export default function Home() {
                 {hasDiscount && <p className={styles.summaryRow}><span>{t.order.step4.discountLabel}</span><strong className={styles.discount}>−{savedAmount} zł</strong></p>}
                 {nfcActive && <p className={styles.summaryRow}><span>{lang === 'pl' ? `NFC/RFID (${nfcTotalQty} × ${nfcUnitPrice} zł)` : `NFC/RFID (${nfcTotalQty} × ${nfcUnitPrice} zł)`}</span><strong>{nfcTotal} zł</strong></p>}
                 {cardFinishAddonTotal > 0 && <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Dopłaty za wykończenie' : 'Finish add-ons'}</span><strong>{cardFinishAddonTotal} zł</strong></p>}
-                <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Wysyłka' : 'Shipping'}</span><strong>{SHIPPING_COST} zł</strong></p>
+                <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Wysyłka' : 'Shipping'}{shippingRegion === 'intl' ? (lang === 'pl' ? ' (zagranica)' : ' (abroad)') : ''}</span><strong>{SHIPPING_COST} zł</strong></p>
                 <div className={styles.summaryTotal}><span>{t.order.step4.totalLabel}</span><strong className={styles.totalPrice}>{totalPrice} zł</strong></div>
                 <p className={styles.summaryNote}>{t.order.step4.note}</p>
-                <p className={styles.summaryNote}>{lang === 'pl' ? `Do ceny doliczamy stały koszt wysyłki: ${SHIPPING_COST} zł za zamówienie.` : `A flat shipping fee of ${SHIPPING_COST} zł is added to every order.`}</p>
+                <p className={styles.summaryNote}>{t.order.step5.shippingCostNote(SHIPPING_COST)}</p>
               </div>
               <div className={styles.formButtons}>
                 <button className={styles.btnSecondary} onClick={() => setStep(3)}>{t.order.step4.back}</button>
@@ -1191,6 +1216,23 @@ export default function Home() {
               </div>
 
               <div style={{ marginTop: '8px' }}>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>{t.order.step5.shippingRegionEyebrow}</p>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+                  {(['pl', 'intl'] as const).map(r => (
+                    <div key={r}
+                      onClick={() => {
+                        // Zmiana kraju czyści ewentualnie już wybrany/potwierdzony paczkomat —
+                        // polska wyszukiwarka nie ma sensu dla zagranicy i odwrotnie.
+                        setShippingRegion(r); setPaczkomatConfirmed(false); setPaczkomatId('')
+                        if (deliveryMethod === 'paczkomat') setForm({ ...form, address: '' })
+                      }} role="button" tabIndex={0}
+                      onKeyDown={e => e.key === 'Enter' && setShippingRegion(r)} aria-pressed={shippingRegion === r}
+                      className={`${styles.toggleBtn} ${shippingRegion === r ? styles.toggleBtnActive : ''}`}>
+                      {r === 'pl' ? `🇵🇱 ${t.order.step5.shippingRegionPl}` : `🇪🇺 ${t.order.step5.shippingRegionIntl}`}
+                    </div>
+                  ))}
+                </div>
+
                 <p style={{ fontFamily: 'var(--font-display)', fontSize: '11px', color: 'var(--neon)', letterSpacing: '2px', margin: '0 0 10px' }}>{t.order.step5.deliveryEyebrow}</p>
                 <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
                   {(['address', 'paczkomat'] as const).map(m => (
@@ -1206,7 +1248,22 @@ export default function Home() {
                 {deliveryMethod === 'address' ? (
                   <div className={styles.field}>
                     <label className={styles.label}>{t.order.step5.addressLabel}</label>
-                    <input value={form.address} onChange={e => setForm({...form, address: e.target.value})} placeholder={t.order.step5.addressPlaceholder} />
+                    <input value={form.address} onChange={e => setForm({...form, address: e.target.value})} placeholder={shippingRegion === 'intl' ? t.order.step5.addressIntlPlaceholder : t.order.step5.addressPlaceholder} />
+                    {shippingRegion === 'intl' && <p style={{ margin: '4px 0 0', fontSize: '11px', color: 'var(--text-faint)' }}>{t.order.step5.addressIntlNote}</p>}
+                  </div>
+                ) : shippingRegion === 'intl' ? (
+                  // Darmowe, publiczne API InPost, którego używamy do podpowiedzi (patrz
+                  // components/InpostAutocomplete.tsx), obejmuje tylko polskie paczkomaty — dla
+                  // zagranicy klient wpisuje kod ręcznie (znajdzie go w aplikacji InPost/lokalnym
+                  // odpowiedniku w swoim kraju).
+                  <div className={styles.field}>
+                    <label className={styles.label}>{t.order.step5.intlPaczkomatLabel}</label>
+                    <input value={form.address} onChange={e => { setForm({...form, address: e.target.value}); setPaczkomatId(e.target.value) }} placeholder={t.order.step5.intlPaczkomatPlaceholder} />
+                    <p style={{ margin: '4px 0 0', fontSize: '11px', color: 'var(--text-faint)' }}>{t.order.step5.intlPaczkomatNote}</p>
+                    <a href="https://inpost.pl/znajdz-paczkomat" target="_blank" rel="noopener noreferrer"
+                      style={{ display: 'inline-block', marginTop: '8px', fontSize: '12px', color: 'var(--neon2)', textDecoration: 'none' }}>
+                      {t.order.step5.paczkomatMapLink}
+                    </a>
                   </div>
                 ) : (
                   <div className={styles.field}>
@@ -1263,7 +1320,7 @@ export default function Home() {
                 {discountApplied && <p className={styles.summaryRow}><span>{t.order.step5.codeDiscountLabel(discountCode.toUpperCase(), discountPct)}</span><strong className={styles.discount}>−{discountSaved} zł</strong></p>}
                 {nfcActive && <p className={styles.summaryRow}><span>{lang === 'pl' ? `NFC/RFID (${nfcTotalQty} × ${nfcUnitPrice} zł)` : `NFC/RFID (${nfcTotalQty} × ${nfcUnitPrice} zł)`}</span><strong>{nfcTotal} zł</strong></p>}
                 {cardFinishAddonTotal > 0 && <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Dopłaty za wykończenie' : 'Finish add-ons'}</span><strong>{cardFinishAddonTotal} zł</strong></p>}
-                <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Wysyłka' : 'Shipping'}</span><strong>{SHIPPING_COST} zł</strong></p>
+                <p className={styles.summaryRow}><span>{lang === 'pl' ? 'Wysyłka' : 'Shipping'}{shippingRegion === 'intl' ? (lang === 'pl' ? ' (zagranica)' : ' (abroad)') : ''}</span><strong>{SHIPPING_COST} zł</strong></p>
                 <div className={styles.summaryTotal}><span>{t.order.step5.payLabel}</span><strong className={styles.totalPrice}>{totalPrice} zł</strong></div>
                 <p className={styles.summaryNote}>{t.order.step5.payNote}</p>
               </div>

@@ -36,6 +36,11 @@ export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' 
   const [current, setCurrent] = useState(0)
   const [paused, setPaused] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  // Mini-animacja przy scrollu (brief marketingowy, pkt 9) — środkowa karta dostaje jednorazowy
+  // puls glow, gdy sekcja wjeżdża w widok, spójny ze świeceniem karty w animacji Hero
+  // (patrz raGlowPulse w HeroCardAnimation.tsx). Odpala się raz, przy pierwszym wejściu w viewport.
+  const sectionRef = useRef<HTMLElement>(null)
+  const [glowIn, setGlowIn] = useState(false)
 
   const filteredItems = filter === 'all' ? items : items.filter(i => i.theme === filter)
 
@@ -80,10 +85,26 @@ export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' 
     setTimeout(() => setPaused(false), 5000)
   }
 
+  useEffect(() => {
+    if (!sectionRef.current) return
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setGlowIn(true); observer.disconnect() }
+    }, { threshold: 0.3 })
+    observer.observe(sectionRef.current)
+    return () => observer.disconnect()
+  }, [])
+
   if (items.length === 0) return null
 
   return (
-    <section id="realizacje" style={{ padding: '32px 5vw 40px', maxWidth: '1100px', margin: '0 auto', scrollMarginTop: 'var(--nav-height, 70px)' }}>
+    <section ref={sectionRef} id="realizacje" style={{ padding: '32px 5vw 40px', maxWidth: '1100px', margin: '0 auto', scrollMarginTop: 'var(--nav-height, 70px)' }}>
+      <style>{`
+        @keyframes raPortfolioGlowIn {
+          0% { box-shadow: 0 0 0px rgba(180,77,255,0); }
+          50% { box-shadow: 0 0 44px rgba(180,77,255,0.55); }
+          100% { box-shadow: 0 0 28px rgba(180,77,255,0.25); }
+        }
+      `}</style>
       <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: 'var(--neon)', letterSpacing: '2px', marginBottom: '12px' }}>{t.eyebrow}</p>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
         <h2 style={{ fontFamily: "'Space Mono', monospace", fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 700, color: 'var(--text)', margin: 0 }}>{t.title}</h2>
@@ -137,6 +158,7 @@ export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' 
                   cursor: 'pointer',
                   border: isCenter ? '1.5px solid var(--neon)' : '1px solid var(--border)',
                   boxShadow: isCenter ? '0 0 28px rgba(180,77,255,0.25)' : 'none',
+                  animation: isCenter && glowIn ? 'raPortfolioGlowIn 1.3s ease-out' : undefined,
                 }}>
                 <img src={item.card_url} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               </div>

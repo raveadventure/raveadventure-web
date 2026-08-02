@@ -22,7 +22,7 @@ To jest hobby/pasja, nie skalowany biznes VC. Michał prowadzi to solo, obok pra
   - Rabat ilościowy: -35% przy zamówieniu ≥ 3 sztuk (obniżone z -50% 2026-07-30 — realny koszt wytworzenia w BOM pokazał, że -50% na 3+ szt. wychodziło na zero/stratę)
   - Kody rabatowe: dodatkowy % nakładany OSOBNO od rabatu ilościowego
   - NFC/RFID (tylko karta PVC): +15 zł/kartę przy ≤3 sztukach, +8 zł/kartę przy >3 sztukach — liczone OSOBNO od rabatu -35%, żeby nie zdublować przeceny
-  - Wysyłka: stałe 15 zł, doliczane zawsze
+  - Wysyłka: 15 zł w Polsce (stałe, doliczane zawsze). **Od 2026-08-02 też wysyłka za granicę (UE)**, ustalona z Michałem: 40 zł do paczkomatu InPost, 80 zł na adres — te kwoty ZASTĘPUJĄ (nie dodają się do) standardowych 15 zł. Wybór kraju to nowy toggle „Polska / Zagranica (UE)" w kroku 5 formularza (`shippingRegion` w `app/page.tsx`), zapisywany do nowych kolumn `shipping_region`/`shipping_cost` w `orders`.
 - Nienaruszalna paleta kolorów marki (dokładne kody hex):
   ```
   Tło:            #07070f / #0a0014
@@ -76,14 +76,15 @@ Michał dostał zewnętrzną analizę/plan marketingowy strony i poprosił o zap
 - **Formularz zamówienia — zostaje 5 kroków.** Sugestia briefu (uproszczenie do 4 kroków) **odrzucona** — obowiązuje wcześniejsze ustalenie w „Zakres i priorytet redesignu" niżej: zachować 5 kroków bez zmian liczby, redesign zmienia tylko wygląd.
 - **Poprawki projektu — zostają bezpłatne i nieograniczone.** Sugestia briefu (odpowiedź FAQ „masz 2 rundy poprawek w cenie") **odrzucona** — obowiązuje istniejąca logika biznesowa: poprawki bez limitu, aż klient zaakceptuje projekt (patrz „Regulamin"/„Logika cenowa"). Przy wdrażaniu FAQ z briefu (punkt 7 niżej) użyć tej treści, nie sugestii z briefu.
 
-### ⚠️ Nadal do ustalenia przed wdrożeniem
-- **FAQ — czas realizacji**: brief proponuje „2-3 dni robocze + wysyłka". Obecna treść FAQ (`components/FaqReviews.tsx`) mówi „kilka dni do ok. 2 tygodni". Do ujednolicenia z Michałem przy wdrożeniu — to zależy od realnej kolejki, nie jest czysto kosmetyczne.
+### ✅ Rozstrzygnięte 2026-08-02 (były w „nadal do ustalenia")
+- **FAQ — czas realizacji**: Michał podał dokładny rozkład zamiast ogólnikowego „kilka dni do 2 tygodni" z briefu — projekt 1-3 dni, wysyłka następnego dnia roboczego, potem PL paczkomat do 3 dni / adres do 7 dni, zagranica (UE) paczkomat 4-7 dni / adres 7-14 dni. Wdrożone w `components/FaqReviews.tsx` (PL/EN).
+- **FAQ — wysyłka za granicę**: tak, wysyłamy do UE — patrz „Wysyłka za granicę (UE)" w „Logika cenowa" wyżej i nowe pytanie FAQ w `components/FaqReviews.tsx`.
 
 ### 🔍 Co już mamy (nie budować od nowa) vs. co jest realną luką
 - **„Prawdziwy produkt"**: ✅ zrobione — `components/RealCardsSection.tsx` ma teraz podpis pod każdym z 4 zdjęć (PL/EN, `PHOTOS` jako `{id, captionPl, captionEn}`). **Nadal bez zdjęć nowych wariantów** (lodówka/Top Holder) — te dotrą ok. 2026-08-07 (patrz wyżej), do dodania osobno jako kolejne wpisy w `PHOTOS` gdy pliki przyjdą.
 - **Portfolio**: ✅ zrobione — `components/PortfolioCarousel.tsx` ma teraz widoczne chipy filtrów (Wszystkie/Rave/Festiwal/Podróże/Custom, motyw `fan_art` celowo pominięty w tym skróconym, homepage'owym teaserze) i CTA „Zamów swoją kartę z kolejnego eventu →" pod karuzelą, linkujące do `#order`. Pełna strona `/portfolio` (`app/portfolio/page.tsx`) miała filtry/grid/lightbox już wcześniej — dopasowano tylko treść jej istniejącego CTA do tego samego sformułowania z briefu.
 - **„Jak to działa"**: sekcja już istnieje (`id="jak-zamowic"`), ale krok 3 briefu („Płacisz wygodnie PayByLink") wymaga najpierw aktywacji PayByLink (patrz wyżej) — do zaktualizowania razem z integracją płatności, nie wcześniej. Krok 2 briefu („2 propozycje grafiki do akceptacji") **już jest wspierane w bazie** (`design_url_2`/`design_original_url_2`/`approved_design_option` w `orders`, wysyłka dwóch wariantów w adminie) — to kwestia dopilnowania, żeby treść kroku to odzwierciedlała, nie budowy nowej funkcji.
-- **Opinie i FAQ**: **już zbudowane w tej sesji** (`components/FaqReviews.tsx`, `/admin/opinie`) — 8 pytań FAQ, siatka opinii z gwiazdkami/opcjonalnym zdjęciem, formularz dodawania z moderacją. Brief dodaje pomysł **screenshotów wiadomości/postów** jako format social proof — to nowy typ treści (nie tylko tekst+ocena), do rozważenia jako rozszerzenie `photo_url` (już obsługuje dowolne zdjęcie, więc screenshot posta technicznie już da się wgrać jako "zdjęcie" do opinii — wystarczy dodać krótszą treść "cytatu" obok).
+- **Opinie i FAQ**: **już zbudowane w tej sesji** (`components/FaqReviews.tsx`, `/admin/opinie`) — 9 pytań FAQ, siatka opinii z gwiazdkami/opcjonalnym zdjęciem, formularz dodawania z moderacją. Pomysł briefu na **screenshoty wiadomości/postów** jako format social proof — **✅ zrobione 2026-08-02**: nowa kolumna `reviews.quote` (nullable text), opcjonalne pole „Krótki cytat" w formularzu opinii, wyświetlane jako wyróżniony cytat nad treścią (na stronie i w `/admin/opinie`); `photo_url` już obsługiwał dowolne zdjęcie, więc screenshot da się wgrać bez zmian.
 - **Kolejność sekcji na stronie**: ✅ ustalone — obecny, faktyczny porządek w `app/page.tsx` to `quickNav → Hero (H1/CTA) → AdShowcase → PortfolioCarousel → RealCardsSection → WhyUs → „Jak to działa" → Formularz → FaqReviews`. Hero zostało fizycznie przesunięte na górę, zaraz pod `quickNav` — zgodnie z priorytetem #1 briefu (Hero jako pierwszy ekran, ścieżka wzroku animacja→przycisk→formularz).
 
 ### Treść z briefu — do wykorzystania przy wdrożeniu (skrót, pełne uzasadnienia w oryginalnej wiadomości Michała)
@@ -96,15 +97,18 @@ Michał dostał zewnętrzną analizę/plan marketingowy strony i poprosił o zap
 
 **4. „Jak to działa"**: nagłówek „Jak wygląda proces zamówienia?", 4 kroki w linii (desktop) / pionowo (mobile) z ikonami: (1) wyślij zdjęcie + wybierz typ karty, (2) dostajesz 2 propozycje grafiki do akceptacji, (3) płacisz wygodnie PayByLink, (4) produkcja i wysyłka do paczkomatu. Pod krokami: „Cały proces jest zrobiony tak, żeby był prosty: od zdjęcia, przez projekt, po gotową kartę w Twojej ręce."
 
-**5. „Dlaczego RaveAdventure?"** — **✅ zbudowane 2026-07-31** (`components/WhyUs.tsx`, wpięte w `app/page.tsx` między Hero a „Jak to działa"). Nagłówek „Co wyróżnia RaveAdventure?", 4 karty z ikoną (🎯/🎴/📲/⚙️): personalizacja 1:1 (nie szablon), fizyczny produkt z subkultury rave/techno (nie plik JPG), opcje NFC/magnes/Top Holder/stojak (pamiątka/dekoracja/inteligentny link), proces zoptymalizowany przez inżyniera (szybka realizacja, wysoka jakość, jasna komunikacja) — ostatni punkt to świadome połączenie pasji Michała i jego inżynierskiego backgroundu jako element wiarygodności. Sekcja NIE ma na razie kotwicy w quick-nav (nie dodawałem 6. pigułki bez pytania) — do rozważenia przy dalszym wdrażaniu briefu.
+**5. „Dlaczego RaveAdventure?"** — **✅ zbudowane 2026-07-31** (`components/WhyUs.tsx`, wpięte w `app/page.tsx` między Hero a „Jak to działa"). Nagłówek „Co wyróżnia RaveAdventure?", 4 karty z ikoną (🎯/🎴/📲/⚙️): personalizacja 1:1 (nie szablon), fizyczny produkt z subkultury rave/techno (nie plik JPG), opcje NFC/magnes/Top Holder/stojak (pamiątka/dekoracja/inteligentny link), proces zoptymalizowany przez inżyniera (szybka realizacja, wysoka jakość, jasna komunikacja) — ostatni punkt to świadome połączenie pasji Michała i jego inżynierskiego backgroundu jako element wiarygodności. **Kotwica w quick-nav dodana 2026-08-02** (`#dlaczego-my`, pigułka „Dlaczego my").
 
 **6. Opinie/social proof**: nagłówek „Co mówią o kartach?", 3-5 bloków, pomysł na screenshoty wiadomości/postów (anonimizowane) + nick + krótki cytat. Tekst zachęcający: „Jeśli zamówisz kartę, możesz dodać swoją opinię razem ze zdjęciem — pomagasz mi rozwijać ten projekt."
 
-**7. FAQ**: 5-7 pytań — czas realizacji, poprawki w projekcie, jak działa NFC, wysyłka za granicę (odpowiedź do ustalenia z Michałem — **nadal nieadresowane**, to decyzja biznesowa, nie kosmetyczna — nie zgadywać), co jeśli nie mam dobrego zdjęcia (porady: ostrość/światło/kadrowanie — **✅ dodane 2026-08-02** jako 9. pytanie w `components/FaqReviews.tsx`, PL/EN). Patrz sprzeczności wyżej co do dokładnej treści odpowiedzi o poprawkach/czasie (już rozstrzygnięte — poprawki bez limitu).
+**7. FAQ**: 5-7 pytań — czas realizacji (**✅ zaktualizowane 2026-08-02** z dokładnym rozkładem od Michała), poprawki w projekcie, jak działa NFC, wysyłka za granicę (**✅ dodane 2026-08-02** — wysyłamy do UE, 40 zł paczkomat / 80 zł adres, patrz „Logika cenowa"), co jeśli nie mam dobrego zdjęcia (porady: ostrość/światło/kadrowanie — **✅ dodane 2026-08-02** jako 9. pytanie w `components/FaqReviews.tsx`, PL/EN). Patrz sprzeczności wyżej co do dokładnej treści odpowiedzi o poprawkach/czasie (już rozstrzygnięte — poprawki bez limitu).
 
-**8. Formularz** (patrz sprzeczność wyżej — 4 vs 5 kroków): pomysł na kafelki z ikoną + dopłatą przy każdej opcji (np. „+15 zł"), krok "opis/atrybuty karty" z limitem znaków, podsumowanie z listą wybranych opcji + ceną przed wysyłką.
+**8. Formularz** (patrz sprzeczność wyżej — 4 vs 5 kroków, zostaje 5): kafelki z ikoną + dopłatą przy opcji (np. „+15 zł") i podsumowanie z listą wybranych opcji + ceną przed wysyłką — **już było zrobione wcześniej** (tagi cenowe w `BACK_OPTIONS_I18N`, ceny per wariant wykończenia, pełne podsumowanie w kroku 5). Limit znaków w opisie — **✅ dodany 2026-08-02**: 600 znaków (`maxLength` + licznik na żywo) na `customDesc` (motyw Custom) i `notes` (uwagi do zdjęcia) w `app/page.tsx`.
 
-**9. Detale UX**: mini-animacja/glow karty przy scrollu w sekcji portfolio (spójnie z istniejącą animacją), max 2 fonty, pasek transparentności „Aktualny czas realizacji: X-Y dni" aktualizowany ręcznie przez Michała (nowy, prosty element — mógłby być zwykłym stałym tekstem w kodzie, aktualizowanym przy commitach, bez potrzeby panelu/bazy).
+**9. Detale UX**: ✅ wszystkie 3 zrobione 2026-08-02.
+  - Mini-animacja/glow karty przy scrollu w portfolio — `components/PortfolioCarousel.tsx`, `IntersectionObserver` na sekcji, jednorazowy puls (`raPortfolioGlowIn` keyframe) na środkowej karcie przy pierwszym wejściu w viewport, spójny ze świeceniem karty w `HeroCardAnimation.tsx` (`raGlowPulse`).
+  - Max 2 fonty — usunięty 3. font (Unbounded, był tylko do nagłówków). `app/layout.tsx`/`app/globals.css`: `--font-hero` teraz wskazuje na Space Grotesk (pogrubiony, wszystkie miejsca miały już `font-weight:700`, więc wygląd nagłówków się nie zmienił). Zostają: Space Grotesk (tekst/nagłówki) + Space Mono (etykiety/cyber akcenty).
+  - Pasek transparentności „Aktualny czas realizacji: 1–3 dni" — wpięty w istniejący pasek social media pod navem (`app/page.tsx`, stałe `CURRENT_TURNAROUND_PL`/`CURRENT_TURNAROUND_EN` na górze pliku, obok `SHOW_PROMO_BANNER`) — Michał aktualizuje ręcznie te 2 stałe, ma być spójne z liczbą w FAQ „Ile czasu zajmuje realizacja?" (`components/FaqReviews.tsx`).
 
 ## Zakres i priorytet redesignu (MVP)
 
@@ -261,7 +265,11 @@ w lib/translations.tsx) — jedna z 6 opcji, wybór wykluczający się wzajemnie
   - Pozostałe 4 opcje (magnes/holder/kombinacje) liczone OSOBNO od rabatu
     ilościowego -35%, dokładnie jak NFC/RFID.
 
-Wysyłka: stałe 15 zł, doliczane zawsze
+Wysyłka (SHIPPING_COST, app/page.tsx) — zależna od kraju wysyłki (shippingRegion) i sposobu dostawy:
+  - Polska (domyślne): 15 zł, stałe, niezależnie od adres/paczkomat
+  - Zagranica/UE + paczkomat InPost: 40 zł
+  - Zagranica/UE + adres: 80 zł
+  (od 2026-08-02 — patrz „Wysyłka za granicę (UE)" niżej po sekcji o mieszanym wykończeniu)
 
 totalPrice = baseTotal - discountSaved + SHIPPING_COST + nfcTotal + cardFinishAddonTotal
 ```
@@ -298,6 +306,36 @@ prostym liczniku `laminatedQty`).
   do dawnego pojedynczego `card_finish`. `send-design` nie pokazywał nigdy szczegółu wykończenia,
   więc nie wymagał zmian.
 
+### Wysyłka za granicę / UE (od 2026-08-02)
+
+Krok 5 formularza ma nowy toggle „Polska / Zagranica (UE)" (`shippingRegion` w `app/page.tsx`),
+nad istniejącym toggle adres/paczkomat — ustalone bezpośrednio z Michałem (wcześniej wysyłka
+tylko po Polsce, cena zawsze 15 zł). Ceny (patrz „Logika cenowa" wyżej): paczkomat zagraniczny
+40 zł, adres zagraniczny 80 zł — to najtańsze realne stawki, jakie Michał znalazł, **nie zmieniać
+bez konsultacji**.
+
+- Darmowe publiczne API InPost używane do podpowiedzi (`app/api/inpost-search`,
+  `components/InpostAutocomplete.tsx`) **obejmuje tylko polskie paczkomaty** — sprawdzone wprost
+  zapytaniami do `api-pl-points.easypack24.net` (Praga/Bratysława/Wilno zwracają 0 wyników;
+  "Berlin"/"Wien" trafiają przypadkiem w polskie miejscowości o podobnej nazwie, nie w prawdziwe
+  niemieckie/austriackie paczkomaty). Dlatego przy `shippingRegion === 'intl'` i wybranym
+  paczkomacie formularz pokazuje zwykłe pole tekstowe zamiast `InpostAutocomplete`/`InpostGeowidget`
+  — klient wpisuje kod + miasto ręcznie (znajdzie go w aplikacji InPost lub lokalnym odpowiedniku
+  w swoim kraju). Adres zagraniczny nie wymaga zmian — to od zawsze wolny tekst.
+- Zmiana kraju czyści już wybrany/potwierdzony polski paczkomat (`paczkomatConfirmed`/`paczkomatId`/
+  `form.address`) — polska wyszukiwarka nie ma sensu dla zagranicy i odwrotnie.
+- Telefon jest teraz wymagany także dla każdego zamówienia zagranicznego (nie tylko paczkomatu) —
+  kurier/InPost międzynarodowy częściej go potrzebuje niż krajowa dostawa na adres.
+- Zapis: nowe kolumny `shipping_region` (`'pl'` | `'intl'`, domyślnie `'pl'`) i `shipping_cost`
+  (int, faktyczna kwota policzona za wysyłkę na tym zamówieniu — zapisywana wprost, nie
+  przeliczana później z region+metoda, żeby stare zamówienia zostały wiarygodne nawet gdyby
+  stawki kiedyś się zmieniły).
+- Widoczność dla Michała: badge „🌍 UE" na liście zamówień w `/admin` (obok NFC), badge w mailu
+  admina (`/api/send-order`) z kwotą wysyłki, i osobna sekcja „WYSYŁKA ZAGRANICZNA" dopisana na
+  samym końcu eksportu `.txt` (`lib/orderExportText.ts`) — TYLKO dla zamówień zagranicznych, więc
+  eksport zamówień krajowych (zdecydowana większość) zostaje bajt w bajt identyczny jak wcześniej,
+  parser Cards Creator nic nie traci.
+
 ## Schemat bazy danych — tabela `orders` (Supabase)
 
 ```
@@ -313,7 +351,8 @@ design_original_url, design_back_original_url,
 card_bottom_text, frame_color, holo_effect,
 design_url_2, design_original_url_2, approved_design_option,
 delivery_method, paczkomat_id,
-card_finish_breakdown, nfc_qty
+card_finish_breakdown, nfc_qty,
+shipping_region, shipping_cost
 ```
 
 ### Tabela `page_views` (licznik odwiedzin strony głównej)

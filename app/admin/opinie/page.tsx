@@ -105,6 +105,9 @@ export default function AdminReviews() {
                     {item.approved ? 'Zatwierdzona' : 'Oczekuje'}
                   </span>
                 </div>
+                {item.quote && (
+                  <p style={{ margin: '0 0 8px', fontSize: '14px', fontStyle: 'italic', color: '#b44dff', lineHeight: '1.5', borderLeft: '2px solid #b44dff', paddingLeft: '10px' }}>„{item.quote}"</p>
+                )}
                 <p style={{ margin: '0 0 10px', fontSize: '13px', color: 'rgba(240,238,255,0.7)', lineHeight: '1.6' }}>{item.content}</p>
                 {item.photo_url && <img src={item.photo_url} alt="" style={{ maxWidth: '140px', borderRadius: '8px', display: 'block', marginBottom: '10px' }} />}
                 <div style={{ display: 'flex', gap: '8px' }}>

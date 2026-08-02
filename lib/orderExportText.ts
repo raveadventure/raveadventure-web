@@ -124,5 +124,14 @@ export function buildOrderExportLines(order: Record<string, any>): string[] {
     if (o.design_back_url) lines.push(`Projekt — tył: ${storageFileName(o.design_back_url)}`)
   }
 
+  // Dopisane na samym końcu, tylko dla zamówień zagranicznych (od 2026-08-02) — domowe zamówienia
+  // (zdecydowana większość) mają eksport bajt w bajt identyczny jak wcześniej, więc parser Cards
+  // Creator nic nie traci; to czysty dodatek, nie zmiana istniejącego formatu.
+  if (o.shipping_region === 'intl') {
+    lines.push('', '--- WYSYŁKA ZAGRANICZNA ---')
+    lines.push('Kraj wysyłki: Zagranica (UE)')
+    lines.push(`Koszt wysyłki: ${o.shipping_cost ?? '—'} zł`)
+  }
+
   return lines
 }

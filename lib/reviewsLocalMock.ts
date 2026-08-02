@@ -14,6 +14,7 @@ export type ReviewItem = {
   name: string
   rating: number
   content: string
+  quote: string | null
   photo_url: string | null
   approved: boolean
   lang: 'pl' | 'en'
