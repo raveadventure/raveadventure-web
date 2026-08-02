@@ -76,7 +76,7 @@ export const T = {
       title2: 'w kolekcjonerską kartę.',
       // Nierozdzielające spacje po jednoliterowych spójnikach/przyimkach ("z", "i") — zasada
       // polskiej typografii: takie literki nie mogą zostać "sierotami" na końcu linijki.
-      sub: 'PVC jak karta bankomatowa, z Twoim zdjęciem, opisem i dodatkami (NFC, magnes, Top Holder).',
+      sub: 'PVC jak karta bankomatowa, z Twoim zdjęciem, opisem i dodatkami (NFC, magnes, Top Holder).',
       badge1: '-35% przy 3+ sztukach',
       cta: 'Zamów swoją kartę',
       ctaSecondary: 'Zobacz przykładowe karty',

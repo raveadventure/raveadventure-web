@@ -265,7 +265,10 @@
 
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
-  .hero { grid-template-columns: 1fr; padding-top: 90px; gap: 32px; }
+  /* padding-top zredukowany z 90px — quickNav + pasek social nad Hero już rezerwują miejsce pod
+     fixed navem (marginTop: navHeight), więc 90px dokładało się na to podwójnie, tworząc spory,
+     pusty odstęp przed "// Wyjątkowa pamiątka" (zgłoszone przez Michała na telefonie). */
+  .hero { grid-template-columns: 1fr; padding-top: 24px; gap: 32px; }
   .fieldGrid { grid-template-columns: 1fr; }
   .formBox { padding: 20px; }
   .stepDot { margin-right: 36px; }
