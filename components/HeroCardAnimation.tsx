@@ -1,5 +1,10 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
+import { Observer } from 'gsap/Observer'
+
+gsap.registerPlugin(useGSAP, Observer)
 
 // Fazy: photo → flash → artwork → frame → attrs → final → real → (loop)
 // "real" (prawdziwa, sfotografowana karta) dotyczy tylko kart z polem `real` (patrz CARDS) —
@@ -114,6 +119,54 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
   const [phase, setPhase] = useState<Phase>('photo')
   const [cardIndex, setCardIndex] = useState(0)
   const [ratios, setRatios] = useState<Record<string, number>>(DEFAULT_RATIOS)
+
+  // Interaktywny tilt + połysk (GSAP) — Faza 1 redesignu. Dodane OBOK istniejącej, dopracowanej
+  // sekwencji faz (setTimeout state machine wyżej) zamiast jej przepisywania: to jedyna realna,
+  // ryzykowna zmiana wizualna, którą warto było przetestować w izolacji. sceneRef = zewnętrzny
+  // kontener 3D (perspective), cardInnerRef = sama karta (preserve-3d, obraca się), glareRef =
+  // nowa warstwa połysku podążająca za kursorem.
+  const sceneRef = useRef<HTMLDivElement>(null)
+  const cardInnerRef = useRef<HTMLDivElement>(null)
+  const glareRef = useRef<HTMLDivElement>(null)
+
+  useGSAP(() => {
+    if (!sceneRef.current || !cardInnerRef.current) return
+    // Reduced motion: żadnego tiltu/połysku — GSAP pisze transform bezpośrednio do DOM, więc
+    // globalna reguła @media (prefers-reduced-motion) w globals.css (celowana w CSS
+    // animation/transition) go NIE łapie. Musi być sprawdzone jawnie tutaj.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    const card = cardInnerRef.current
+    const glare = glareRef.current
+    if (glare) gsap.set(glare, { opacity: 0 })
+    const quickRotX = gsap.quickTo(card, 'rotationX', { duration: 0.6, ease: 'power3.out' })
+    const quickRotY = gsap.quickTo(card, 'rotationY', { duration: 0.6, ease: 'power3.out' })
+    const quickGlareX = glare ? gsap.quickTo(glare, 'x', { duration: 0.35, ease: 'power3.out' }) : null
+    const quickGlareY = glare ? gsap.quickTo(glare, 'y', { duration: 0.35, ease: 'power3.out' }) : null
+    const quickGlareOpacity = glare ? gsap.quickTo(glare, 'opacity', { duration: 0.3 }) : null
+
+    const observer = Observer.create({
+      target: sceneRef.current,
+      type: 'pointer,touch',
+      onMove: self => {
+        const rect = sceneRef.current!.getBoundingClientRect()
+        const px = gsap.utils.clamp(0, 1, ((self.x ?? 0) - rect.left) / rect.width)
+        const py = gsap.utils.clamp(0, 1, ((self.y ?? 0) - rect.top) / rect.height)
+        quickRotY(gsap.utils.mapRange(0, 1, -10, 10, px))
+        quickRotX(gsap.utils.mapRange(0, 1, 8, -8, py))
+        quickGlareX?.(gsap.utils.mapRange(0, 1, -70, 70, px))
+        quickGlareY?.(gsap.utils.mapRange(0, 1, -70, 70, py))
+        quickGlareOpacity?.(0.5)
+      },
+      onHoverEnd: () => {
+        quickRotX(0)
+        quickRotY(0)
+        quickGlareOpacity?.(0)
+      },
+    })
+
+    return () => observer.kill()
+  }, { scope: sceneRef })
 
   const current = CARDS[cardIndex]
   const attrsLabels = cardIndex === 0 ? t.attrs : CARD2_ATTRS
@@ -233,10 +286,6 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
           0%, 100% { opacity: 0.45; }
           50% { opacity: 1; }
         }
-        @keyframes raTilt {
-          0%, 100% { transform: rotateY(-3deg) rotateX(1.5deg) translateZ(0); }
-          50% { transform: rotateY(3deg) rotateX(-1.5deg) translateZ(0); }
-        }
         @keyframes raFadeToBlack {
           0% { opacity: 0; }
           100% { opacity: 1; }
@@ -253,8 +302,10 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
       `}</style>
 
       {/* SCENA: stały, większy obszar z czarnym tłem — mieści zdjęcie/kartę
-          w całości niezależnie od jej proporcji (bez przycinania po bokach) */}
-      <div style={{
+          w całości niezależnie od jej proporcji (bez przycinania po bokach).
+          sceneRef = zasięg Observer (tilt reaguje na ruch myszy w całym tym obszarze, nie tylko
+          nad samą kartą — łatwiej "trafić" w efekt). */}
+      <div ref={sceneRef} style={{
         perspective: '900px',
         position: 'relative',
         width: 'min(280px, 68vw)',
@@ -279,6 +330,7 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
           }} />
         )}
         <div
+          ref={cardInnerRef}
           style={{
             position: 'relative',
             width: '100%',
@@ -288,10 +340,8 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
             background: '#07070f',
             border: '1px solid rgba(180,77,255,0.25)',
             boxShadow: showCard ? '0 0 28px rgba(180,77,255,0.4)' : undefined,
-            animation: showCard ? 'raTilt 7s ease-in-out infinite' : undefined,
             transformStyle: 'preserve-3d',
             willChange: 'transform',
-            transform: 'translateZ(0)',
           }}
         >
           {idx <= 1 && (
@@ -401,6 +451,26 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
               }} />
             </div>
           )}
+
+          {/* Interaktywny połysk — podąża za kursorem (GSAP, patrz useGSAP wyżej), niezależny od
+              istniejącego okresowego "sweep" (raShine) powyżej — dwa różne, uzupełniające się
+              efekty świetlne, nie zamiennik. Zawsze w DOM, żeby GSAP miał stały element do
+              animowania bez re-montowania przy każdej zmianie fazy. UWAGA: opacity NIE jest
+              ustawiane tutaj w JSX (celowo) — GSAP ustawia je startowo w useGSAP (gsap.set) i
+              zarządza nim wyłącznie odtąd; gdyby zostało tu jako statyczna wartość React,
+              każdy re-render (zmiana fazy, co 0.5-7s) zresetowałby je, kasując quickTo z GSAP
+              — dokładnie ten sam błąd co wcześniej ze statycznym transform na karcie. */}
+          <div
+            ref={glareRef}
+            aria-hidden="true"
+            style={{
+              position: 'absolute', top: '50%', left: '50%', width: '70%', height: '70%',
+              marginTop: '-35%', marginLeft: '-35%', borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(255,255,255,0.55), transparent 70%)',
+              mixBlendMode: 'overlay', zIndex: 7, pointerEvents: 'none',
+              willChange: 'transform, opacity',
+            }}
+          />
         </div>
       </div>
       </div>
