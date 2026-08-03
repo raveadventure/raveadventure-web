@@ -10,7 +10,7 @@ type Item = { id: string; name: string; card_url: string; theme: string }
 
 const TXT = {
   pl: {
-    eyebrow: '// realizacje', title: 'Nasze karty', viewAll: 'Zobacz wszystkie →', prev: 'Poprzednia karta', next: 'Następna karta', card: (i: number) => `Karta ${i}`,
+    title: 'Nasze karty', viewAll: 'Zobacz wszystkie →', prev: 'Poprzednia karta', next: 'Następna karta', card: (i: number) => `Karta ${i}`,
     filters: [
       { id: 'all', label: 'Wszystkie' },
       { id: 'techno_rave', label: 'Rave' },
@@ -21,7 +21,7 @@ const TXT = {
     ctaBelow: 'Zamów swoją kartę z kolejnego eventu →',
   },
   en: {
-    eyebrow: '// our work', title: 'Our cards', viewAll: 'View all →', prev: 'Previous card', next: 'Next card', card: (i: number) => `Card ${i}`,
+    title: 'Our cards', viewAll: 'View all →', prev: 'Previous card', next: 'Next card', card: (i: number) => `Card ${i}`,
     filters: [
       { id: 'all', label: 'All' },
       { id: 'techno_rave', label: 'Rave' },
@@ -111,7 +111,6 @@ export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' 
           100% { box-shadow: 0 0 28px rgba(180,77,255,0.25); }
         }
       `}</style>
-      <p className="font-mono text-xs tracking-[2px] text-primary mb-3">{t.eyebrow}</p>
       <div className="flex items-end justify-between mb-8">
         <h2 className="font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground">{t.title}</h2>
         <a href="/portfolio" className="text-sm text-primary whitespace-nowrap hover:underline">{t.viewAll}</a>

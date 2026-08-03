@@ -621,28 +621,33 @@ export default function Home() {
       )}
 
       <div
-        className="flex items-center justify-center gap-3.5 flex-wrap bg-[linear-gradient(90deg,rgba(180,77,255,0.14),rgba(0,240,255,0.10))] border-b border-[rgba(180,77,255,0.25)] py-2.5 px-[5vw]"
+        className="flex items-center justify-center gap-3.5 flex-wrap max-md:flex-col max-md:gap-2 bg-[linear-gradient(90deg,rgba(180,77,255,0.14),rgba(0,240,255,0.10))] border-b border-[rgba(180,77,255,0.25)] py-2.5 px-[5vw]"
         style={{ marginTop: SHOW_PROMO_BANNER ? undefined : `${navHeight}px` }}
       >
-        <span className="text-[13px] font-semibold text-foreground">
-          {lang === 'pl' ? 'Zapraszamy na nasze sociale' : 'Follow us on social media'}
+        <span className="flex items-center justify-center gap-2.5 flex-wrap">
+          <span className="text-[13px] font-semibold text-foreground">
+            {lang === 'pl' ? 'Zapraszamy na nasze sociale' : 'Follow us on social media'}
+          </span>
+          <span className="flex items-center gap-2.5">
+            <a href="https://www.instagram.com/rave_adventure_pl/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="inline-flex items-center justify-center w-11 h-11">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b44dff" strokeWidth="2">
+                <rect x="2" y="2" width="20" height="20" rx="5" />
+                <circle cx="12" cy="12" r="4.2" />
+                <circle cx="17.3" cy="6.7" r="1.1" fill="#b44dff" stroke="none" />
+              </svg>
+            </a>
+            <a href="https://www.facebook.com/raveadventurepl" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="inline-flex items-center justify-center w-11 h-11">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M13.8 21v-7.2h2.4l.4-2.8h-2.8v-1.8c0-.8.2-1.4 1.4-1.4h1.5V5.3C16.2 5.2 15.3 5 14.3 5c-2.1 0-3.5 1.3-3.5 3.6v2.4H8.4v2.8h2.4V21" fill="none" />
+              </svg>
+            </a>
+          </span>
         </span>
-        <span className="flex items-center gap-2.5">
-          <a href="https://www.instagram.com/rave_adventure_pl/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="inline-flex items-center justify-center w-11 h-11">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b44dff" strokeWidth="2">
-              <rect x="2" y="2" width="20" height="20" rx="5" />
-              <circle cx="12" cy="12" r="4.2" />
-              <circle cx="17.3" cy="6.7" r="1.1" fill="#b44dff" stroke="none" />
-            </svg>
-          </a>
-          <a href="https://www.facebook.com/raveadventurepl" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="inline-flex items-center justify-center w-11 h-11">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M13.8 21v-7.2h2.4l.4-2.8h-2.8v-1.8c0-.8.2-1.4 1.4-1.4h1.5V5.3C16.2 5.2 15.3 5 14.3 5c-2.1 0-3.5 1.3-3.5 3.6v2.4H8.4v2.8h2.4V21" fill="none" />
-            </svg>
-          </a>
-        </span>
-        <span className="text-[rgba(240,238,255,0.2)]">|</span>
+        {/* Przedziałek tylko w układzie jednowierszowym (desktop) — na telefonie oba bloki stoją
+            jeden pod drugim (max-md:flex-col), więc pionowa kreska między nimi nie ma sensu i
+            wyglądała krzywo. Kolor podbity z szarego na przytłumiony neon-fiolet, spójnie z paletą. */}
+        <span className="text-[rgba(180,77,255,0.35)] max-md:hidden">|</span>
         <span className="text-xs text-[rgba(240,238,255,0.6)]">
           ⏱ {lang === 'pl' ? 'Aktualny czas realizacji' : 'Current turnaround'}: <strong className="text-foreground">{lang === 'pl' ? CURRENT_TURNAROUND_PL : CURRENT_TURNAROUND_EN}</strong>
         </span>
@@ -670,7 +675,6 @@ export default function Home() {
       <section className={styles.hero}>
         <div className={styles.heroGrid} aria-hidden="true" />
         <div className={styles.heroContent}>
-          <p className={styles.eyebrow}>{t.hero.eyebrow}</p>
           <h1 className={styles.heroTitle}>
             {t.hero.title1}<br />
             <span className={styles.neon}>{t.hero.title2}</span>
@@ -753,7 +757,7 @@ export default function Home() {
       <section className={styles.section} id="jak-zamowic" data-reveal>
         <div className={styles.mobileCollapse}>
           <button type="button" className={styles.mobileCollapseSummary} onClick={() => setHowItWorksOpen(o => !o)}>
-            <p className={styles.sectionEye} style={{ margin: 0 }}>{t.howItWorks.eyebrow}</p>
+            <h2 className="font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground m-0">{t.howItWorks.title}</h2>
             <span className={styles.collapseIcon} style={{ transform: howItWorksOpen ? 'rotate(180deg)' : 'none' }}>▾</span>
           </button>
           <div className={`${styles.mobileCollapseBody} ${howItWorksOpen ? styles.mobileCollapseBodyOpen : ''}`}>
@@ -772,7 +776,7 @@ export default function Home() {
         </div>
 
         <div>
-          <p className={styles.sectionEye} style={{ margin: '0 0 12px' }}>{t.options.eyebrow}</p>
+          <h2 className="font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground mb-3">{t.options.title}</h2>
           <Accordion
             type="single"
             collapsible
@@ -823,7 +827,6 @@ export default function Home() {
       </section>
 
       <section className={styles.section} id="order" data-reveal>
-        <p className={styles.sectionEye}>{t.order.eyebrow}</p>
         <h2 className={styles.sectionTitle}>{t.order.title}</h2>
 
         <div className="max-w-[620px] mx-auto mb-6 bg-[rgba(0,229,160,0.08)] border border-[rgba(0,229,160,0.3)] rounded-[var(--radius-lg)] py-3.5 px-5 flex items-center gap-3.5 text-left">

@@ -2,8 +2,8 @@
 import { useEffect, useRef, useState } from 'react'
 
 const TXT = {
-  pl: { eyebrow: '// reklama', title: 'Zobacz RaveAdventure w akcji' },
-  en: { eyebrow: '// promo', title: 'See RaveAdventure in action' },
+  pl: { title: 'Zobacz RaveAdventure w akcji' },
+  en: { title: 'See RaveAdventure in action' },
 }
 
 const CLIPS = ['/real-cards/promo-ad.mp4', '/real-cards/card-animation.mp4']
@@ -37,7 +37,6 @@ export default function AdShowcase({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
 
   return (
     <section data-reveal className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-2 text-center">
-      <p className="font-mono text-xs tracking-[2px] text-primary mb-3">{t.eyebrow}</p>
       <h2 className="font-heading text-[clamp(20px,3vw,28px)] font-bold text-foreground mb-5">{t.title}</h2>
 
       <div className="relative mx-auto aspect-[9/16] max-w-[380px] overflow-hidden rounded-2xl border border-border bg-black">

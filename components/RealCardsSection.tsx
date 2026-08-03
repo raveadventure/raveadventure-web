@@ -4,13 +4,11 @@ import Image from 'next/image'
 
 const TXT = {
   pl: {
-    eyebrow: '// prawdziwe karty',
     title: 'To nie tylko grafika na ekranie',
     sub: 'Każda karta trafia do Ciebie jako prawdziwy, namacalny przedmiot — plastikowa karta w formacie karty bankomatowej, którą nosisz w portfelu razem z resztą kart.',
     walletCaption: '✅ Prawdziwe nagranie — bez CGI',
   },
   en: {
-    eyebrow: '// real cards',
     title: 'Not just a design on a screen',
     sub: 'Every card arrives as a real, tangible object — a PVC card in ATM-card format that lives in your wallet alongside the rest of your cards.',
     walletCaption: '✅ Real footage — no CGI',
@@ -30,7 +28,6 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
 
   return (
     <section id="prawdziwe-karty" data-reveal className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-10 text-center [scroll-margin-top:var(--nav-height,70px)]">
-      <p className="font-mono text-xs tracking-[2px] text-primary mb-3">{t.eyebrow}</p>
       <h2 className="font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground mb-2.5">{t.title}</h2>
       <p className="mx-auto mb-7 max-w-[560px] text-sm leading-[1.7] text-muted-foreground">{t.sub}</p>
 

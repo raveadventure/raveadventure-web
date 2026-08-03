@@ -6,7 +6,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './
 
 const TXT = {
   pl: {
-    eyebrow: '// faq i opinie',
     title: 'Pytania i opinie',
     faqTitle: 'Najczęstsze pytania',
     reviewsTitle: 'Co mówią klienci',
@@ -44,7 +43,6 @@ const TXT = {
     ],
   },
   en: {
-    eyebrow: '// faq & reviews',
     title: 'Questions & reviews',
     faqTitle: 'Frequently asked questions',
     reviewsTitle: 'What customers say',
@@ -184,7 +182,6 @@ export default function FaqReviews({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
 
   return (
     <section id="faq-opinie" data-reveal className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-14 [scroll-margin-top:var(--nav-height,70px)]">
-      <p className="mb-3 text-center font-mono text-xs tracking-[2px] text-primary">{t.eyebrow}</p>
       <h2 className="mb-8 text-center font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground">{t.title}</h2>
 
       <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] items-start gap-10">

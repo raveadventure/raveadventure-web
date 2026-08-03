@@ -2,7 +2,6 @@
 
 const TXT = {
   pl: {
-    eyebrow: '// dlaczego my',
     title: 'Co wyróżnia RaveAdventure?',
     items: [
       { icon: '🎯', heading: 'Personalizacja 1:1', detail: 'Każda karta powstaje na bazie Twojego zdjęcia i opisu — nie gotowego szablonu.' },
@@ -12,7 +11,6 @@ const TXT = {
     ],
   },
   en: {
-    eyebrow: '// why us',
     title: 'What makes RaveAdventure different?',
     items: [
       { icon: '🎯', heading: '1:1 personalization', detail: 'Every card is built from your own photo and description — not a ready-made template.' },
@@ -66,7 +64,6 @@ export default function WhyUs({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
           font-size: 20px;
         }
       `}</style>
-      <p className="font-mono text-xs tracking-[2px] text-primary mb-3">{t.eyebrow}</p>
       <h2 className="font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground mb-7">{t.title}</h2>
 
       <div className="whyUsGrid">

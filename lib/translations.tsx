@@ -70,7 +70,6 @@ export const T = {
   pl: {
     nav: { orderCta: 'Zamów kartę' },
     hero: {
-      eyebrow: '// Wyjątkowa pamiątka',
       brandTagline: 'Najlepsze wspomnienia z Twojej przygody zasługują na kartę.',
       title1: 'Zamień swoje zdjęcie z festiwalu',
       title2: 'w kolekcjonerską kartę.',
@@ -82,7 +81,7 @@ export const T = {
       ctaSecondary: 'Zobacz przykładowe karty',
     },
     howItWorks: {
-      eyebrow: '// jak to działa',
+      title: 'Jak to działa',
       steps: [
         { n: '01', t: 'Zamów online', d: 'Typ karty, motyw, rewers, zdjęcie.' },
         { n: '02', t: 'Zatwierdź projekt', d: 'Projekt w 24h — min. 2 warianty grafiki do wyboru. Poprawki gratis, aż zaakceptujesz kartę.' },
@@ -90,7 +89,7 @@ export const T = {
       ],
     },
     options: {
-      eyebrow: '// co możesz zamówić',
+      title: 'Co możesz zamówić',
       cards: [
         { icon: '💳', title: 'Karta PVC lub Wizytówka', desc: 'Karta PVC — trwały format karty bankomatowej, mieści się w portfelu, można dodać NFC. Wizytówka — tańszy, lżejszy zestaw 100 sztuk.', tags: ['PVC', 'Wizytówka (100 szt.)'], color: '#b44dff' },
         { icon: '🎨', title: 'Karta z Twoim zdjęciem', desc: 'Wgrywasz zdjęcie — my przerabiamy w klimacie Techno, Festiwal lub Adventure. Dodajesz własną nazwę, atrybuty i umiejętność.', tags: ['Techno / Rave', 'Festiwal', 'Adventure'], color: 'var(--neon)' },
@@ -103,7 +102,6 @@ export const T = {
       attrNote: 'Do każdej karty możesz dodać własne atrybuty — nazwę karty, rok, rzadkość (Common · Rare · Epic · Legendary), dwa atrybuty z wartościami i umiejętność. Twoja karta, Twoje zasady.',
     },
     order: {
-      eyebrow: '// zamówienie',
       title: 'Zamów swoją kartę',
       steps: ['Typ karty', 'Motyw frontu', 'Rewers', 'Ilość', 'Dane'],
       step1: {
@@ -248,7 +246,6 @@ export const T = {
   en: {
     nav: { orderCta: 'Order a card' },
     hero: {
-      eyebrow: '// A unique keepsake',
       brandTagline: 'The best memories from your adventure deserve a card.',
       title1: 'Turn your festival photo',
       title2: 'into a collectible card.',
@@ -258,7 +255,7 @@ export const T = {
       ctaSecondary: 'See example cards',
     },
     howItWorks: {
-      eyebrow: '// how it works',
+      title: 'How it works',
       steps: [
         { n: '01', t: 'Order online', d: 'Card type, theme, back, photo.' },
         { n: '02', t: 'Approve the design', d: 'Design in 24h — at least 2 artwork options to choose from. Free revisions until you approve your card.' },
@@ -266,7 +263,7 @@ export const T = {
       ],
     },
     options: {
-      eyebrow: '// what you can order',
+      title: 'What you can order',
       cards: [
         { icon: '💳', title: 'PVC Card or Business Card', desc: 'PVC card — durable ATM-card format, fits in your wallet, NFC-ready. Business card — cheaper, lighter set of 100 pieces.', tags: ['PVC', 'Business Card (100 pcs)'], color: '#b44dff' },
         { icon: '🎨', title: 'Card with your photo', desc: 'Upload a photo — we turn it into a Techno, Festival, or Adventure themed artwork. Add your own name, attributes, and skill.', tags: ['Techno / Rave', 'Festival', 'Adventure'], color: 'var(--neon)' },
@@ -279,7 +276,6 @@ export const T = {
       attrNote: "You can add your own attributes to every card — card name, year, rarity (Common · Rare · Epic · Legendary), two attributes with values, and a skill. Your card, your rules.",
     },
     order: {
-      eyebrow: '// order',
       title: 'Order your card',
       steps: ['Card type', 'Front theme', 'Back', 'Quantity', 'Details'],
       step1: {
