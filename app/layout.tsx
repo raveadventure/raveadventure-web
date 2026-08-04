@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Orbitron, JetBrains_Mono } from 'next/font/google'
+import { Audiowide, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import SmoothScrollProvider from '../components/SmoothScrollProvider'
 
@@ -13,7 +13,18 @@ import SmoothScrollProvider from '../components/SmoothScrollProvider'
 // dawną rolę Space Grotesk (body) i Space Mono (etykiety) jednym fontem, więc nadal dokładnie
 // 2 fonty łącznie, zgodnie z briefem. Mapowanie ról w app/globals.css (--font-hero/--font-body/
 // --font-display wszystkie teraz przez te dwie zmienne).
-const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '800', '900'], variable: '--font-heading-raw', display: 'swap' })
+//
+// Orbitron → Audiowide (2026-08-03, zgłoszone przez Michała): Orbitron na Google Fonts oferuje
+// WYŁĄCZNIE subset 'latin' (potwierdzone w font-data.json samego next/font, próba dodania
+// 'latin-ext' to błąd typów) — nie ma w ogóle glifów dla polskich ogonków/kresek
+// (ą,ć,ę,ł,ń,ó,ś,ź,ż), w żadnej wadze, więc przeglądarka dorenderowywała je fallbackiem,
+// czasem całym wyrazem/linią naraz. To nie był błąd konfiguracji do naprawienia subsetami —
+// twardy limit tej konkretnej rodziny fontu. Audiowide ma pełne wsparcie 'latin-ext' i podobny,
+// szeroki/futurystyczny "sci-fi HUD" charakter — wybrany przez Michała spośród 4 kandydatów po
+// wizualnym porównaniu z prawdziwym tekstem nagłówków. Tylko jedna waga (400, jedyna dostępna
+// na Google Fonts) — przeglądarki renderują pogrubione nagłówki (font-weight 700/800/900 w CSS)
+// na bazie tej jedynej face bez widocznego pogorszenia, zweryfikowane wizualnie.
+const audiowide = Audiowide({ subsets: ['latin', 'latin-ext'], weight: ['400'], variable: '--font-heading-raw', display: 'swap' })
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin', 'latin-ext'], weight: ['400', '500', '700'], variable: '--font-mono-raw', display: 'swap' })
 
 // Ten sam fallback co w app/api/send-order i send-design — jedno źródło prawdy dla
@@ -62,7 +73,7 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pl" className={`${orbitron.variable} ${jetbrainsMono.variable}`}>
+    <html lang="pl" className={`${audiowide.variable} ${jetbrainsMono.variable}`}>
       <head>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>

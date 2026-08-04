@@ -42,10 +42,11 @@
      etykiety/eyebrow, przyciski) — świadomie zastępuje Space Grotesk/Space Mono, nadal dokładnie
      2 fonty. --font-display (dawniej osobna rola dla "// eyebrow") i --font-body wskazują teraz na
      ten sam JetBrains Mono — rozróżnienie zostaje przez rozmiar/kolor/letter-spacing w miejscach
-     użycia, nie przez osobny krój. */
+     użycia, nie przez osobny krój. Orbitron → Audiowide 2026-08-03 (brak polskich znaków w
+     Orbitronie, patrz komentarz w layout.tsx) — rola i pozostały jeden font (JetBrains Mono) bez zmian. */
   --font-display: var(--font-mono-raw), 'JetBrains Mono', monospace;
   --font-body: var(--font-mono-raw), 'JetBrains Mono', monospace;
-  --font-hero: var(--font-heading-raw), 'Orbitron', sans-serif;
+  --font-hero: var(--font-heading-raw), 'Audiowide', sans-serif;
   /* `shadcn init` chciał dorzucić Geist jako --font-sans (usunięte w layout.tsx) — --font-sans
      mapowany tu na --font-body (JetBrains Mono), żeby klasa Tailwindowa `font-sans` (używana przez
      wygenerowane komponenty shadcn) też renderowała się w naszym foncie, nie domyślnym systemowym. */
