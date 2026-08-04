@@ -38,12 +38,18 @@ const PREMIUM_PHOTOS = [
   { id: 'fridge-4', captionPl: 'Wersja bez etui — sam magnes, prosto na lodówkę.', captionEn: 'The no-case version — just the magnet, straight on the fridge.' },
 ]
 
+// Tymczasowe ograniczenie do 2×2 (Michał, 2026-08-04) — docelowo sekcja ma pokazywać 4 rzędy
+// (8 zdjęć), ale brakuje jeszcze 2 nowych fotek. Do tego czasu wyświetlamy tylko te 4 (po jednym
+// z każdego układu + jedna "cała kolekcja"), reszta ZOSTAJE w PREMIUM_PHOTOS gotowa do włączenia —
+// usuń ten filtr (i wróć renderPhotoGrid do domyślnej siatki auto-fit), gdy dojdą kolejne zdjęcia.
+const PREMIUM_FEATURED_IDS = ['top-holder-1', 'top-holder-2', 'fridge-1', 'fridge-3']
+
 export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
   const t = TXT[lang]
   const [lightbox, setLightbox] = useState<{ src: string; caption: string } | null>(null)
 
-  const renderPhotoGrid = (photos: typeof PHOTOS) => (
-    <div className="mb-7 grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3.5 text-left">
+  const renderPhotoGrid = (photos: typeof PHOTOS, gridClassName = 'grid-cols-[repeat(auto-fit,minmax(150px,1fr))]') => (
+    <div className={`mb-7 grid ${gridClassName} gap-3.5 text-left`}>
       {photos.map(photo => (
         <div key={photo.id}>
           <div
@@ -89,7 +95,10 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
           głównej galerii, żeby wizualnie odróżnić standardowe noszenie od dodatkowego wykończenia. */}
       <h3 className="font-heading text-[clamp(18px,2.4vw,24px)] font-bold text-foreground mb-2">{t.premiumTitle}</h3>
       <p className="mx-auto mb-7 max-w-[560px] text-sm leading-[1.7] text-muted-foreground">{t.premiumSub}</p>
-      {renderPhotoGrid(PREMIUM_PHOTOS)}
+      {renderPhotoGrid(
+        PREMIUM_PHOTOS.filter(p => PREMIUM_FEATURED_IDS.includes(p.id)),
+        'mx-auto max-w-[520px] grid-cols-2'
+      )}
 
       {/* LIGHTBOX ZDJĘĆ */}
       {lightbox && (
