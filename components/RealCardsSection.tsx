@@ -7,11 +7,15 @@ const TXT = {
     title: 'To nie tylko grafika na ekranie',
     sub: 'Każda karta trafia do Ciebie jako prawdziwy, namacalny przedmiot — plastikowa karta w formacie karty bankomatowej, którą nosisz w portfelu razem z resztą kart.',
     walletCaption: '✅ Prawdziwe nagranie — bez CGI',
+    premiumTitle: 'Twoja pamiątka w akcesoriach premium',
+    premiumSub: 'Top Holder ze stojakiem na biurko albo na lodówkę — Twoja karta zawsze na widoku, nie w szufladzie.',
   },
   en: {
     title: 'Not just a design on a screen',
     sub: 'Every card arrives as a real, tangible object — a PVC card in ATM-card format that lives in your wallet alongside the rest of your cards.',
     walletCaption: '✅ Real footage — no CGI',
+    premiumTitle: 'Your keepsake in premium accessories',
+    premiumSub: 'Top Holder with a desk stand or fridge mount — your card always on display, not in a drawer.',
   },
 }
 
@@ -22,29 +26,43 @@ const PHOTOS = [
   { id: 'card-4', captionPl: 'Cały festiwal z lotu ptaka — pamiątka, którą masz zawsze przy sobie.', captionEn: 'The whole festival from above — a keepsake you always carry.' },
 ]
 
+// Osobna sekcja "akcesoria premium" (poniżej wideo z portfelem) — Top Holder na stojaku i na
+// lodówce, świadomie oddzielone od zwykłej galerii "karta w dłoni" powyżej: pokazuje eskalację
+// od codziennego noszenia (portfel) do wystawienia na widoku (biurko/lodówka).
+const PREMIUM_PHOTOS = [
+  { id: 'top-holder-1', captionPl: 'Karta w Top Holderze na stojaku — mini-plakat z najlepszej nocy w Amsterdamie.', captionEn: 'A card in a Top Holder stand — a mini-poster from your best night in Amsterdam.' },
+  { id: 'top-holder-2', captionPl: 'Dwie karty, dwóch ulubionych DJ-ów — Twoja mini-galeria na biurku.', captionEn: 'Two cards, two favorite DJs — your own mini-gallery on the desk.' },
+  { id: 'fridge-1', captionPl: 'Top Holder na lodówce — pamiątka, którą widzisz codziennie.', captionEn: 'A Top Holder on the fridge — a keepsake you see every day.' },
+  { id: 'fridge-2', captionPl: 'Ekipa z Twojego ulubionego festiwalu, zawsze na widoku w kuchni.', captionEn: 'Your crew from your favorite festival, always in view in the kitchen.' },
+]
+
 export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
   const t = TXT[lang]
   const [lightbox, setLightbox] = useState<{ src: string; caption: string } | null>(null)
+
+  const renderPhotoGrid = (photos: typeof PHOTOS) => (
+    <div className="mb-7 grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3.5 text-left">
+      {photos.map(photo => (
+        <div key={photo.id}>
+          <div
+            onClick={() => setLightbox({ src: `/real-cards/${photo.id}.jpg`, caption: lang === 'pl' ? photo.captionPl : photo.captionEn })}
+            className="relative aspect-[0.8] cursor-pointer overflow-hidden rounded-2xl border border-border"
+          >
+            <Image src={`/real-cards/${photo.id}.jpg`} alt={lang === 'pl' ? photo.captionPl : photo.captionEn} fill sizes="(max-width: 640px) 45vw, 220px" className="object-cover" loading="lazy" />
+          </div>
+          <p className="mt-2 text-xs leading-[1.5] text-muted-foreground">{lang === 'pl' ? photo.captionPl : photo.captionEn}</p>
+        </div>
+      ))}
+    </div>
+  )
 
   return (
     <section id="prawdziwe-karty" data-reveal className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-10 text-center [scroll-margin-top:var(--nav-height,70px)]">
       <h2 className="font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground mb-2.5">{t.title}</h2>
       <p className="mx-auto mb-7 max-w-[560px] text-sm leading-[1.7] text-muted-foreground">{t.sub}</p>
 
-      {/* GALERIA ZDJĘĆ PRAWDZIWYCH KART */}
-      <div className="mb-7 grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3.5 text-left">
-        {PHOTOS.map(photo => (
-          <div key={photo.id}>
-            <div
-              onClick={() => setLightbox({ src: `/real-cards/${photo.id}.jpg`, caption: lang === 'pl' ? photo.captionPl : photo.captionEn })}
-              className="relative aspect-[0.8] cursor-pointer overflow-hidden rounded-2xl border border-border"
-            >
-              <Image src={`/real-cards/${photo.id}.jpg`} alt={lang === 'pl' ? photo.captionPl : photo.captionEn} fill sizes="(max-width: 640px) 45vw, 220px" className="object-cover" loading="lazy" />
-            </div>
-            <p className="mt-2 text-xs leading-[1.5] text-muted-foreground">{lang === 'pl' ? photo.captionPl : photo.captionEn}</p>
-          </div>
-        ))}
-      </div>
+      {/* GALERIA ZDJĘĆ PRAWDZIWYCH KART — codzienne noszenie (dłoń/telefon) */}
+      {renderPhotoGrid(PHOTOS)}
 
       {/* WIDEO: karty w portfelu — wyśrodkowane, węższy blok niż cała sekcja */}
       <div className="mx-auto mb-3.5 grid max-w-[640px] grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3.5">
@@ -62,7 +80,14 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
           </div>
         ))}
       </div>
-      <p className="text-[11px] text-[var(--text-faint)]">{t.walletCaption}</p>
+      <p className="mb-8 text-[11px] text-[var(--text-faint)]">{t.walletCaption}</p>
+
+      {/* AKCESORIA PREMIUM: Top Holder na stojaku / na lodówce — eskalacja od "noszę przy sobie"
+          (galeria + wideo wyżej) do "mam wystawione na widoku". Osobny nagłówek, nie wrzucone do
+          głównej galerii, żeby wizualnie odróżnić standardowe noszenie od dodatkowego wykończenia. */}
+      <h3 className="font-heading text-[clamp(18px,2.4vw,24px)] font-bold text-foreground mb-2">{t.premiumTitle}</h3>
+      <p className="mx-auto mb-7 max-w-[560px] text-sm leading-[1.7] text-muted-foreground">{t.premiumSub}</p>
+      {renderPhotoGrid(PREMIUM_PHOTOS)}
 
       {/* LIGHTBOX ZDJĘĆ */}
       {lightbox && (
