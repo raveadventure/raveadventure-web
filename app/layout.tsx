@@ -62,12 +62,15 @@ export const metadata: Metadata = {
 // Dane strukturalne (schema.org) — pomagają Google zrozumieć, że to konkretna marka/usługa,
 // nie tylko strona tekstowa; mogą też poprawić wygląd wyniku w wyszukiwarce (np. link do strony
 // głównej jako "sitelink"). Nie wpływa na treść widoczną dla użytkownika.
+// `logo` wskazywał na stary /logo_kwadrat.png (Michał: "w wyszukiwarce pokazuje się stare logo")
+// — podmieniony na /icon-512.png, który po tej samej naprawie (patrz commit) ma teraz ten sam,
+// aktualny motyw equalizera co favicon, zamiast starego, ozdobnego okrągłego logo z błyskawicami.
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'RaveAdventure',
   url: baseUrl,
-  logo: `${baseUrl}/logo_kwadrat.png`,
+  logo: `${baseUrl}/icon-512.png`,
   description: 'Personalizowane karty kolekcjonerskie z motywem techno i rave — Twoje zdjęcie z festiwalu w formacie karty bankomatowej.',
 }
 
