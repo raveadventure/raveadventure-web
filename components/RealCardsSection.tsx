@@ -39,10 +39,12 @@ const PREMIUM_PHOTOS = [
 ]
 
 // Tymczasowe ograniczenie do 2×2 (Michał, 2026-08-04) — docelowo sekcja ma pokazywać 4 rzędy
-// (8 zdjęć), ale brakuje jeszcze 2 nowych fotek. Do tego czasu wyświetlamy tylko te 4 (po jednym
-// z każdego układu + jedna "cała kolekcja"), reszta ZOSTAJE w PREMIUM_PHOTOS gotowa do włączenia —
-// usuń ten filtr (i wróć renderPhotoGrid do domyślnej siatki auto-fit), gdy dojdą kolejne zdjęcia.
-const PREMIUM_FEATURED_IDS = ['top-holder-1', 'top-holder-2', 'fridge-1', 'fridge-3']
+// (8 zdjęć), ale brakuje jeszcze 2 nowych fotek. Do tego czasu wyświetlamy tylko te 4, reszta
+// ZOSTAJE w PREMIUM_PHOTOS gotowa do włączenia — usuń ten filtr (i wróć renderPhotoGrid do
+// domyślnej siatki auto-fit), gdy dojdą kolejne zdjęcia. fridge-3 (Top Holdery na lodówce)
+// zamieniony na fridge-4 (te same 3 karty, sam magnes bez etui) — Michał chciał pokazać wariant
+// bez Top Holdera zamiast dublować go z fridge-1.
+const PREMIUM_FEATURED_IDS = ['top-holder-1', 'top-holder-2', 'fridge-1', 'fridge-4']
 
 export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
   const t = TXT[lang]
