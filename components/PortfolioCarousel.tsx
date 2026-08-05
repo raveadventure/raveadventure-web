@@ -18,7 +18,7 @@ const TXT = {
       { id: 'adventure', label: 'Podróże' },
       { id: 'custom', label: 'Custom' },
     ],
-    ctaBelow: 'Zamów swoją kartę z kolejnego eventu →',
+    ctaBelowLine1: 'Zamów swoją kartę', ctaBelowLine2: 'z kolejnego eventu →',
   },
   en: {
     title: 'Our cards', viewAll: 'View all →', prev: 'Previous card', next: 'Next card', card: (i: number) => `Card ${i}`,
@@ -29,7 +29,7 @@ const TXT = {
       { id: 'adventure', label: 'Travel' },
       { id: 'custom', label: 'Custom' },
     ],
-    ctaBelow: 'Order your card from your next event →',
+    ctaBelowLine1: 'Order your card', ctaBelowLine2: 'from your next event →',
   },
 }
 
@@ -188,7 +188,9 @@ export default function PortfolioCarousel({ lang = 'pl' }: { lang?: 'pl' | 'en' 
         <a href="#order"
           className="inline-block rounded-full border-[1.5px] border-primary bg-[var(--neon-dim)] px-7 py-3 text-sm font-bold text-primary no-underline transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:shadow-[0_0_32px_rgba(180,77,255,0.5)] hover:scale-[1.03] active:scale-95"
           style={{ boxShadow: 'var(--glow-neon)', animation: glowIn ? 'raPortfolioGlowIn 1.3s ease-out' : undefined }}>
-          {t.ctaBelow}
+          {t.ctaBelowLine1}
+          <br className="hidden max-md:block" />{' '}
+          {t.ctaBelowLine2}
         </a>
       </div>
     </section>
