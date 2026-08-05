@@ -5,10 +5,10 @@ import Image from 'next/image'
 const TXT = {
   pl: {
     title: 'To nie tylko grafika na ekranie',
-    sub: 'Każda karta trafia do Ciebie jako prawdziwy, namacalny przedmiot — plastikowa karta w formacie karty bankomatowej, którą nosisz w portfelu razem z resztą kart.',
+    sub: 'Każda karta trafia do Ciebie jako prawdziwy, namacalny przedmiot — plastikowa karta w formacie karty bankomatowej, którą nosisz w portfelu razem z resztą kart.',
     walletCaption: '✅ Prawdziwe nagranie — bez CGI',
-    premiumTitle: 'Twoja pamiątka w akcesoriach premium',
-    premiumSub: 'Top Holder ze stojakiem na biurko albo na lodówkę — Twoja karta zawsze na widoku, nie w szufladzie.',
+    premiumTitle: 'Twoja pamiątka w akcesoriach premium',
+    premiumSub: 'Top Holder ze stojakiem na biurko albo na lodówkę — Twoja karta zawsze na widoku, nie w szufladzie.',
   },
   en: {
     title: 'Not just a design on a screen',
@@ -20,20 +20,20 @@ const TXT = {
 }
 
 const PHOTOS = [
-  { id: 'card-1', captionPl: 'Ekipa z ulubionego setu — zawsze pod ręką, w jednej karcie.', captionEn: 'Your crew from that one set — always close, in a single card.' },
+  { id: 'card-1', captionPl: 'Ekipa z ulubionego setu — zawsze pod ręką, w jednej karcie.', captionEn: 'Your crew from that one set — always close, in a single card.' },
   { id: 'card-2', captionPl: 'Karta-hołd dla Twojego ulubionego artysty z line-upu.', captionEn: 'A tribute card for your favorite artist from the lineup.' },
-  { id: 'card-3', captionPl: 'Noc w Amsterdamie, zamknięta w kolekcjonerskiej karcie.', captionEn: 'A night in Amsterdam, sealed into a collectible card.' },
-  { id: 'card-4', captionPl: 'Cały festiwal z lotu ptaka — pamiątka, którą masz zawsze przy sobie.', captionEn: 'The whole festival from above — a keepsake you always carry.' },
+  { id: 'card-3', captionPl: 'Noc w Amsterdamie, zamknięta w kolekcjonerskiej karcie.', captionEn: 'A night in Amsterdam, sealed into a collectible card.' },
+  { id: 'card-4', captionPl: 'Cały festiwal z lotu ptaka — pamiątka, którą masz zawsze przy sobie.', captionEn: 'The whole festival from above — a keepsake you always carry.' },
 ]
 
 // Osobna sekcja "akcesoria premium" (poniżej wideo z portfelem) — Top Holder na stojaku i na
 // lodówce, świadomie oddzielone od zwykłej galerii "karta w dłoni" powyżej: pokazuje eskalację
 // od codziennego noszenia (portfel) do wystawienia na widoku (biurko/lodówka).
 const PREMIUM_PHOTOS = [
-  { id: 'top-holder-1', captionPl: 'Karta w Top Holderze na stojaku — mini-plakat z najlepszej nocy w Amsterdamie.', captionEn: 'A card in a Top Holder stand — a mini-poster from your best night in Amsterdam.' },
+  { id: 'top-holder-1', captionPl: 'Karta w Top Holderze na stojaku — mini-plakat z najlepszej nocy w Amsterdamie.', captionEn: 'A card in a Top Holder stand — a mini-poster from your best night in Amsterdam.' },
   { id: 'top-holder-2', captionPl: 'Dwie karty, dwóch ulubionych DJ-ów — Twoja mini-galeria na biurku.', captionEn: 'Two cards, two favorite DJs — your own mini-gallery on the desk.' },
   { id: 'fridge-1', captionPl: 'Top Holder na lodówce — pamiątka, którą widzisz codziennie.', captionEn: 'A Top Holder on the fridge — a keepsake you see every day.' },
-  { id: 'fridge-2', captionPl: 'Ekipa z Twojego ulubionego festiwalu, zawsze na widoku w kuchni.', captionEn: 'Your crew from your favorite festival, always in view in the kitchen.' },
+  { id: 'fridge-2', captionPl: 'Ekipa z Twojego ulubionego festiwalu, zawsze na widoku w kuchni.', captionEn: 'Your crew from your favorite festival, always in view in the kitchen.' },
   { id: 'fridge-3', captionPl: 'Cała kolekcja na lodówce — Top Holder do każdej karty, mini-galeria Twoich wspomnień.', captionEn: 'Your whole collection on the fridge — a Top Holder for every card, a mini-gallery of your memories.' },
   { id: 'fridge-4', captionPl: 'Wersja bez etui — sam magnes, prosto na lodówkę.', captionEn: 'The no-case version — just the magnet, straight on the fridge.' },
 ]

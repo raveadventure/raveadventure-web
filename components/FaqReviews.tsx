@@ -6,7 +6,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './
 
 const TXT = {
   pl: {
-    title: 'Pytania i opinie',
+    title: 'Pytania i opinie',
     faqTitle: 'Najczęstsze pytania',
     reviewsTitle: 'Co mówią klienci',
     addReviewBtn: '+ Dodaj opinię',

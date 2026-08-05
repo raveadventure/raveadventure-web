@@ -18,7 +18,7 @@ const TXT = {
       { id: 'adventure', label: 'Podróże' },
       { id: 'custom', label: 'Custom' },
     ],
-    ctaBelow: 'Zamów swoją kartę z kolejnego eventu →',
+    ctaBelow: 'Zamów swoją kartę z kolejnego eventu →',
   },
   en: {
     title: 'Our cards', viewAll: 'View all →', prev: 'Previous card', next: 'Next card', card: (i: number) => `Card ${i}`,

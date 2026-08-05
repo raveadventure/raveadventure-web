@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 const TXT = {
-  pl: { title: 'Zobacz RaveAdventure w akcji' },
+  pl: { title: 'Karta Rave Adventure w akcji' },
   en: { title: 'See RaveAdventure in action' },
 }
 

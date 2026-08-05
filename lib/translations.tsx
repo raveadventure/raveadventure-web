@@ -70,8 +70,8 @@ export const T = {
   pl: {
     nav: { orderCta: 'Zamów kartę' },
     hero: {
-      brandTagline: 'Najlepsze wspomnienia z Twojej przygody zasługują na kartę.',
-      title1: 'Zamień swoje zdjęcie z festiwalu',
+      brandTagline: 'Najlepsze wspomnienia z Twojej przygody zasługują na kartę.',
+      title1: 'Zamień swoje zdjęcie z festiwalu',
       title2: 'w kolekcjonerską kartę.',
       // Nierozdzielające spacje po jednoliterowych spójnikach/przyimkach ("z", "i") — zasada
       // polskiej typografii: takie literki nie mogą zostać "sierotami" na końcu linijki.
