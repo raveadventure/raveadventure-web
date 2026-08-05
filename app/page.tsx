@@ -258,7 +258,13 @@ export default function Home() {
     gsap.set(targets, { opacity: 0, y: 28 })
     ScrollTrigger.batch(targets, {
       start: 'top 85%',
-      onEnter: batch => gsap.to(batch, { opacity: 1, y: 0, duration: 0.7, stagger: 0.12, ease: 'power2.out', overwrite: true }),
+      // clearProps: 'transform' — bez tego GSAP zostawia inline transform: translate(0px, 0px)
+      // (matematycznie bez znaczenia, ale wg spec CSS DOWOLNY transform ≠ none tworzy nowy
+      // containing block dla position: fixed) — łamało to np. lightbox w RealCardsSection.tsx
+      // (fixed inset-0 liczony względem tej sekcji zamiast viewportu, szczególnie widoczne na
+      // telefonie — zdjęcie po kliknięciu wyskakiwało poza ekran). Usunięcie transformu po
+      // zakończeniu animacji naprawia to dla każdej sekcji [data-reveal], nie tylko tej jednej.
+      onEnter: batch => gsap.to(batch, { opacity: 1, y: 0, duration: 0.7, stagger: 0.12, ease: 'power2.out', overwrite: true, clearProps: 'transform' }),
     })
     // Sekcje niżej (portfolio, opinie...) doczytują dane z Supabase asynchronicznie i mogą
     // zmienić wysokość po pierwszym pomiarze — odśwież progi triggerów, gdy strona w pełni
