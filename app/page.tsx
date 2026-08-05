@@ -135,7 +135,7 @@ export default function Home() {
   // zostaje przy prostym liczniku.
   const [finishBreakdown, setFinishBreakdown] = useState<Record<string, { qty: number; nfcQty: number }>>({ standard: { qty: 1, nfcQty: 0 } })
   // Krok 1 domyślnie pokazuje tylko "Standard" — 5 dodatkowych wykończeń chowa się za
-  // "Dodaj inne wykończenie", żeby nie serwować 6 równoczesnych decyzji + sub-decyzji NFC
+  // "Dodaj akcesoria premium do swojej karty", żeby nie serwować 6 równoczesnych decyzji + sub-decyzji NFC
   // zanim klient zdąży się w ogóle zaangażować (patrz $impeccable critique, P2). Klient, który
   // wraca do kroku 1 z już wybranym dodatkowym wykończeniem (np. po cofnięciu się z kroku 2),
   // od razu widzi pełną listę — nic nie chowamy, co już wybrał.
@@ -956,9 +956,10 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => setShowMoreFinishes(true)}
-                      className="mb-5 text-[13px] font-semibold text-primary bg-transparent border-0 cursor-pointer p-0 hover:underline"
+                      style={{ boxShadow: 'var(--glow-neon)' }}
+                      className="mb-5 inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-primary bg-[var(--neon-dim)] px-5 py-2.5 text-[13px] font-bold text-primary transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:shadow-[0_0_28px_rgba(180,77,255,0.5)] hover:scale-[1.03] active:scale-95 cursor-pointer"
                     >
-                      {lang === 'pl' ? '+ Dodaj inne wykończenie' : '+ Add another finish'}
+                      {lang === 'pl' ? '✦ Dodaj akcesoria premium do swojej karty' : '✦ Add premium accessories to your card'}
                     </button>
                   )}
                   {quantity === 0 && (
