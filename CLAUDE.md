@@ -8,7 +8,7 @@ Zawsze odpowiadaj po polsku w tej konwersacji (tekst do użytkownika, komentarze
 
 ## Co to za projekt
 
-RaveAdventure to serwis, w którym klienci zamieniają zdjęcia z festiwali techno/rave w spersonalizowane, kolekcjonerskie karty (format karty bankomatowej, PVC lub wizytówki). Klient wgrywa zdjęcie → dostaje mail potwierdzający → właściciel (Michał) tworzy grafikę (patrz „Aplikacja towarzysząca" niżej — dziś głównie przez dedykowaną, osobną aplikację Rave Adventure Cards Creator ze stylizacją AI, wcześniej czysto ręcznie w Pixlr) → wysyła projekt do akceptacji → klient płaci (BLIK/przelew, docelowo PayByLink) → karta idzie do druku i wysyłki.
+RaveAdventure to serwis, w którym klienci zamieniają zdjęcia z festiwali techno/rave w spersonalizowane, kolekcjonerskie karty (format karty bankomatowej, PVC lub wizytówki). Klient wgrywa zdjęcie → dostaje mail potwierdzający → właściciel (Michał) tworzy grafikę (patrz „Aplikacja towarzysząca" niżej — dziś głównie przez dedykowaną, osobną aplikację Rave Adventure Cards Creator ze stylizacją AI, wcześniej czysto ręcznie w Pixlr) → wysyła projekt do akceptacji → klient płaci (automatycznie przez Paybylink — BLIK/Przelewy Online — albo ręcznym BLIK/przelewem jako fallback) → karta idzie do druku i wysyłki.
 
 To jest hobby/pasja, nie skalowany biznes VC. Michał prowadzi to solo, obok pracy na etacie, jako niezarejestrowana działalność (limit przychodu kwartalnego). Nie sugeruj rozwiązań zakładających duży zespół, duży budżet infrastruktury czy enterprise-scale — priorytet to prostota utrzymania przez jedną osobę.
 
@@ -42,7 +42,9 @@ To jest hobby/pasja, nie skalowany biznes VC. Michał prowadzi to solo, obok pra
 
 ## Aktualny redesign — kontekst ważny dla pracy w tym repo
 
-Trwa kompletny redesign robiony lokalnie (WSL + VS Code), zanim cokolwiek trafi na produkcję. Obecna wersja online (raveadventure.pl) działa i **nie jest ruszana**, dopóki redesign nie będzie gotowy do podmiany.
+**[✅ ZAKTUALIZOWANE 2026-08-06] `main` na GitHubie jest podłączony do Vercela — każdy `git push origin main` automatycznie builduje i wdraża raveadventure.pl. Nie ma osobnego kroku "podmiana produkcji".** Redesign (Tailwind CSS v4 + shadcn/ui + GSAP + Lenis) poszedł live 2026-08-02 na wyraźną prośbę Michała i od tego czasu każdy push na `main` trafia bezpośrednio na żywą stronę, z prawdziwym Supabase i prawdziwymi klientami (Vercel ma własne, osobno skonfigurowane zmienne środowiskowe w panelu — niezależne od lokalnego `.env.local`). Zasada „local only, nie pushuj bez wyraźnego polecenia" nadal obowiązuje jako domyślna (patrz sekcja „Workflow" niżej) — ale **wynika teraz z tego, że push = natychmiastowy wpływ na prawdziwych klientów i prawdziwe pieniądze**, nie z tego, że produkcja czeka gdzieś w poczekalni na osobny „swap". Praca lokalna to siatka bezpieczeństwa (testowanie przed dotarciem do klienta), nie krok przygotowawczy przed czymś, co i tak nastąpi później.
+
+**Ważne dla nowych zmiennych środowiskowych**: dodanie/zmiana zmiennej w panelu Vercela NIE działa wstecznie na już wdrożony deployment — trzeba wywołać nowy build (Redeploy w panelu Vercela **czasem nie wystarcza** — zweryfikowane 2026-08-06, że zadziałał dopiero nowy push/commit, nie ręczny redeploy istniejącego). Jeśli po dodaniu zmiennej coś nadal nie działa, zrób pusty commit (`git commit --allow-empty`) i push, żeby wymusić świeży build.
 
 Zakres redesignu — otwarty na duże zmiany:
 
@@ -175,12 +177,15 @@ Wymagane w `.env.local` (patrz `README.md` / `SUPABASE_SETUP.md` dla schematu Su
 
 ## Stack
 
-_Aktualnie zainstalowane pakiety — docelowy stack redesignu (Tailwind, Motion, Lenis, Three.js/R3F/drei lub Spline) opisany w „Architektura i stack redesignu" wyżej jeszcze nie jest dodany do `package.json`._
+_[✅ ZAKTUALIZOWANE 2026-08-06] Redesign z sekcji „Architektura i stack redesignu" wyżej jest już zaimplementowany i na żywo (patrz „Aktualny redesign" wyżej) — z jedną świadomą zmianą kierunku po drodze: Hero zostało na 2D/SVG (`components/HeroCardAnimation.tsx`) wzmocnionym o GSAP tilt/połysk, NIE przepisane na prawdziwe 3D (Three.js/R3F/Spline) — mniejszy koszt utrzymania dla jednoosobowego projektu. „Motion" z pierwotnego planu zastąpiony w całości przez GSAP (jedna biblioteka animacji zamiast dwóch nakładających się)._
 
 - Next.js 14.2.35 (App Router), React 18, TypeScript 5
+- Tailwind CSS v4 (`@tailwindcss/postcss`) + shadcn/ui (Accordion, Dialog, Tabs) — zastąpiły inline style/CSS Modules na całej stronie głównej i `/portfolio`; panel admina (`/admin/**`) i `/login` świadomie NIE migrowane, zostają na starym stylu
+- GSAP (`gsap`, `@gsap/react`) — animacje, ScrollTrigger.batch() do reveali przy scrollu, tilt/połysk w Hero
+- Lenis — płynny scroll, w domyślnym trybie (bez transformowanego wrappera — GSAP ScrollSmoother był testowany i odrzucony, bo łamał `position: fixed` nav), wyłączony na `/admin/**` i `/login`
 - Supabase (`@supabase/supabase-js` ^2.43.4) — baza danych + Storage
 - Resend — maile transakcyjne, wysyłane bezpośrednio przez `fetch('https://api.resend.com/emails')`, bez SDK
-- Hosting: Vercel
+- Hosting: Vercel — auto-deploy z `main` (patrz „Aktualny redesign" wyżej)
 - Package manager: npm
 
 ## Struktura kluczowych plików
@@ -483,7 +488,7 @@ Maile (`send-order`, `send-design`) duplikują podobny wzorzec `L = {pl: {...}, 
 - Supabase project ID: `jhdakluuhjnuyrgxqgxg`, bucket Storage: `order-photos`
 - Panel admina: `/admin`, login `ravemaster` — hasło patrz `ADMIN_PASSWORD` w `.env.local` (celowo nie wpisane tutaj — plik trafia do gita; hasło i tak zostanie zmienione przed podmianą produkcji)
 - GitHub: `raveadventure/raveadventure-web`
-- Domena produkcyjna: raveadventure.pl (obecna wersja online — nie dotykać do czasu ukończenia redesignu)
+- Domena produkcyjna: raveadventure.pl — auto-deploy z `main` przez Vercel (patrz „Aktualny redesign" wyżej), na żywo od 2026-08-02
 
 ## Pytania, które warto zadać Michałowi zanim zrobisz coś dużego
 
