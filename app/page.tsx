@@ -735,8 +735,8 @@ export default function Home() {
             {showPaymentInfo && (
               <p style={{ margin: '10px 0 0', paddingTop: '10px', borderTop: '1px solid rgba(0,229,160,0.2)', fontSize: '12.5px', color: 'rgba(240,238,255,0.7)', lineHeight: '1.7', textAlign: 'left' }}>
                 {lang === 'pl'
-                  ? 'Po przygotowaniu projektu otrzymasz go na maila do zatwierdzenia lub do poprawek. W tym samym mailu znajdziesz informację o opłacie — możliwość przelewu BLIK na telefon lub na numer konta. Po zaksięgowaniu opłaty karta trafia do druku, a następnie do wysyłki.'
-                  : "Once your design is ready, you'll receive it by email for approval or revisions. That same email includes payment details — BLIK to a phone number or a bank transfer. Once payment is confirmed, your card goes to print and then shipping."}
+                  ? 'Po przygotowaniu projektu otrzymasz go na maila do zatwierdzenia lub do poprawek. Po zaakceptowaniu możesz zapłacić od razu online (BLIK lub przelew) jednym kliknięciem, albo ręcznie wg danych z maila. Po zaksięgowaniu opłaty karta trafia do druku, a następnie do wysyłki.'
+                  : "Once your design is ready, you'll receive it by email for approval or revisions. After approving, you can pay instantly online (BLIK or bank transfer) with one click, or manually using the details in the email. Once payment is confirmed, your card goes to print and then shipping."}
               </p>
             )}
           </div>

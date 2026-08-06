@@ -85,7 +85,8 @@ export const T = {
       steps: [
         { n: '01', t: 'Zamów online', d: 'Typ karty, motyw, rewers, zdjęcie.' },
         { n: '02', t: 'Zatwierdź projekt', d: 'Projekt w 24h — min. 2 warianty grafiki do wyboru. Poprawki gratis, aż zaakceptujesz kartę.' },
-        { n: '03', t: 'Karta do Ciebie', d: 'Produkcja i wysyłka 3–5 dni.' },
+        { n: '03', t: 'Płacisz online', d: 'BLIK lub przelew jednym kliknięciem — płatność księguje się automatycznie.' },
+        { n: '04', t: 'Karta do Ciebie', d: 'Produkcja i wysyłka 3–5 dni.' },
       ],
     },
     options: {
@@ -259,7 +260,8 @@ export const T = {
       steps: [
         { n: '01', t: 'Order online', d: 'Card type, theme, back, photo.' },
         { n: '02', t: 'Approve the design', d: 'Design in 24h — at least 2 artwork options to choose from. Free revisions until you approve your card.' },
-        { n: '03', t: 'Card to you', d: 'Production and shipping in 3–5 days.' },
+        { n: '03', t: 'Pay online', d: 'BLIK or bank transfer in one click — payment is confirmed automatically.' },
+        { n: '04', t: 'Card to you', d: 'Production and shipping in 3–5 days.' },
       ],
     },
     options: {
