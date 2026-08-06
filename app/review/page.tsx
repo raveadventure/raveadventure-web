@@ -7,12 +7,18 @@ function ReviewContent() {
   const token = params.get('token')
   const action = params.get('action')
   const option = params.get('option')
+  // Powrót z hostowanej strony płatności Paybylink (returnUrlSuccess) — nie wołamy ponownie
+  // /api/approve (zamówienie jest już zatwierdzone), tylko od razu pokazujemy ekran sukcesu
+  // z informacją o płatności zamiast instrukcji "zapłać wg danych z maila".
+  const paidReturn = params.get('paid') === '1'
 
   const [step, setStep] = useState<'loading' | 'approve' | 'reject' | 'success-approve' | 'success-reject' | 'error'>(
-    action === 'approve' ? 'approve' : action === 'reject' ? 'reject' : 'error'
+    paidReturn ? 'success-approve' : action === 'approve' ? 'approve' : action === 'reject' ? 'reject' : 'error'
   )
   const [notes, setNotes] = useState('')
   const [sending, setSending] = useState(false)
+  const [payLoading, setPayLoading] = useState(false)
+  const [payError, setPayError] = useState('')
   const [designInfo, setDesignInfo] = useState<{
     design_url: string | null
     design_url_2: string | null
@@ -21,7 +27,7 @@ function ReviewContent() {
   } | null>(null)
 
   useEffect(() => {
-    if (action === 'approve' && token) handleApprove()
+    if (action === 'approve' && token && !paidReturn) handleApprove()
   }, [])
 
   useEffect(() => {
@@ -59,6 +65,27 @@ function ReviewContent() {
       else setStep('error')
     } catch { setStep('error') }
     setSending(false)
+  }
+
+  const handlePay = async () => {
+    setPayLoading(true)
+    setPayError('')
+    try {
+      const res = await fetch('/api/paybylink/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      })
+      const data = await res.json()
+      if (res.ok && data.url) {
+        window.location.href = data.url
+        return
+      }
+      setPayError(data.error || 'Nie udało się rozpocząć płatności. Spróbuj ponownie lub zapłać ręcznie wg danych z maila.')
+    } catch {
+      setPayError('Nie udało się rozpocząć płatności. Spróbuj ponownie lub zapłać ręcznie wg danych z maila.')
+    }
+    setPayLoading(false)
   }
 
   const designPreview = (() => {
@@ -166,9 +193,30 @@ function ReviewContent() {
     {option && (
       <p style={{ color: '#00e5a0', fontSize: '14px', fontWeight: 700, margin: '0 0 12px' }}>Wybrany wariant: {option}</p>
     )}
-    <p style={{ color: 'rgba(240,238,255,0.6)', fontSize: '15px', lineHeight: '1.7', margin: '0 0 24px' }}>
-      Świetnie! Jeszcze tylko jeden krok — dokonaj płatności zgodnie z danymi które otrzymałeś/aś w mailu z projektem. Po zaksięgowaniu wpłaty od razu przekazujemy kartę do produkcji.
-    </p>
+    {paidReturn ? (
+      <p style={{ color: '#00e5a0', fontSize: '15px', lineHeight: '1.7', margin: '0 0 24px', fontWeight: 700 }}>
+        ✅ Płatność otrzymana! Karta trafia do produkcji.
+      </p>
+    ) : (
+      <>
+        <p style={{ color: 'rgba(240,238,255,0.6)', fontSize: '15px', lineHeight: '1.7', margin: '0 0 20px' }}>
+          Świetnie! Jeszcze tylko jeden krok — zapłać online (BLIK lub przelew) albo ręcznie wg danych z maila. Po zaksięgowaniu wpłaty od razu przekazujemy kartę do produkcji.
+        </p>
+        <button
+          onClick={handlePay}
+          disabled={payLoading}
+          style={{ width: '100%', background: '#b44dff', color: '#fff', border: 'none', borderRadius: '10px', padding: '14px', fontSize: '15px', fontWeight: 700, cursor: payLoading ? 'default' : 'pointer', fontFamily: 'inherit', marginBottom: '12px', boxShadow: '0 0 24px rgba(180,77,255,0.35)' }}
+        >
+          {payLoading ? 'Przekierowuję...' : '💳 Zapłać teraz (BLIK / Przelew)'}
+        </button>
+        {payError && (
+          <p style={{ color: '#ff4d6d', fontSize: '13px', margin: '0 0 16px' }}>{payError}</p>
+        )}
+        <p style={{ color: 'rgba(240,238,255,0.4)', fontSize: '13px', lineHeight: '1.6', margin: '0 0 24px' }}>
+          Wolisz zapłacić ręcznie? Dane do przelewu/BLIK znajdziesz w mailu z projektem karty.
+        </p>
+      </>
+    )}
     <p style={{ color: 'rgba(240,238,255,0.4)', fontSize: '13px', margin: 0 }}>
       Pytania? Napisz na <a href="mailto:kontakt@raveadventure.pl" style={{ color: '#b44dff' }}>kontakt@raveadventure.pl</a>
     </p>
