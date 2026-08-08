@@ -38,13 +38,14 @@
   padding: 40px 5vw 32px;
   position: relative; overflow: hidden;
 }
-.heroGrid {
-  position: absolute; inset: 0; pointer-events: none; z-index: 0;
-  background-image:
-    linear-gradient(rgba(180,77,255,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(180,77,255,0.06) 1px, transparent 1px);
-  background-size: 60px 60px;
-  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+/* Promienie równika (rayburst) — sygnaturowy element tego przejścia Hero: te same "słupki
+   equalizera", które tworzą logo (patrz LogoEqualizer), rozbite promieniście za kartą animacji,
+   jakby to ona była źródłem dźwięku/energii. Naprzemienna długość = echo słupków korektora, nie
+   płaski sunburst. Czysta geometria (SVG line), nie ilustracja. */
+.heroRays {
+  position: absolute; left: 50%; top: 54%; width: min(900px, 140vw); aspect-ratio: 1;
+  transform: translate(-50%, -50%); pointer-events: none; z-index: 0;
+  mask-image: radial-gradient(circle at 50% 50%, black 8%, transparent 62%);
 }
 .heroContent { position: relative; z-index: 1; max-width: 680px; width: 100%; }
 .heroTitle { font-family: var(--font-hero); font-size: clamp(32px, 4vw, 54px); line-height: 1.12; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 20px; color: var(--text); }
@@ -56,17 +57,39 @@
   border: 1px solid var(--border); border-radius: 20px;
   color: var(--text-muted); background: var(--surface);
 }
+/* Para przycisków w stylu "pigułka + okrągła strzałka" (kierunek Hero 2026-08-08, patrz
+   PRODUCT.md/DESIGN.md) — pigułka zastępuje dawny prostokąt zaokrąglony 10px, druga akcja
+   dostaje własny okrągły przycisk zamiast płaskiego podkreślonego linku. */
 .btnHero {
-  display: inline-block; padding: 15px 34px;
+  display: inline-flex; align-items: center; gap: 10px; padding: 15px 12px 15px 30px;
   background: linear-gradient(135deg, var(--neon), #a855f7);
   color: #0a0014;
-  font-size: 15px; font-weight: 700; border-radius: 10px;
+  font-size: 15px; font-weight: 700; border-radius: 999px;
   transition: box-shadow 0.25s, transform 0.15s;
   font-family: var(--font-body);
   box-shadow: 0 4px 20px -4px rgba(180,77,255,0.5);
 }
 .btnHero:hover { box-shadow: 0 6px 28px -4px rgba(180,77,255,0.75), var(--glow-neon); transform: translateY(-2px); }
 .btnHero:active { transform: translateY(0); }
+.btnHeroIcon {
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 34px; height: 34px; border-radius: 50%; background: #0a0014;
+  transition: transform 0.25s;
+}
+.btnHero:hover .btnHeroIcon { transform: rotate(45deg); }
+.btnHeroSecondary {
+  display: inline-flex; align-items: center; gap: 12px;
+  color: var(--text-muted); font-size: 13px; font-weight: 600;
+  transition: color 0.2s;
+}
+.btnHeroSecondary:hover { color: var(--text); }
+.btnHeroSecondaryIcon {
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1.5px solid var(--border); background: var(--surface);
+  color: var(--neon); transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.btnHeroSecondary:hover .btnHeroSecondaryIcon { border-color: var(--neon); box-shadow: var(--glow-neon); transform: scale(1.06); }
 
 /* ── SECTIONS ── */
 .section { padding: 36px 5vw; max-width: 1100px; margin: 0 auto; scroll-margin-top: var(--nav-height, 70px); }

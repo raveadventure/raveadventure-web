@@ -90,6 +90,38 @@ function PreviewSlot({ top, left, width, align = 'center', fontSize = '10px', co
   )
 }
 
+// Promienie za animacją Hero — czysta geometria SVG, nie ilustracja. Naprzemienna długość
+// (długi/krótki/średni...) świadomie powtarza rytm słupków korektora z LogoEqualizer, więc
+// element czytany jest jako "dźwięk promieniujący z karty", nie jako przypadkowy sunburst.
+// Kierunek wizualny Hero 2026-08-08 — patrz PRODUCT.md / DESIGN.md.
+function HeroRays() {
+  const RAY_COUNT = 28
+  const rays = Array.from({ length: RAY_COUNT }, (_, i) => {
+    const angle = (360 / RAY_COUNT) * i
+    // Wzorzec 3-krokowy (długi/krótki/średni) jak w equalizerze — nie jednostajna długość.
+    const pattern = [46, 22, 34]
+    const len = pattern[i % pattern.length]
+    const isAccent = i % 7 === 0
+    return { angle, len, isAccent }
+  })
+  return (
+    <svg viewBox="-50 -50 100 100" className={styles.heroRays} aria-hidden="true">
+      {rays.map((r, i) => (
+        <line
+          key={i}
+          x1={0} y1={-8}
+          x2={0} y2={-8 - r.len}
+          stroke={r.isAccent ? '#00f0ff' : '#b44dff'}
+          strokeOpacity={r.isAccent ? 0.5 : 0.28}
+          strokeWidth={1.1}
+          strokeLinecap="round"
+          transform={`rotate(${r.angle})`}
+        />
+      ))}
+    </svg>
+  )
+}
+
 export default function Home() {
   const [lang, setLang] = useState<Lang>('pl')
   const t = T[lang]
@@ -678,8 +710,24 @@ export default function Home() {
         ))}
       </nav>
 
+      {/*
+        THESIS: The card, not the copy, is the proof — every decorative element radiates from it
+        instead of decorating the page around it. Refuses the generic "grid background + flat
+        button" agency-template default this category always ships.
+        OWN-WORLD: Near-black stage, neon purple #b44dff primary / cyan #00f0ff secondary, pill
+        CTA + paired circular arrow-icon button, equalizer-rhythm ray burst (long/short/medium,
+        not uniform sunburst) as the one signature decorative motif.
+        STORY: Visitor sees their photo mid-transformation into a card, radiating energy outward
+        — reads "this becomes something", clicks the pill to start.
+        FIRST VIEWPORT: H1 + subhead centered, card animation as focal point with rays behind it,
+        pill CTA + circular secondary CTA directly beneath, no scroll needed to find the action.
+        FORM: Brief-pinned direction (SkyNexa Labs reference, adapted to protected RA palette,
+        confirmed via AskUserQuestion 2026-08-08) — fused with RA's own existing equalizer/wave
+        brand motif (LogoEqualizer) rather than a bare sunburst copy.
+        FINISH: unreviewed and undocumented is unfinished; this build ends with the finish
+        review, the verdict, and DESIGN.md.
+      */}
       <section className={styles.hero}>
-        <div className={styles.heroGrid} aria-hidden="true" />
         <div className={styles.heroContent}>
           <h1 className={styles.heroTitle}>
             {t.hero.title1}<br />
@@ -687,15 +735,27 @@ export default function Home() {
           </h1>
           <p className={styles.heroSub}>{t.hero.sub}</p>
 
-          <div style={{ marginTop: '28px' }}>
+          <div style={{ marginTop: '28px', position: 'relative' }}>
+            <HeroRays />
             <HeroCardAnimation lang={lang} />
           </div>
 
           {/* CTA tuż pod animacją (nie oddzielone innym blokiem) — prosta ścieżka wzroku:
-              animacja → przycisk → formularz, patrz brief marketingowy. */}
-          <div style={{ marginTop: '18px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-            <a href="#order" className={styles.btnHero}>{t.hero.cta}</a>
-            <a href="#realizacje" style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'underline', textUnderlineOffset: '3px' }}>{t.hero.ctaSecondary}</a>
+              animacja → przycisk → formularz, patrz brief marketingowy. Para pigułka + okrągła
+              strzałka (kierunek Hero 2026-08-08) zastępuje dawny prostokąt + podkreślony link. */}
+          <div style={{ marginTop: '22px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+            <a href="#order" className={styles.btnHero}>
+              {t.hero.cta}
+              <span className={styles.btnHeroIcon} aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 11L11 3M11 3H4.5M11 3V9.5" stroke="#b44dff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </span>
+            </a>
+            <a href="#realizacje" className={styles.btnHeroSecondary}>
+              <span className={styles.btnHeroSecondaryIcon} aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 11L11 3M11 3H4.5M11 3V9.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </span>
+              {t.hero.ctaSecondary}
+            </a>
           </div>
 
           <div
