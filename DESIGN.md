@@ -2,7 +2,7 @@
 
 <!-- impeccable:design-schema 1 -->
 
-**Scope note:** This records the visual system established for the Hero section (`app/page.tsx` Hero block + `components/HeroCardAnimation.tsx`, styled via `app/page.module.css`) on 2026-08-08. The rest of the public site (AdShowcase, PortfolioCarousel, RealCardsSection, WhyUs, "Jak to działa", order form, FAQ, nav/footer) predates this decision and has not been brought into this system yet — do not assume it matches until it's deliberately extended here.
+**Scope note:** This records the visual system established for the Hero section (`app/page.tsx` Hero block + `components/HeroCardAnimation.tsx`) on 2026-08-08, extended the same day to the "Jak to działa" step cards. The rest of the public site (AdShowcase, PortfolioCarousel, RealCardsSection, WhyUs, order form, FAQ, nav/footer) predates this decision and has not been brought into this system yet — do not assume it matches until it's deliberately extended here.
 
 ## Direction
 
@@ -22,6 +22,12 @@ Committed — the palette is fixed brand identity (protected, see PRODUCT.md), n
 - **CTA pair**: primary action is a full pill (`border-radius: 999px`) with a small circular icon-badge inset on its trailing edge (arrow, rotates 45° on hover); secondary action is plain label + a standalone circular icon button (40px, bordered, glows on hover). This pairing replaces the prior single rounded-rect button + plain underlined text link. Reuses the "glowing pill" convention already established elsewhere on the site (e.g. the step-1 "Dodaj akcesoria premium" button) rather than inventing a third button style.
 - **Signature decoration — HeroRays**: a pure-SVG radiating line-burst (28 rays, 3-step long/short/medium length pattern echoing equalizer bars, ~1-in-7 rendered in cyan as accent) centered behind `HeroCardAnimation`, masked to fade at its edges. Replaces the prior flat CSS dot-grid background for the Hero section (removed — the mechanical detector flagged the grid as a generic "codex-grid-background" pattern, and running both at once would have split the section's one authored decorative moment into two competing ones).
 - **HeroCardAnimation** (the photo→card transformation sequence) is untouched — it is the product's actual mechanism and existing brand IP, not something this pass had licence to redesign; only the button/decoration language around it changed.
+
+## Component Language — "Jak to działa" step cards
+
+- Extends the Hero direction rather than repeating it verbatim: same card surface (`var(--surface)` fill, 1px border, 16px radius, purple border-glow + lift on hover) as the rest of the site's card language, but the step number is now the dominant visual element — large (32px, Audiowide), low-opacity purple, pinned bottom-right — replacing the small top-left "01" label the section used before.
+- **StepsRays**: a second, more subdued instance of the ray-burst motif (20 rays vs. Hero's 28, lower opacity, smaller mask radius) centered behind the step row. Shares its generator (`buildRays()`) with `HeroRays` rather than being a copy-pasted variant, but is deliberately toned down — the brief's own reference used the ray motif at different scales in different sections (hero vs. process vs. blog cards), never identically, and this follows that precedent rather than stamping the same asset everywhere.
+- **Bug caught in review (fixed same session):** the first version let the step description text and the bottom-right number collide on the longest step ("Zatwierdź projekt", 4 lines at narrow widths) — cards stretch to equal height via CSS Grid's default `align-items: stretch`, so a fixed bottom-padding reservation wasn't enough once one card's real content got tall. Fixed by giving the description text a permanent `padding-right` (34px) instead of relying on bottom padding — the text column now stays clear of the number's column at every vertical position, not just past a guessed height.
 
 ## Motion
 

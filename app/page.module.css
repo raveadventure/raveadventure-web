@@ -48,6 +48,29 @@
   mask-image: radial-gradient(circle at 50% 50%, black 8%, transparent 52%);
 }
 .heroContent { position: relative; z-index: 1; max-width: 680px; width: 100%; }
+
+/* Wariant promieni dla "Jak to działa" — dyskretniejszy niż w Hero (rodzinne echo, nie kopia),
+   wyśrodkowany za całym rzędem numerowanych kroków. */
+.stepsRays {
+  position: absolute; left: 50%; top: 50%; width: min(720px, 96%); aspect-ratio: 1;
+  transform: translate(-50%, -50%); pointer-events: none; z-index: 0;
+  mask-image: radial-gradient(circle at 50% 50%, black 4%, transparent 58%);
+}
+.stepsWrap { position: relative; overflow: hidden; padding: 32px 0; margin-bottom: 6px; }
+.stepCard {
+  position: relative; z-index: 1;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 22px 20px 30px; transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.stepCard:hover { border-color: rgba(180,77,255,0.5); box-shadow: var(--glow-neon); transform: translateY(-2px); }
+/* Numer siedzi w prawej kolumnie karty na każdej wysokości — opis dostaje stały prawy margines
+   (nie tylko dolny padding), więc dłuższy tekst (np. krok 2) nigdy nie "wjeżdża" pod cyfrę,
+   niezależnie od tego, ile linijek zajmie. */
+.stepDesc { padding-right: 34px; }
+.stepNum {
+  position: absolute; right: 14px; bottom: 10px;
+  font-family: var(--font-hero); font-size: 32px; line-height: 1; color: rgba(180,77,255,0.2);
+}
 .heroTitle { font-family: var(--font-hero); font-size: clamp(32px, 4vw, 54px); line-height: 1.12; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 20px; color: var(--text); }
 .neon { color: var(--neon); }
 .heroSub { font-size: 17px; color: var(--text-muted); line-height: 1.7; margin-bottom: 24px; max-width: 560px; margin-left: auto; margin-right: auto; }

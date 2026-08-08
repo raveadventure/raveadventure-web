@@ -90,20 +90,23 @@ function PreviewSlot({ top, left, width, align = 'center', fontSize = '10px', co
   )
 }
 
-// Promienie za animacją Hero — czysta geometria SVG, nie ilustracja. Naprzemienna długość
-// (długi/krótki/średni...) świadomie powtarza rytm słupków korektora z LogoEqualizer, więc
-// element czytany jest jako "dźwięk promieniujący z karty", nie jako przypadkowy sunburst.
-// Kierunek wizualny Hero 2026-08-08 — patrz PRODUCT.md / DESIGN.md.
-function HeroRays() {
-  const RAY_COUNT = 28
-  const rays = Array.from({ length: RAY_COUNT }, (_, i) => {
-    const angle = (360 / RAY_COUNT) * i
-    // Wzorzec 3-krokowy (długi/krótki/średni) jak w equalizerze — nie jednostajna długość.
+// Promienie — czysta geometria SVG, nie ilustracja. Naprzemienna długość (długi/krótki/średni...)
+// świadomie powtarza rytm słupków korektora z LogoEqualizer, więc element czytany jest jako
+// "dźwięk promieniujący z X", nie jako przypadkowy sunburst. Kierunek wizualny 2026-08-08 —
+// patrz PRODUCT.md / DESIGN.md. Wspólna geometria, różne wcielenia (Hero pod kartą, sekcja
+// "Jak to działa" za numerowanymi krokami) — ten sam motyw rodzinny, nie identyczna kalka.
+function buildRays(count: number) {
+  return Array.from({ length: count }, (_, i) => {
+    const angle = (360 / count) * i
     const pattern = [46, 22, 34]
     const len = pattern[i % pattern.length]
     const isAccent = i % 7 === 0
     return { angle, len, isAccent }
   })
+}
+
+function HeroRays() {
+  const rays = buildRays(28)
   return (
     <svg viewBox="-50 -50 100 100" className={styles.heroRays} aria-hidden="true">
       {rays.map((r, i) => (
@@ -114,6 +117,28 @@ function HeroRays() {
           stroke={r.isAccent ? '#00f0ff' : '#b44dff'}
           strokeOpacity={r.isAccent ? 0.5 : 0.28}
           strokeWidth={1.1}
+          strokeLinecap="round"
+          transform={`rotate(${r.angle})`}
+        />
+      ))}
+    </svg>
+  )
+}
+
+// Wariant dla sekcji "Jak to działa" — mniej promieni, niższe opacity, umieszczony za rzędem
+// numerowanych kroków (echo kierunku Hero, nie duplikat: patrz DESIGN.md).
+function StepsRays() {
+  const rays = buildRays(20)
+  return (
+    <svg viewBox="-50 -50 100 100" className={styles.stepsRays} aria-hidden="true">
+      {rays.map((r, i) => (
+        <line
+          key={i}
+          x1={0} y1={-6}
+          x2={0} y2={-6 - r.len}
+          stroke={r.isAccent ? '#00f0ff' : '#b44dff'}
+          strokeOpacity={r.isAccent ? 0.32 : 0.16}
+          strokeWidth={1}
           strokeLinecap="round"
           transform={`rotate(${r.angle})`}
         />
@@ -828,14 +853,17 @@ export default function Home() {
           </button>
           <div className={`${styles.mobileCollapseBody} ${howItWorksOpen ? styles.mobileCollapseBodyOpen : ''}`}>
             <div className={styles.mobileCollapseBodyInner}>
-              <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-2.5 mb-6">
-                {t.howItWorks.steps.map(s => (
-                  <div key={s.n} className="glassPanel rounded-[10px] px-3.5 py-3">
-                    <span className="font-heading text-[11px] font-bold text-primary tracking-[1px]">{s.n}</span>
-                    <p className="mt-[5px] mb-0.5 text-xs font-semibold text-foreground">{s.t}</p>
-                    <p className="m-0 text-[11px] text-muted-foreground leading-[1.5]">{s.d}</p>
-                  </div>
-                ))}
+              <div className={styles.stepsWrap}>
+                <StepsRays />
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3 mb-6">
+                  {t.howItWorks.steps.map(s => (
+                    <div key={s.n} className={styles.stepCard}>
+                      <p className={`m-0 mb-1.5 text-sm font-semibold text-foreground ${styles.stepDesc}`}>{s.t}</p>
+                      <p className={`m-0 text-[11px] text-muted-foreground leading-[1.5] ${styles.stepDesc}`}>{s.d}</p>
+                      <span className={styles.stepNum} aria-hidden="true">{s.n}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
