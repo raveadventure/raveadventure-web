@@ -179,7 +179,7 @@ export default function Home() {
   const [discountPct, setDiscountPct] = useState(0)
   const [discountMsg, setDiscountMsg] = useState<string | null>(null)
 
-  const DISCOUNT_CODES: Record<string, number> = {} // brak aktywnych kodów — LSF2026 wygasł 27.07.2026, usunięty
+  const DISCOUNT_CODES: Record<string, number> = { SIERRA: 90 } // SIERRA — 90% rabat dla znajomych, celowo bez promocji/banera na stronie
 
   const applyDiscount = () => {
     const code = discountCode.trim().toUpperCase()
