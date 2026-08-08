@@ -735,7 +735,7 @@ export default function Home() {
           </h1>
           <p className={styles.heroSub}>{t.hero.sub}</p>
 
-          <div style={{ marginTop: '28px', position: 'relative' }}>
+          <div style={{ marginTop: '28px', position: 'relative', overflow: 'hidden', width: 'min(640px, 92vw)', margin: '28px auto 0', display: 'flex', justifyContent: 'center' }}>
             <HeroRays />
             <HeroCardAnimation lang={lang} />
           </div>
