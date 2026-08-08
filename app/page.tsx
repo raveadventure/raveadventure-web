@@ -650,7 +650,7 @@ export default function Home() {
         <span className="font-heading text-lg max-md:text-[15px] font-bold text-foreground tracking-[-0.3px]">Rave<span className="text-primary">Adventure</span></span>
         <div className="flex items-center gap-3.5">
           <LangSwitch />
-          <a href="#order" className="text-[13px] max-md:text-xs font-semibold py-[9px] px-5 max-md:py-[7px] max-md:px-3.5 max-md:whitespace-nowrap border border-primary rounded-lg text-primary transition-all duration-200 hover:bg-[var(--neon-dim)] hover:shadow-[var(--glow-neon)] hover:-translate-y-px active:translate-y-0">{t.nav.orderCta}</a>
+          <a href="#order" className="text-[13px] max-md:text-xs font-semibold py-[9px] px-5 max-md:py-[7px] max-md:px-3.5 max-md:whitespace-nowrap rounded-full border-[1.5px] border-primary bg-[var(--neon-dim)] text-primary no-underline transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:shadow-[0_0_20px_rgba(180,77,255,0.5)] hover:-translate-y-px active:translate-y-0">{t.nav.orderCta}</a>
         </div>
       </nav>
 

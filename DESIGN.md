@@ -2,7 +2,13 @@
 
 <!-- impeccable:design-schema 1 -->
 
-**Scope note:** This records the visual system established for the Hero section (`app/page.tsx` Hero block + `components/HeroCardAnimation.tsx`) on 2026-08-08, extended the same day to the "Jak to działa" step cards, the `WhyUs` ("Dlaczego my") cards, and the FAQ "still have questions" card in `components/FaqReviews.tsx`. The rest of the public site (AdShowcase, PortfolioCarousel, RealCardsSection, order form, nav/footer, and most CTA buttons outside Hero) predates this decision and has not been brought into this system yet — do not assume it matches until it's deliberately extended here.
+**Scope note:** This records the visual system established for the Hero section (`app/page.tsx` Hero block + `components/HeroCardAnimation.tsx`) on 2026-08-08, extended the same day to the "Jak to działa" step cards, the `WhyUs` ("Dlaczego my") cards, the FAQ "still have questions" card in `components/FaqReviews.tsx`, and the persistent nav CTA. The rest of the public site (AdShowcase, PortfolioCarousel — already pill-styled independently before this direction existed, RealCardsSection, order form, footer) predates this decision and has not been brought into this system yet — do not assume it matches until it's deliberately extended here.
+
+## Component Language — CTA buttons: what got unified, what deliberately didn't
+
+- **Unified:** the fixed nav's "Zamów kartę" button (`app/page.tsx`) was the last remaining Persuade-mode marketing CTA still on the old `border + rounded-lg` treatment — moved to the same glowing-pill class already shared by Hero, PortfolioCarousel, the FAQ card, and the step-1 accessories button. That pill class has now been reused identically in five places without a sixth variant being invented.
+- **Deliberately left alone:** the order form's step-navigation ("Dalej"/"Wstecz") and final submit buttons. Those are Operate-mode (task completion, not persuasion) — per this skill's own mode guidance, expression should never obscure the task or a familiar affordance there, and pill/glow treatment is a Persuade-mode signature. Converting them would have been scope creep against the skill's own rules, not consistency.
+- Utility icon buttons (mute/unmute on `AdShowcase`, accordion toggles, the payment-info disclosure toggle) were left as-is for the same reason — they're controls, not calls to action.
 
 ## Direction
 
