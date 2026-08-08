@@ -2,7 +2,7 @@
 
 <!-- impeccable:design-schema 1 -->
 
-**Scope note:** This records the visual system established for the Hero section (`app/page.tsx` Hero block + `components/HeroCardAnimation.tsx`) on 2026-08-08, extended the same day to the "Jak to działa" step cards. The rest of the public site (AdShowcase, PortfolioCarousel, RealCardsSection, WhyUs, order form, FAQ, nav/footer) predates this decision and has not been brought into this system yet — do not assume it matches until it's deliberately extended here.
+**Scope note:** This records the visual system established for the Hero section (`app/page.tsx` Hero block + `components/HeroCardAnimation.tsx`) on 2026-08-08, extended the same day to the "Jak to działa" step cards and the `WhyUs` ("Dlaczego my") cards. The rest of the public site (AdShowcase, PortfolioCarousel, RealCardsSection, order form, FAQ, nav/footer) predates this decision and has not been brought into this system yet — do not assume it matches until it's deliberately extended here.
 
 ## Direction
 
@@ -28,6 +28,13 @@ Committed — the palette is fixed brand identity (protected, see PRODUCT.md), n
 - Extends the Hero direction rather than repeating it verbatim: same card surface (`var(--surface)` fill, 1px border, 16px radius, purple border-glow + lift on hover) as the rest of the site's card language, but the step number is now the dominant visual element — large (32px, Audiowide), low-opacity purple, pinned bottom-right — replacing the small top-left "01" label the section used before.
 - **StepsRays**: a second, more subdued instance of the ray-burst motif (20 rays vs. Hero's 28, lower opacity, smaller mask radius) centered behind the step row. Shares its generator (`buildRays()`) with `HeroRays` rather than being a copy-pasted variant, but is deliberately toned down — the brief's own reference used the ray motif at different scales in different sections (hero vs. process vs. blog cards), never identically, and this follows that precedent rather than stamping the same asset everywhere.
 - **Bug caught in review (fixed same session):** the first version let the step description text and the bottom-right number collide on the longest step ("Zatwierdź projekt", 4 lines at narrow widths) — cards stretch to equal height via CSS Grid's default `align-items: stretch`, so a fixed bottom-padding reservation wasn't enough once one card's real content got tall. Fixed by giving the description text a permanent `padding-right` (34px) instead of relying on bottom padding — the text column now stays clear of the number's column at every vertical position, not just past a guessed height.
+
+## Component Language — `WhyUs` ("Dlaczego my") cards
+
+- Extends the direction with a new small element: a short uppercase tag pill in the card's top-right corner (e.g. "1:1, NIE SZABLON", "NAMACALNE"), same row as the existing icon box — mirrors the reference's icon-left/tag-right service-card header without copying its copy or icon set. Tag color and icon-box color both key off the card's existing `--accent` CSS variable (the pre-existing 4-color cycle: neon/cyan/success/warning), so the new element didn't require inventing a second color system.
+- Card body order changed from icon+heading-on-one-row/description to icon+tag-header-row, then heading, then description — gives the tag room without crowding the heading, and reads top-to-bottom like the SkyNexa reference instead of the prior single icon+heading row.
+- Existing card chrome (gradient surface fill, top glow bar, hover lift + accent-tinted shadow, 2×2/1-col responsive grid) was already close to the established direction and was kept as-is — this pass added the tag, not a rebuild.
+- Kept the site's existing icon convention (emoji, matching `WhyUs`'s own prior pattern and the options/FAQ cards elsewhere) rather than introducing a drawn-icon system for one section — craft-floor generally discourages emoji-as-icons, but this section inherits an established site-wide convention rather than being a fresh greenfield surface, and mixing two icon systems on one page would have been the worse failure.
 
 ## Motion
 
