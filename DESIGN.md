@@ -2,7 +2,7 @@
 
 <!-- impeccable:design-schema 1 -->
 
-**Scope note:** This records the visual system established for the Hero section (`app/page.tsx` Hero block + `components/HeroCardAnimation.tsx`) on 2026-08-08, extended the same day to the "Jak to działa" step cards and the `WhyUs` ("Dlaczego my") cards. The rest of the public site (AdShowcase, PortfolioCarousel, RealCardsSection, order form, FAQ, nav/footer) predates this decision and has not been brought into this system yet — do not assume it matches until it's deliberately extended here.
+**Scope note:** This records the visual system established for the Hero section (`app/page.tsx` Hero block + `components/HeroCardAnimation.tsx`) on 2026-08-08, extended the same day to the "Jak to działa" step cards, the `WhyUs` ("Dlaczego my") cards, and the FAQ "still have questions" card in `components/FaqReviews.tsx`. The rest of the public site (AdShowcase, PortfolioCarousel, RealCardsSection, order form, nav/footer, and most CTA buttons outside Hero) predates this decision and has not been brought into this system yet — do not assume it matches until it's deliberately extended here.
 
 ## Direction
 
@@ -35,6 +35,12 @@ Committed — the palette is fixed brand identity (protected, see PRODUCT.md), n
 - Card body order changed from icon+heading-on-one-row/description to icon+tag-header-row, then heading, then description — gives the tag room without crowding the heading, and reads top-to-bottom like the SkyNexa reference instead of the prior single icon+heading row.
 - Existing card chrome (gradient surface fill, top glow bar, hover lift + accent-tinted shadow, 2×2/1-col responsive grid) was already close to the established direction and was kept as-is — this pass added the tag, not a rebuild.
 - Kept the site's existing icon convention (emoji, matching `WhyUs`'s own prior pattern and the options/FAQ cards elsewhere) rather than introducing a drawn-icon system for one section — craft-floor generally discourages emoji-as-icons, but this section inherits an established site-wide convention rather than being a fresh greenfield surface, and mixing two icon systems on one page would have been the worse failure.
+
+## Component Language — FAQ "Nadal masz pytania?" card
+
+- Adapts SkyNexa's FAQ sidebar card (icon + copy + CTA pill) as a closing element below the FAQ accordion, not a third grid column — RA's FAQ section is already a 2-column grid (FAQ list / reviews), and a third column would have broken that existing balance rather than extending it. This is the pattern's intent (a contact prompt after the question list) adapted to RA's actual layout, not a literal transplant.
+- CTA reuses the exact "glowing pill" class string already used in three other places on the site (Hero secondary-turned-primary pattern, PortfolioCarousel's bottom CTA, the step-1 "Dodaj akcesoria premium" button) — a fourth invented button style would have fragmented the system rather than extending it.
+- **Deliberately not responsive-row (no `sm:flex-row`):** the first version put icon+copy on one row and the button beside them at `sm:` (640px viewport) width, which looks fine in isolation but this card lives inside a ~500px-wide grid column even on a 1280px desktop viewport — Tailwind's `sm:` breakpoint reads the *viewport*, not the containing grid track, so it flipped to a cramped row layout that visually collided. Caught in review before shipping; fixed by keeping the card always vertical (icon+heading row, then description, then button, no breakpoint) since the column width, not the viewport, is what actually constrains this element.
 
 ## Motion
 
