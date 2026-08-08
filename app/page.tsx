@@ -855,7 +855,7 @@ export default function Home() {
             <div className={styles.mobileCollapseBodyInner}>
               <div className={styles.stepsWrap}>
                 <StepsRays />
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
                   {t.howItWorks.steps.map(s => (
                     <div key={s.n} className={styles.stepCard}>
                       <p className={`m-0 mb-1.5 text-sm font-semibold text-foreground ${styles.stepDesc}`}>{s.t}</p>
