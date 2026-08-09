@@ -1050,10 +1050,9 @@ export default function Home() {
                               )}
                               <p className="m-0 text-sm font-semibold text-foreground">{f.label}</p>
                             </span>
-                            <span className={`font-heading text-[13px] font-bold rounded-full py-[3px] px-3 whitespace-nowrap inline-block ${f.id === 'standard' ? 'text-[var(--success)] bg-[rgba(0,229,160,0.1)] border border-[rgba(0,229,160,0.35)]' : 'text-primary bg-[var(--neon-dim)] border border-[color-mix(in_srgb,var(--neon)_35%,transparent)]'}`}>
-                              {f.id === 'standard' ? (lang === 'pl' ? 'Gratis' : 'Free')
-                                : f.id === 'zestaw_promocyjny' ? `${f.price} zł${lang === 'pl' ? '/kpl.' : '/set'}`
-                                : `+${f.price} zł`}
+                            <span className="font-heading text-[13px] font-bold rounded-full py-[3px] px-3 whitespace-nowrap inline-block text-primary bg-[var(--neon-dim)] border border-[color-mix(in_srgb,var(--neon)_35%,transparent)]">
+                              {f.id === 'zestaw_promocyjny' ? `${f.price} zł${lang === 'pl' ? '/kpl.' : '/set'}`
+                                : `${cardObj.price + f.price} zł`}
                             </span>
                           </div>
                           {/* Rząd ikonek pokazujący SKŁAD wariantu (💳 karta, 🧲 magnes, 🖼 Top
@@ -1387,7 +1386,7 @@ export default function Home() {
                 {cardType === 'pvc' ? activeFinishLines.map(l => (
                   <p key={l.finish.id} className={summaryRowCls}>
                     <span>{l.finish.label} × {l.qty}{l.nfcQty > 0 ? (lang === 'pl' ? ` (${l.nfcQty} z NFC)` : ` (${l.nfcQty} with NFC)`) : ''}</span>
-                    <strong>{l.finish.id === 'standard' ? '—' : l.finish.id === 'zestaw_promocyjny' ? `${l.finish.price} zł${lang === 'pl' ? '/kpl.' : '/set'}` : `+${l.finish.price} zł/szt.`}</strong>
+                    <strong>{l.finish.id === 'zestaw_promocyjny' ? `${l.finish.price} zł${lang === 'pl' ? '/kpl.' : '/set'}` : `${cardObj.price + l.finish.price} zł/szt.`}</strong>
                   </p>
                 )) : (
                   <p className={summaryRowCls}><span>{t.order.step4.qtyLabel}</span><strong>× {quantity}</strong></p>
@@ -1564,7 +1563,7 @@ export default function Home() {
                 {cardType === 'pvc' && activeFinishLines.map(l => (
                   <p key={l.finish.id} className={summaryRowCls}>
                     <span>{l.finish.label} × {l.qty}{l.nfcQty > 0 ? (lang === 'pl' ? ` (${l.nfcQty} z NFC)` : ` (${l.nfcQty} with NFC)`) : ''}</span>
-                    <strong>{l.finish.id === 'standard' ? '—' : l.finish.id === 'zestaw_promocyjny' ? `${l.finish.price} zł${lang === 'pl' ? '/kpl.' : '/set'}` : `+${l.finish.price} zł/szt.`}</strong>
+                    <strong>{l.finish.id === 'zestaw_promocyjny' ? `${l.finish.price} zł${lang === 'pl' ? '/kpl.' : '/set'}` : `${cardObj.price + l.finish.price} zł/szt.`}</strong>
                   </p>
                 ))}
                 <p className={summaryRowCls}><span>{t.order.step4.backLabel} — {backObj.label}</span><strong>{backObj.price === 0 ? t.order.step3.freeLabel : `+${backObj.price} zł`}</strong></p>
