@@ -986,6 +986,21 @@ export default function Home() {
         <div ref={stepContentRef} className="bg-[var(--glass-bg)] backdrop-blur-[14px] rounded-[var(--radius-lg)] p-8 max-w-[680px] mx-auto max-md:p-5">
           {step === 1 && (
             <div className="flex flex-col gap-5">
+              {/* Zgłoszone przez Michała 2026-08-09 — klienci nie wiedzieli, że formularz obsługuje
+                  tylko JEDEN motyw/grafikę na zamówienie, a łączenie wysyłki dla drugiej, INNEJ
+                  karty to osobna, świadoma akcja w kroku 5 (patrz deliveryMethod === 'combined'
+                  niżej) — bez tej informacji na samym starcie klient dowiadywał się o tej opcji
+                  dopiero w mailu potwierdzającym, czyli za późno, żeby zaplanować drugie zamówienie. */}
+              <div className="flex items-start gap-2.5 rounded-[var(--radius)] border border-[rgba(180,77,255,0.25)] bg-[linear-gradient(90deg,rgba(180,77,255,0.14),rgba(0,240,255,0.10))] py-3 px-4">
+                <span className="text-base leading-none shrink-0" aria-hidden="true">🔗</span>
+                <p className="m-0 text-[13px] leading-[1.6] text-foreground">
+                  {lang === 'pl' ? (
+                    <>Skonfiguruj tutaj jedną kartę. Chcesz zamówić kolejną, z inną grafiką? <strong>Nie musisz płacić za wysyłkę drugi raz</strong> — w kroku 5 wybierz „Połącz z innym zamówieniem" i podaj numer pierwszego zlecenia, wyślemy obie karty razem.</>
+                  ) : (
+                    <>Configure one card here. Want to order another one with different artwork? <strong>You don't have to pay for shipping twice</strong> — in step 5 choose "Combine with another order" and enter your first order's number, we'll ship both cards together.</>
+                  )}
+                </p>
+              </div>
               <p className="font-heading text-[15px] font-bold text-primary tracking-[0.2px]">{t.order.step1.title}</p>
               <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-3">
                 {CARD_TYPES.map(c => (
