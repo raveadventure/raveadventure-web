@@ -43,7 +43,7 @@ export default function HoloCardShowcase({ lang = 'pl' }: { lang?: 'pl' | 'en' }
         const py = gsap.utils.clamp(0, 1, ((self.y ?? 0) - rect.top) / rect.height)
         quickRotY(gsap.utils.mapRange(0, 1, -16, 16, px))
         quickRotX(gsap.utils.mapRange(0, 1, 14, -14, py))
-        quickFoilOpacity?.(0.85)
+        quickFoilOpacity?.(0.6)
         if (foil) {
           foil.style.setProperty('--holo-x', `${px * 100}%`)
           foil.style.setProperty('--holo-y', `${py * 100}%`)
@@ -65,14 +65,14 @@ export default function HoloCardShowcase({ lang = 'pl' }: { lang?: 'pl' | 'en' }
         .holoFoil {
           position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
           background-image:
-            radial-gradient(circle at var(--holo-x, 50%) var(--holo-y, 50%), rgba(255,255,255,0.9), transparent 45%),
+            radial-gradient(circle at var(--holo-x, 50%) var(--holo-y, 50%), rgba(255,255,255,0.3), transparent 45%),
             repeating-linear-gradient(
               115deg,
-              rgba(180,77,255,0.55) 0%,
-              rgba(0,240,255,0.55) 8%,
-              rgba(0,229,160,0.5) 16%,
-              rgba(255,183,3,0.5) 24%,
-              rgba(180,77,255,0.55) 32%
+              rgba(180,77,255,0.16) 0%,
+              rgba(0,240,255,0.16) 8%,
+              rgba(0,229,160,0.14) 16%,
+              rgba(255,183,3,0.14) 24%,
+              rgba(180,77,255,0.16) 32%
             );
           background-size: 100% 100%, 220% 220%;
           background-position: var(--holo-x, 50%) var(--holo-y, 50%), var(--holo-x, 50%) var(--holo-y, 50%);
