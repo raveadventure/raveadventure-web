@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 
 const TXT = {
@@ -50,6 +50,24 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
   const t = TXT[lang]
   const [lightbox, setLightbox] = useState<{ src: string; caption: string } | null>(null)
 
+  // Galeria "prawdziwe karty" (4 zdjęcia) — rozszerzanie na hover + lightbox z nawigacją
+  // strzałka/licznik, zamiast zwykłej siatki. Świadomie osobny stan od `lightbox` wyżej (ten
+  // zostaje bez zmian dla galerii akcesoriów premium) — tu lightbox musi znać SWÓJ indeks w
+  // PHOTOS, żeby strzałki przewijały wewnątrz tej samej czwórki zdjęć.
+  const [galleryHover, setGalleryHover] = useState<number | null>(null)
+  const [galleryLightbox, setGalleryLightbox] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (galleryLightbox === null) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setGalleryLightbox(null)
+      if (e.key === 'ArrowRight') setGalleryLightbox(i => (i === null ? i : (i + 1) % PHOTOS.length))
+      if (e.key === 'ArrowLeft') setGalleryLightbox(i => (i === null ? i : (i - 1 + PHOTOS.length) % PHOTOS.length))
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [galleryLightbox])
+
   const renderPhotoGrid = (photos: typeof PHOTOS, gridClassName = 'grid-cols-[repeat(auto-fit,minmax(150px,1fr))]') => (
     <div className={`mb-7 grid ${gridClassName} gap-3.5 text-left`}>
       {photos.map(photo => (
@@ -71,8 +89,52 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
       <h2 className="font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground mb-2.5">{t.title}</h2>
       <p className="mx-auto mb-7 max-w-[560px] text-sm leading-[1.7] text-muted-foreground">{t.sub}</p>
 
-      {/* GALERIA ZDJĘĆ PRAWDZIWYCH KART — codzienne noszenie (dłoń/telefon) */}
-      {renderPhotoGrid(PHOTOS)}
+      {/* GALERIA ZDJĘĆ PRAWDZIWYCH KART — codzienne noszenie (dłoń/telefon). Dwa osobne
+          renderowania, nie jeden responsywny hybrid: na mobile hover nie istnieje, więc
+          hover-expand nie miałby tam sensu (zostaje sprawdzony, prosty grid 2×2 z podpisem pod
+          każdym zdjęciem, jak dotąd). Na desktopie (sm+): poziomy pasek, najechane zdjęcie
+          rozszerza się kosztem sąsiadów (czysty CSS `transition-[flex]`, bez żadnej biblioteki
+          animacji — projekt świadomie stoi na samym GSAP, nie dokładamy Framer Motion dla
+          jednego hover-efektu); podpisy nie mieszczą się sensownie pod dynamicznie zmieniającą
+          szerokość kolumną, więc tu żyją w lightboksie po kliknięciu (z licznikiem i strzałkami). */}
+      <div className="mb-7 grid grid-cols-2 gap-2.5 text-left sm:hidden">
+        {PHOTOS.map((photo, i) => (
+          <div key={photo.id}>
+            <div
+              onClick={() => setGalleryLightbox(i)}
+              className="relative aspect-[0.8] cursor-pointer overflow-hidden rounded-2xl border border-border"
+            >
+              <Image src={`/real-cards/${photo.id}.jpg`} alt={lang === 'pl' ? photo.captionPl : photo.captionEn} fill sizes="45vw" className="object-cover" loading="lazy" />
+            </div>
+            <p className="mt-2 text-xs leading-[1.5] text-muted-foreground">{lang === 'pl' ? photo.captionPl : photo.captionEn}</p>
+          </div>
+        ))}
+      </div>
+      <div className="mb-7 hidden text-left sm:flex sm:h-[380px] sm:gap-2">
+        {PHOTOS.map((photo, i) => (
+          <div
+            key={photo.id}
+            onMouseEnter={() => setGalleryHover(i)}
+            onMouseLeave={() => setGalleryHover(null)}
+            onClick={() => setGalleryLightbox(i)}
+            style={{ flex: galleryHover === null ? 1 : galleryHover === i ? 2.4 : 0.7 }}
+            className="relative cursor-pointer overflow-hidden rounded-2xl border border-border transition-[flex] duration-500 ease-in-out"
+          >
+            <Image
+              src={`/real-cards/${photo.id}.jpg`}
+              alt={lang === 'pl' ? photo.captionPl : photo.captionEn}
+              fill
+              sizes="380px"
+              className="object-cover"
+              loading="lazy"
+            />
+            <div
+              className="pointer-events-none absolute inset-0 bg-black transition-opacity duration-300"
+              style={{ opacity: galleryHover === i ? 0 : 0.25 }}
+            />
+          </div>
+        ))}
+      </div>
 
       {/* WIDEO: karty w portfelu — wyśrodkowane, węższy blok niż cała sekcja */}
       <div className="mx-auto mb-3.5 grid max-w-[640px] grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3.5">
@@ -102,13 +164,64 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
         'mx-auto max-w-[520px] grid-cols-2'
       )}
 
-      {/* LIGHTBOX ZDJĘĆ */}
+      {/* LIGHTBOX ZDJĘĆ (akcesoria premium — bez zmian) */}
       {lightbox && (
         <div
           onClick={() => setLightbox(null)}
           className="fixed inset-0 z-[1000] flex cursor-pointer items-center justify-center bg-[rgba(8,8,16,0.92)] p-5"
         >
           <img src={lightbox.src} alt={lightbox.caption} className="max-h-[90vh] max-w-[90vw] rounded-xl" />
+        </div>
+      )}
+
+      {/* LIGHTBOX GALERII "PRAWDZIWE KARTY" — z nawigacją strzałka/licznik, osobny od powyższego */}
+      {galleryLightbox !== null && (
+        <div
+          onClick={() => setGalleryLightbox(null)}
+          className="fixed inset-0 z-[1000] flex cursor-pointer items-center justify-center bg-[rgba(8,8,16,0.95)] p-5"
+        >
+          <button
+            onClick={() => setGalleryLightbox(null)}
+            aria-label={lang === 'pl' ? 'Zamknij' : 'Close'}
+            className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-colors hover:text-primary"
+          >
+            <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+
+          {PHOTOS.length > 1 && (
+            <button
+              onClick={e => { e.stopPropagation(); setGalleryLightbox(i => (i === null ? i : (i - 1 + PHOTOS.length) % PHOTOS.length)) }}
+              aria-label={lang === 'pl' ? 'Poprzednie zdjęcie' : 'Previous image'}
+              className="absolute left-2 z-10 flex h-11 w-11 items-center justify-center rounded-full text-foreground transition-colors hover:text-primary sm:left-4"
+            >
+              <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            </button>
+          )}
+
+          <div className="relative max-h-[85vh] max-w-[90vw]" onClick={e => e.stopPropagation()}>
+            <img
+              src={`/real-cards/${PHOTOS[galleryLightbox].id}.jpg`}
+              alt={lang === 'pl' ? PHOTOS[galleryLightbox].captionPl : PHOTOS[galleryLightbox].captionEn}
+              className="max-h-[75vh] max-w-[90vw] rounded-xl"
+            />
+            <p className="mt-3 text-center text-sm text-muted-foreground">
+              {lang === 'pl' ? PHOTOS[galleryLightbox].captionPl : PHOTOS[galleryLightbox].captionEn}
+            </p>
+          </div>
+
+          {PHOTOS.length > 1 && (
+            <button
+              onClick={e => { e.stopPropagation(); setGalleryLightbox(i => (i === null ? i : (i + 1) % PHOTOS.length)) }}
+              aria-label={lang === 'pl' ? 'Następne zdjęcie' : 'Next image'}
+              className="absolute right-2 z-10 flex h-11 w-11 items-center justify-center rounded-full text-foreground transition-colors hover:text-primary sm:right-4"
+            >
+              <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </button>
+          )}
+
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full border border-border bg-card px-4 py-1.5 text-xs text-muted-foreground">
+            {galleryLightbox + 1} / {PHOTOS.length}
+          </div>
         </div>
       )}
     </section>

@@ -2,7 +2,7 @@
 
 <!-- impeccable:design-schema 1 -->
 
-**Scope note:** This records the visual system established for the Hero section (`app/page.tsx` Hero block + `components/HeroCardAnimation.tsx`) on 2026-08-08, extended the same day to the "Jak to działa" step cards, the `WhyUs` ("Dlaczego my") cards, the FAQ "still have questions" card in `components/FaqReviews.tsx`, and the persistent nav CTA; extended 2026-08-09 to the new `components/CostTransparency.tsx` section and `components/HoloCardShowcase.tsx`. The rest of the public site (AdShowcase, PortfolioCarousel — already pill-styled independently before this direction existed, RealCardsSection, order form, footer) predates this decision and has not been brought into this system yet — do not assume it matches until it's deliberately extended here.
+**Scope note:** This records the visual system established for the Hero section (`app/page.tsx` Hero block + `components/HeroCardAnimation.tsx`) on 2026-08-08, extended the same day to the "Jak to działa" step cards, the `WhyUs` ("Dlaczego my") cards, the FAQ "still have questions" card in `components/FaqReviews.tsx`, and the persistent nav CTA; extended 2026-08-09 to the new `components/CostTransparency.tsx` section, `components/HoloCardShowcase.tsx`, and the "prawdziwe karty" (4-photo) gallery inside `components/RealCardsSection.tsx`. The rest of the public site (AdShowcase, PortfolioCarousel — already pill-styled independently before this direction existed, RealCardsSection, order form, footer) predates this decision and has not been brought into this system yet — do not assume it matches until it's deliberately extended here.
 
 ## Component Language — CTA buttons: what got unified, what deliberately didn't
 
@@ -63,6 +63,13 @@ Committed — the palette is fixed brand identity (protected, see PRODUCT.md), n
 - **Portrait, not landscape:** the source demo used `aspect={1.586}` (a generic horizontal credit-card ratio). RA's real card is `638×1011` (0.631, portrait) — confirmed against the actual uploaded example image (`public/holo_card_ex.png`) rather than assumed.
 - Uses a real card from a past order ("Cambodia Style" / Adventure theme) as the demo face, with a caption clarifying it's an example and every customer's card is uniquely designed — avoids implying every card looks like this one.
 - `prefers-reduced-motion` fully disables tilt/foil (checked explicitly in JS, same as `HeroCardAnimation` — CSS media-query alone doesn't catch GSAP-driven inline transforms).
+
+## Component Language — "Prawdziwe karty" 4-photo gallery (`RealCardsSection`)
+
+- Michał's source material was another external-registry component (`gallery-animation.tsx`, a hover-to-expand horizontal image strip with a navigable lightbox) requiring `framer-motion`. Not installed: CLAUDE.md already records an explicit, deliberate decision that this project's original two-library plan ("Motion" + GSAP) was collapsed to GSAP alone specifically to avoid two overlapping animation libraries. Adding framer-motion for one hover effect would have reversed that decision for no real benefit — the same expand-on-hover interaction is achievable with a plain CSS `transition-[flex]`, no animation library needed at all (not even GSAP).
+- **Two separate renderings, not one responsive hybrid:** mobile (`<sm`) keeps the original simple 2×2 grid with a caption under each photo — hover-to-expand has no meaning without a mouse, and cramming 4 photos into one horizontal row on a narrow viewport would make them unusably thin. Desktop (`sm+`) gets the horizontal hover-expand strip (`flex: 1` default, `2.4` on the hovered tile, `0.7` on its siblings, `transition-[flex] duration-500`).
+- Per-photo captions don't appear under the desktop strip (a caption under a tile whose width keeps changing on hover would reflow constantly and look broken) — they live in the enhanced lightbox instead, along with prev/next arrows, an image counter ("2 / 4"), and Escape/ArrowLeft/ArrowRight keyboard support alongside the identical UI pattern from the source reference (`AnimatePresence`'s close/prev/next buttons and counter, reimplemented as plain conditional JSX with CSS transitions).
+- This gallery's lightbox is a **separate state** (`galleryLightbox: number | null`, indexed into `PHOTOS`) from the pre-existing simple `lightbox` state used by the premium-accessories gallery below it — the premium gallery was out of scope for this request and was left untouched, including its own simpler no-navigation lightbox.
 
 ## Motion
 
