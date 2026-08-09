@@ -1020,11 +1020,19 @@ export default function Home() {
                   <p className={sectionEyebrowCls}>
                     {lang === 'pl' ? '// ile kart i w jakim wykończeniu' : '// how many cards, and which finish'}
                   </p>
-                  <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3 mb-3">
+                  {/* Zgłoszone przez Michała 2026-08-09 — bez tego zdania klient wybierający
+                      Standard ×1 + Top Holder+Stojak ×1 mógł pomyśleć, że dokłada Top Holder do
+                      TEJ SAMEJ karty, zamiast zamawiać drugą, osobną kartę w tym wykończeniu. */}
+                  <p className="mb-3 text-xs leading-[1.5] text-muted-foreground">
+                    {lang === 'pl'
+                      ? '⚠️ Każdy wiersz poniżej to OSOBNA karta — jeśli wybierzesz Standard ×1 i Top Holder ×1, zamawiasz 2 różne karty, nie jedną kartę z dodatkiem.'
+                      : "⚠️ Each row below is a SEPARATE card — choosing Standard ×1 and Top Holder ×1 orders 2 different cards, not one card with an add-on."}
+                  </p>
+                  <div className="grid grid-cols-1 gap-3 mb-3">
                     {CARD_FINISHES.filter(f => f.id === 'standard' || showMoreFinishes || (finishBreakdown[f.id]?.qty ?? 0) > 0).map(f => {
                       const bd = finishBreakdown[f.id] ?? { qty: 0, nfcQty: 0 }
                       return (
-                        <div key={f.id} className="glassPanel rounded-[var(--radius-lg)] p-4 relative transition-all duration-200 cursor-default hover:border-[rgba(180,77,255,0.45)] hover:-translate-y-[3px] hover:shadow-[var(--glass-shadow),var(--glow-neon)]">
+                        <div key={f.id} className="glassPanel rounded-[var(--radius-lg)] p-5 relative transition-all duration-200 cursor-default hover:border-[rgba(180,77,255,0.45)] hover:-translate-y-[3px] hover:shadow-[var(--glass-shadow),var(--glow-neon)]">
                           <div className="flex justify-between items-center mb-1.5">
                             <span className="flex items-center gap-1.5 min-w-0">
                               {f.id !== 'standard' && (
@@ -1038,6 +1046,17 @@ export default function Home() {
                                 : `+${f.price} zł`}
                             </span>
                           </div>
+                          {/* Rząd ikonek pokazujący SKŁAD wariantu (💳 karta, 🧲 magnes, 🖼 Top
+                              Holder, 📐 stojak) — na życzenie Michała, żeby skład był czytelny na
+                              pierwszy rzut oka, nie tylko z opisu tekstowego niżej. */}
+                          <div className="flex items-center gap-1.5 mb-2" aria-hidden="true">
+                            {f.icons.map((icon, i) => (
+                              <span key={i} className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-[var(--surface2)] text-[13px]">
+                                {icon}
+                              </span>
+                            ))}
+                          </div>
+                          <p className="m-0 text-xs leading-[1.5] text-muted-foreground">{f.desc}</p>
                           <div className="flex items-center gap-2.5 mt-2.5">
                             <button className="w-7 h-7 rounded-full bg-[var(--surface2)] border border-border text-foreground text-[15px] cursor-pointer flex items-center justify-center transition-all duration-200 font-mono shrink-0 enabled:hover:border-primary enabled:hover:text-primary enabled:active:scale-[0.94] disabled:opacity-30 disabled:cursor-not-allowed" onClick={() => updateFinishQty(f.id, -1)} disabled={bd.qty === 0}>−</button>
                             <span className="font-heading text-base font-bold text-foreground min-w-5 text-center">{bd.qty}</span>

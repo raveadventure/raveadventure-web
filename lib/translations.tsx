@@ -47,22 +47,40 @@ export const BACK_OPTIONS_I18N = {
 // liczone są per sztuka OSOBNO od rabatu ilościowego (jak NFC/RFID). "zestaw_promocyjny"
 // to wyjątek: jego cena ZASTĘPUJE bazową cenę karty PVC (40 zł), zamiast być dodatkiem na wierzchu —
 // patrz obliczenie unitPrice w app/page.tsx.
+// Etykiety świadomie zaczynają się od "Karta" (np. "Karta + Top Holder", nie samo "Top Holder")
+// — zgłoszone przez Michała 2026-08-09: klient wybierający Standard ×1 + Top Holder+Stojak ×1
+// myślał, że kupuje JEDNĄ kartę standard z dołożonym Top Holderem, podczas gdy każdy wiersz w tej
+// siatce to zawsze OSOBNA, kompletna karta w danym wykończeniu — dwa wiersze = dwie karty. `desc`
+// też przeformułowany, żeby zawsze jawnie wymieniał "karta + X", nie tylko sam dodatek.
+// `icons` — mały rząd emoji obrazujący DOKŁADNIE co zawiera dany wariant (💳 karta, 🧲 magnes,
+// 🖼 Top Holder/rameczka, 📐 stojak — te same symbole co już ustalone w panelu admina dla
+// magnesu/Top Holdera/stojaka, więc spójne między adminem a formularzem klienta). Language-neutral,
+// stąd jedna wspólna tablica niezależna od PL/EN.
+const FINISH_ICONS: Record<string, string[]> = {
+  standard: ['💳'],
+  magnes: ['💳', '🧲'],
+  top_holder: ['💳', '🖼'],
+  top_holder_magnes: ['💳', '🖼', '🧲'],
+  top_holder_stojak: ['💳', '🖼', '📐'],
+  zestaw_promocyjny: ['💳', '💳', '🖼', '📐', '🧲'],
+}
+
 export const CARD_FINISH_I18N = {
   pl: [
-    { id: 'standard', label: 'Standard', price: 0, desc: 'Sama karta PVC, bez dodatków' },
-    { id: 'magnes', label: 'Wersja na lodówkę', price: 5, desc: 'Karta z przyklejonym magnesem z tyłu — gotowa do powieszenia na lodówce' },
-    { id: 'top_holder', label: 'Top Holder', price: 20, desc: 'Karta w sztywnym plastikowym etui ochronnym — chroni przed zarysowaniem i zagięciem' },
-    { id: 'top_holder_magnes', label: 'Top Holder + Magnes', price: 25, desc: 'Etui ochronne + magnes — karta w twardej osłonie, którą można powiesić na lodówce' },
-    { id: 'top_holder_stojak', label: 'Top Holder + Stojak', price: 30, desc: 'Etui ochronne + mały stojak biurkowy — karta stoi pionowo na biurku czy półce' },
-    { id: 'zestaw_promocyjny', label: 'Zestaw Promocyjny', price: 80, desc: 'Dwie karty: jedna luzem + jedna w Top Holderze ze stojakiem, plus naklejka magnetyczna do ewentualnego użycia. Cena zestawu zastępuje cenę pojedynczej karty PVC.' },
+    { id: 'standard', label: 'Karta Standard', price: 0, desc: 'To po prostu 1 karta PVC, bez dodatków.', icons: FINISH_ICONS.standard },
+    { id: 'magnes', label: 'Karta + Magnes (na lodówkę)', price: 5, desc: '1 karta z przyklejonym magnesem z tyłu — gotowa do powieszenia na lodówce.', icons: FINISH_ICONS.magnes },
+    { id: 'top_holder', label: 'Karta + Top Holder', price: 20, desc: '1 karta w sztywnym plastikowym etui ochronnym — chroni przed zarysowaniem i zagięciem.', icons: FINISH_ICONS.top_holder },
+    { id: 'top_holder_magnes', label: 'Karta + Top Holder + Magnes', price: 25, desc: '1 karta w twardym etui, z magnesem z tyłu — można powiesić na lodówce.', icons: FINISH_ICONS.top_holder_magnes },
+    { id: 'top_holder_stojak', label: 'Karta + Top Holder + Stojak', price: 30, desc: '1 karta w twardym etui + mały stojak biurkowy — stoi pionowo na biurku czy półce.', icons: FINISH_ICONS.top_holder_stojak },
+    { id: 'zestaw_promocyjny', label: 'Zestaw Promocyjny (2 karty)', price: 80, desc: 'Zawiera 2 karty z tym samym projektem: jedna luzem + jedna w Top Holderze ze stojakiem, plus naklejka magnetyczna do ewentualnego użycia. Cena zestawu zastępuje cenę pojedynczej karty PVC.', icons: FINISH_ICONS.zestaw_promocyjny },
   ],
   en: [
-    { id: 'standard', label: 'Standard', price: 0, desc: 'Just the PVC card, no extras' },
-    { id: 'magnes', label: 'Fridge Version', price: 5, desc: 'Card with a magnet attached to the back — ready to hang on your fridge' },
-    { id: 'top_holder', label: 'Top Holder', price: 20, desc: 'Card in a rigid plastic protective case — guards against scratches and bending' },
-    { id: 'top_holder_magnes', label: 'Top Holder + Magnet', price: 25, desc: 'Protective case + magnet — a hard-cased card you can hang on the fridge' },
-    { id: 'top_holder_stojak', label: 'Top Holder + Stand', price: 30, desc: 'Protective case + a small desk stand — displays the card upright on a desk or shelf' },
-    { id: 'zestaw_promocyjny', label: 'Promotional Set', price: 80, desc: 'Two cards: one loose + one in a Top Holder with a stand, plus a magnetic sticker for optional use. The set price replaces the price of a single PVC card.' },
+    { id: 'standard', label: 'Standard Card', price: 0, desc: "It's just 1 PVC card, no extras.", icons: FINISH_ICONS.standard },
+    { id: 'magnes', label: 'Card + Magnet (fridge)', price: 5, desc: '1 card with a magnet attached to the back — ready to hang on your fridge.', icons: FINISH_ICONS.magnes },
+    { id: 'top_holder', label: 'Card + Top Holder', price: 20, desc: '1 card in a rigid plastic protective case — guards against scratches and bending.', icons: FINISH_ICONS.top_holder },
+    { id: 'top_holder_magnes', label: 'Card + Top Holder + Magnet', price: 25, desc: '1 card in a hard case, with a magnet on the back — can be hung on the fridge.', icons: FINISH_ICONS.top_holder_magnes },
+    { id: 'top_holder_stojak', label: 'Card + Top Holder + Stand', price: 30, desc: '1 card in a hard case + a small desk stand — displays upright on a desk or shelf.', icons: FINISH_ICONS.top_holder_stojak },
+    { id: 'zestaw_promocyjny', label: 'Promotional Set (2 cards)', price: 80, desc: 'Contains 2 cards with the same design: one loose + one in a Top Holder with a stand, plus a magnetic sticker for optional use. The set price replaces the price of a single PVC card.', icons: FINISH_ICONS.zestaw_promocyjny },
   ],
 }
 
