@@ -88,11 +88,13 @@ export async function POST(req: NextRequest) {
         statusBtn: 'Sprawdź status zamówienia →',
         subject: '🎴 Twój projekt karty RaveAdventure — sprawdź i zatwierdź',
         paymentEyebrow: '// dane do płatności',
-        paymentIntro: 'Jeśli projekt Ci się podoba i klikniesz "Zatwierdzam", prosimy o dokonanie płatności jedną z poniższych metod:',
+        paymentIntro: 'Jeśli projekt Ci się podoba, kliknij "Zatwierdzam" — najszybciej zapłacisz automatycznie online, od razu po zatwierdzeniu. Możesz też zapłacić ręcznie jedną z metod poniżej:',
         paymentTitleImportant: 'Ważne',
         paymentTitleCode: 'W tytule przelewu / opisie BLIK koniecznie podaj numer zamówienia:',
-        blikLabel: 'Opcja 1 — BLIK na numer telefonu',
-        bankLabel: 'Opcja 2 — Przelew tradycyjny',
+        payAutoLabel: 'Opcja 1 — Płatność online (najszybsza)',
+        payAutoDesc: 'Po kliknięciu „Zatwierdzam" na stronie zatwierdzenia projektu pojawi się automatycznie przycisk „💳 Zapłać teraz" — BLIK lub Przelewy Online, bez przepisywania numerów.',
+        blikLabel: 'Opcja 2 — BLIK na numer telefonu (ręcznie)',
+        bankLabel: 'Opcja 3 — Przelew tradycyjny (ręcznie)',
         bankAccountLabel: 'Numer konta',
         bankRecipientLabel: 'Odbiorca',
         amountLabel: 'Kwota',
@@ -122,11 +124,13 @@ export async function POST(req: NextRequest) {
         statusBtn: 'Check order status →',
         subject: '🎴 Your RaveAdventure card design — review and approve',
         paymentEyebrow: '// payment details',
-        paymentIntro: 'If you like the design and click "Approve design", please complete the payment using one of the methods below:',
+        paymentIntro: 'If you like the design, click "Approve design" — the fastest way to pay is automatically online, right after approving. You can also pay manually using one of the methods below:',
         paymentTitleImportant: 'Important',
         paymentTitleCode: 'Please include the order number in the transfer title / BLIK description:',
-        blikLabel: 'Option 1 — BLIK to phone number',
-        bankLabel: 'Option 2 — Bank transfer',
+        payAutoLabel: 'Option 1 — Online payment (fastest)',
+        payAutoDesc: 'After clicking "Approve design" on the approval page, a "💳 Pay now" button will appear automatically — BLIK or online transfer, no numbers to copy.',
+        blikLabel: 'Option 2 — BLIK to phone number (manual)',
+        bankLabel: 'Option 3 — Bank transfer (manual)',
         bankAccountLabel: 'Account number',
         bankRecipientLabel: 'Recipient',
         amountLabel: 'Amount',
@@ -285,6 +289,13 @@ export async function POST(req: NextRequest) {
             <p style="margin:0 0 4px;font-size:12px;color:#ff4d6d;font-weight:700;">⚠ ${L.paymentTitleImportant}</p>
             <p style="margin:0 0 6px;font-size:12px;color:#f0eeff;">${L.paymentTitleCode}</p>
             <p style="margin:0;font-size:16px;color:#ff4d6d;font-weight:700;font-family:monospace;letter-spacing:2px;">${order.id.slice(0, 8).toUpperCase()}</p>
+          </td></tr>
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
+          <tr><td style="background:rgba(180,77,255,0.1);border:1.5px solid rgba(180,77,255,0.45);border-radius:8px;padding:14px 16px;">
+            <p style="margin:0 0 6px;font-size:13px;color:#b44dff;font-weight:700;">⚡ ${L.payAutoLabel}</p>
+            <p style="margin:0;font-size:12px;color:rgba(240,238,255,0.7);line-height:1.6;">${L.payAutoDesc}</p>
           </td></tr>
         </table>
 
