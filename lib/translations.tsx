@@ -266,6 +266,8 @@ export const T = {
       orderNumberNote: (orderNum: string) => (
         <>Twój numer zlecenia to <strong>#{orderNum}</strong>. Zamawiasz jeszcze jedną kartę? W kroku 5 wybierz „Połącz z innym zamówieniem" i wpisz ten numer — wyślemy obie karty razem, bez podwójnej opłaty za wysyłkę.</>
       ),
+      copyOrderNumber: '📋 Skopiuj numer zamówienia',
+      orderNumberCopied: '✓ Skopiowano!',
       newOrder: 'Zamów kolejną kartę',
     },
     footer: {
@@ -454,6 +456,8 @@ export const T = {
       orderNumberNote: (orderNum: string) => (
         <>Your order number is <strong>#{orderNum}</strong>. Ordering another card? In step 5, choose "Combine with another order" and enter this number — we'll ship both cards together, with no double shipping fee.</>
       ),
+      copyOrderNumber: '📋 Copy order number',
+      orderNumberCopied: '✓ Copied!',
       newOrder: 'Order another card',
     },
     footer: {
