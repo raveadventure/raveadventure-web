@@ -12,6 +12,7 @@ import AdShowcase from '../components/AdShowcase'
 import FaqReviews from '../components/FaqReviews'
 import WhyUs from '../components/WhyUs'
 import CostTransparency from '../components/CostTransparency'
+import HoloCardShowcase from '../components/HoloCardShowcase'
 import InpostGeowidget from '../components/InpostGeowidget'
 import InpostAutocomplete from '../components/InpostAutocomplete'
 import HeroCardAnimation from '../components/HeroCardAnimation'
@@ -842,6 +843,7 @@ export default function Home() {
 
       <AdShowcase lang={lang} />
       <PortfolioCarousel lang={lang} />
+      <HoloCardShowcase lang={lang} />
       <RealCardsSection lang={lang} />
 
       <WhyUs lang={lang} />

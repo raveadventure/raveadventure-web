@@ -2,7 +2,7 @@
 
 <!-- impeccable:design-schema 1 -->
 
-**Scope note:** This records the visual system established for the Hero section (`app/page.tsx` Hero block + `components/HeroCardAnimation.tsx`) on 2026-08-08, extended the same day to the "Jak to działa" step cards, the `WhyUs` ("Dlaczego my") cards, the FAQ "still have questions" card in `components/FaqReviews.tsx`, and the persistent nav CTA; extended 2026-08-09 to the new `components/CostTransparency.tsx` section. The rest of the public site (AdShowcase, PortfolioCarousel — already pill-styled independently before this direction existed, RealCardsSection, order form, footer) predates this decision and has not been brought into this system yet — do not assume it matches until it's deliberately extended here.
+**Scope note:** This records the visual system established for the Hero section (`app/page.tsx` Hero block + `components/HeroCardAnimation.tsx`) on 2026-08-08, extended the same day to the "Jak to działa" step cards, the `WhyUs` ("Dlaczego my") cards, the FAQ "still have questions" card in `components/FaqReviews.tsx`, and the persistent nav CTA; extended 2026-08-09 to the new `components/CostTransparency.tsx` section and `components/HoloCardShowcase.tsx`. The rest of the public site (AdShowcase, PortfolioCarousel — already pill-styled independently before this direction existed, RealCardsSection, order form, footer) predates this decision and has not been brought into this system yet — do not assume it matches until it's deliberately extended here.
 
 ## Component Language — CTA buttons: what got unified, what deliberately didn't
 
@@ -55,6 +55,14 @@ Committed — the palette is fixed brand identity (protected, see PRODUCT.md), n
 - **"Praca własna" (own labor) is a callout badge, not a bar segment** — a 0-width segment would be invisible and undercut the exact point Michał wanted to make (he doesn't charge for his own time). Rendered instead as a highlighted pill reading "ZA DARMO"/"FREE".
 - Segment colors are meaningful, not just cycled: purple/cyan for the two most "product" line items (material, printing), warning-amber for artwork generation, a neutral gray for fixed infrastructure costs (domain/licenses — deliberately the least visually exciting category), success-green for shipping/logistics.
 - Closing copy explicitly frames the gap between cost and price as covering real, unlisted costs and unpaid labor time — not profit — per Michał's explicit request ("w tym projekcie nie chodzi o zarabianie"). This is a factual/tone claim from the business owner, not invented copy.
+
+## Component Language — `HoloCardShowcase` (interactive holo card)
+
+- New section (2026-08-09), placed between `PortfolioCarousel` and `RealCardsSection` — right after "Nasze karty", per Michał's explicit placement pick.
+- Michał's source material was a demo file for an unknown `HoloCard` primitive from an external component (its actual tilt/foil implementation was never provided, only the usage wrapper, referencing a "Motiq" design system with its own CSS variables). Rather than guess at unseen code, this was built from scratch reusing the exact GSAP tilt mechanism already proven in `HeroCardAnimation.tsx` (`useGSAP` + `Observer` + `gsap.quickTo` on `rotationX`/`rotationY`), plus a new holographic foil layer: a `radial-gradient` sparkle stacked with a `repeating-linear-gradient` rainbow band, both positioned via `--holo-x`/`--holo-y` CSS custom properties updated on pointer move, blended with `mix-blend-mode: color-dodge` (matches the standard "holo trading card" CSS recipe, and echoes the source demo's own blend-mode choice).
+- **Portrait, not landscape:** the source demo used `aspect={1.586}` (a generic horizontal credit-card ratio). RA's real card is `638×1011` (0.631, portrait) — confirmed against the actual uploaded example image (`public/holo_card_ex.png`) rather than assumed.
+- Uses a real card from a past order ("Cambodia Style" / Adventure theme) as the demo face, with a caption clarifying it's an example and every customer's card is uniquely designed — avoids implying every card looks like this one.
+- `prefers-reduced-motion` fully disables tilt/foil (checked explicitly in JS, same as `HeroCardAnimation` — CSS media-query alone doesn't catch GSAP-driven inline transforms).
 
 ## Motion
 
