@@ -10,9 +10,9 @@ const supabase = createClient(
 )
 
 // ── DANE DO PŁATNOŚCI — PODMIEŃ NA SWOJE ──────────────────────
-const BLIK_PHONE = '[785259525]'
-const BANK_ACCOUNT = '[17102034080000410206489811]'
-const BANK_RECIPIENT = '[MICHAŁ KOCH]'
+const BLIK_PHONE = '785259525'
+const BANK_ACCOUNT = '17102034080000410206489811'
+const BANK_RECIPIENT = 'MICHAŁ KOCH'
 
 export async function POST(req: NextRequest) {
   try {
