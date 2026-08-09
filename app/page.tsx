@@ -227,7 +227,7 @@ export default function Home() {
   }
   const [form, setForm] = useState({
     name: '', email: '', emailConfirm: '', phone: '', address: '',
-    notesBack: '', customDesc: '', notes: '',
+    notesBack: '', customDesc: '', notes: '', nfcNotes: '',
     cardYear: '', cardRarity: '', cardName: '', attr1Label: '', attr1Value: '', cardSkill: '', attr2Label: '', attr2Value: '', cardDesc: '', cardBottomText: '',
   })
   const [photo, setPhoto] = useState<File | null>(null)
@@ -403,6 +403,13 @@ export default function Home() {
   const nfcUnitPrice = quantity > 3 ? NFC_PRICE_BULK : NFC_PRICE_STANDARD
   const nfcTotal = nfcTotalQty * nfcUnitPrice
   const nfcActive = nfcTotalQty > 0
+  // Wytyczne NFC (krok 2, osobne wymagane pole) nie mają własnej kolumny w bazie — dopisywane do
+  // istniejącego pola `notes`, żeby uniknąć migracji SQL dla jednego pola tekstowego. Etykieta
+  // zawsze po polsku (jak reszta wewnętrznych, admin-facing sekcji w eksporcie .txt), bo to trafia
+  // do Michała, nie do klienta.
+  const combinedNotes = nfcActive && form.nfcNotes.trim()
+    ? `${form.notes.trim()}${form.notes.trim() ? '\n\n' : ''}Wytyczne NFC: ${form.nfcNotes.trim()}`
+    : form.notes
 
   let rawBaseTotal = 0
   let cardFinishAddonTotal = 0
@@ -466,6 +473,7 @@ export default function Home() {
 
   const handleSubmit = async () => {
     if (!photo) { setError(t.order.step5.errPhotoRequired); setStep(2); return }
+    if (nfcActive && !form.nfcNotes.trim()) { setError(t.order.step5.errNfcNotesRequired); setStep(2); return }
     if (!form.name || !form.email || (deliveryMethod !== 'combined' && !form.address)) { setError(t.order.step5.errRequired); return }
     if (deliveryMethod === 'combined' && !linkedOrderRef.trim()) { setError(t.order.step5.errLinkedOrderRefRequired); return }
     if (deliveryMethod !== 'combined' && (deliveryMethod === 'paczkomat' || shippingRegion === 'intl') && !form.phone.trim()) { setError(t.order.step5.errPhoneRequired); return }
@@ -486,7 +494,7 @@ export default function Home() {
         card_finish: cardFinishSummary, card_finish_breakdown: cardFinishBreakdownForDb,
         unit_price: unitPrice, total_price: totalPrice, has_discount: hasDiscount,
         name: form.name, email: form.email, phone: form.phone, address: form.address,
-        notes: form.notes, card_text: form.notesBack, custom_desc: form.customDesc, qr_link: form.notesBack,
+        notes: combinedNotes, card_text: form.notesBack, custom_desc: form.customDesc, qr_link: form.notesBack,
         card_year: form.cardYear, card_rarity: form.cardRarity, card_name_custom: form.cardName,
         attr1_label: form.attr1Label, attr1_value: form.attr1Value, card_skill: form.cardSkill,
         attr2_label: form.attr2Label, attr2_value: form.attr2Value, card_desc: form.cardDesc,
@@ -579,7 +587,7 @@ export default function Home() {
       await fetch('/api/send-order', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: form.name, email: form.email, phone: form.phone, address: form.address, deliveryMethod, paczkomatId, shippingRegion, shippingCost: SHIPPING_COST, cardText: form.notesBack, notes: form.notes,
+          name: form.name, email: form.email, phone: form.phone, address: form.address, deliveryMethod, paczkomatId, shippingRegion, shippingCost: SHIPPING_COST, cardText: form.notesBack, notes: combinedNotes,
           theme: frontTheme, orderId: orderData?.id, cardType, backOption, quantity, unitPrice, totalPrice, hasDiscount, savedAmount,
           nfcEnabled: nfcActive, nfcPrice: nfcUnitPrice, nfcQty: nfcTotalQty, cardFinish: cardFinishSummary, cardFinishBreakdown: cardFinishBreakdownForDb,
           cardYear: form.cardYear, cardRarity: form.cardRarity, cardName: form.cardName,
@@ -659,7 +667,7 @@ export default function Home() {
               {t.sent.orderNumberNote(lastOrderId)}
             </p>
           )}
-          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',emailConfirm:'',phone:'',address:'',notesBack:'',customDesc:'',notes:'',cardYear:'',cardRarity:'',cardName:'',attr1Label:'',attr1Value:'',cardSkill:'',attr2Label:'',attr2Value:'',cardDesc:'',cardBottomText:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setFinishBreakdown({ standard: { qty: 1, nfcQty: 0 } }); setLaminatedQty(1); setHoloEffect(false); setFrameColor('neon_purple'); setDeliveryMethod('address'); setPaczkomatId(''); setPaczkomatConfirmed(false); setAgreed(false); setDiscountCode(''); setDiscountApplied(false); setDiscountPct(0); setDiscountMsg(null) }}>
+          <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',emailConfirm:'',phone:'',address:'',notesBack:'',customDesc:'',notes:'',nfcNotes:'',cardYear:'',cardRarity:'',cardName:'',attr1Label:'',attr1Value:'',cardSkill:'',attr2Label:'',attr2Value:'',cardDesc:'',cardBottomText:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setFinishBreakdown({ standard: { qty: 1, nfcQty: 0 } }); setLaminatedQty(1); setHoloEffect(false); setFrameColor('neon_purple'); setDeliveryMethod('address'); setPaczkomatId(''); setPaczkomatConfirmed(false); setAgreed(false); setDiscountCode(''); setDiscountApplied(false); setDiscountPct(0); setDiscountMsg(null) }}>
             {t.sent.newOrder}
           </button>
         </div>
@@ -1306,6 +1314,18 @@ export default function Home() {
                     <textarea value={form.customDesc} onChange={e => setForm({...form, customDesc: e.target.value.slice(0, 600)})} placeholder={t.order.step2.customDescPlaceholder} maxLength={600} />
                     <p className="mt-1 mb-0 text-[11px] text-[var(--text-faint)] text-right">{form.customDesc.length}/600</p>
                   </div>
+                </div>
+              )}
+
+              {nfcActive && (
+                <div className="rounded-[var(--radius-lg)] border-[1.5px] p-4 mt-3" style={{ borderColor: error === t.order.step5.errNfcNotesRequired ? 'var(--error)' : 'rgba(0,240,255,0.35)', background: 'rgba(0,240,255,0.06)' }}>
+                  <div className={fieldCls}>
+                    <label className={labelCls}>{t.order.step2.nfcNotesLabel} <span className="text-[#00f0ff] font-semibold">{t.order.step2.nfcNotesRequired}</span></label>
+                    <textarea value={form.nfcNotes} onChange={e => { setForm({...form, nfcNotes: e.target.value.slice(0, 300)}); if (error === t.order.step5.errNfcNotesRequired) setError(null) }} placeholder={t.order.step2.nfcNotesPlaceholder} maxLength={300} />
+                    <p className="mt-1 mb-0 text-[11px] text-[var(--text-faint)] text-right">{form.nfcNotes.length}/300</p>
+                  </div>
+                  <p className="m-0 mt-1.5 text-[11px] leading-[1.5] text-muted-foreground">{t.order.step2.nfcNotesNote}</p>
+                  {error === t.order.step5.errNfcNotesRequired && <p className={`${errorMsgCls} mt-2`}>{error}</p>}
                 </div>
               )}
 
