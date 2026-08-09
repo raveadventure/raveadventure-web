@@ -745,8 +745,8 @@ export default function Home() {
           { href: '#prawdziwe-karty', label: lang === 'pl' ? 'Prawdziwy produkt' : 'Real product' },
           { href: '#dlaczego-my', label: lang === 'pl' ? 'Dlaczego my' : 'Why us' },
           { href: '#jak-zamowic', label: lang === 'pl' ? 'Jak to działa' : 'How it works' },
-          { href: '#order', label: lang === 'pl' ? 'Zamówienie' : 'Order' },
           { href: '#faq-opinie', label: lang === 'pl' ? 'FAQ i opinie' : 'FAQ & reviews' },
+          { href: '#order', label: lang === 'pl' ? 'Zamówienie' : 'Order' },
         ].map(item => (
           <a
             key={item.href}
@@ -945,6 +945,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <FaqReviews lang={lang} />
 
       <section className={styles.section} id="order" data-reveal>
         <h2 className={styles.sectionTitle}>{t.order.title}</h2>
@@ -1612,8 +1614,6 @@ export default function Home() {
           )}
         </div>
       </section>
-
-      <FaqReviews lang={lang} />
 
       <footer className="border-t border-border py-10 px-[5vw] text-center">
         <p className="font-heading text-xl font-bold text-primary mb-1.5">RaveAdventure</p>
