@@ -6,7 +6,7 @@ const TXT = {
     items: [
       { icon: '🎯', tag: '1:1, NIE SZABLON', heading: 'Personalizacja 1:1', detail: 'Każda karta powstaje na bazie Twojego zdjęcia i opisu — nie gotowego szablonu.' },
       { icon: '🎴', tag: 'NAMACALNE', heading: 'Fizyczny produkt, nie plik JPG', detail: 'Prawdziwa karta z subkultury rave/techno — coś, co możesz trzymać w ręku, w portfelu, na lodówce.' },
-      { icon: '📲', tag: 'MODUŁOWE DODATKI', heading: 'NFC, magnes, Top Holder, stojak', detail: 'Karta jako pamiątka, dekoracja na biurku albo inteligentny link do playlisty z imprezy.' },
+      { icon: '📲', tag: 'MODUŁOWE DODATKI', heading: 'NFC, magnes, Top Holder, stojak', detail: 'Karta jako pamiątka, dekoracja na biurku albo inteligentny link do playlisty z imprezy.', subIcons: ['📲', '🧲', '🖼', '📐'] },
       { icon: '⚙️', tag: 'SPRAWNY PROCES', heading: 'Proces zoptymalizowany przez inżyniera', detail: 'Szybka realizacja, wysoka jakość i jasna komunikacja na każdym etapie zamówienia.' },
     ],
   },
@@ -15,7 +15,7 @@ const TXT = {
     items: [
       { icon: '🎯', tag: '1:1, NOT A TEMPLATE', heading: '1:1 personalization', detail: 'Every card is built from your own photo and description — not a ready-made template.' },
       { icon: '🎴', tag: 'TANGIBLE', heading: 'A physical product, not a JPG', detail: 'A real card from rave/techno culture — something you can hold, keep in your wallet, or put on the fridge.' },
-      { icon: '📲', tag: 'MODULAR ADD-ONS', heading: 'NFC, magnet, Top Holder, stand', detail: 'Your card as a keepsake, desk decoration, or a smart link to your festival playlist.' },
+      { icon: '📲', tag: 'MODULAR ADD-ONS', heading: 'NFC, magnet, Top Holder, stand', detail: 'Your card as a keepsake, desk decoration, or a smart link to your festival playlist.', subIcons: ['📲', '🧲', '🖼', '📐'] },
       { icon: '⚙️', tag: 'STREAMLINED PROCESS', heading: 'A process optimized by an engineer', detail: 'Fast turnaround, high quality, and clear communication at every step of your order.' },
     ],
   },
@@ -82,6 +82,15 @@ export default function WhyUs({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
               <span className="whyUsTag">{item.tag}</span>
             </div>
             <h3 className="m-0 mb-1.5 text-[15px] font-bold text-foreground">{item.heading}</h3>
+            {'subIcons' in item && item.subIcons && (
+              <div className="flex items-center gap-1.5 mb-2" aria-hidden="true">
+                {item.subIcons.map((subIcon, si) => (
+                  <span key={si} className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-[var(--surface2)] text-[13px]">
+                    {subIcon}
+                  </span>
+                ))}
+              </div>
+            )}
             <p className="m-0 text-[13px] leading-[1.6] text-muted-foreground">{item.detail}</p>
           </div>
         ))}
