@@ -258,6 +258,9 @@ export const T = {
       body: (email: string) => (
         <>Odezwiemy się w ciągu 24h na adres <strong>{email}</strong> z projektem karty do zatwierdzenia.</>
       ),
+      orderNumberNote: (orderNum: string) => (
+        <>Twój numer zlecenia to <strong>#{orderNum}</strong>. Zamawiasz jeszcze jedną kartę? W kroku 5 wybierz „Połącz z innym zamówieniem" i wpisz ten numer — wyślemy obie karty razem, bez podwójnej opłaty za wysyłkę.</>
+      ),
       newOrder: 'Zamów kolejną kartę',
     },
     footer: {
@@ -437,6 +440,9 @@ export const T = {
       title: 'Order sent!',
       body: (email: string) => (
         <>We'll get back to you within 24h at <strong>{email}</strong> with the card design for approval.</>
+      ),
+      orderNumberNote: (orderNum: string) => (
+        <>Your order number is <strong>#{orderNum}</strong>. Ordering another card? In step 5, choose "Combine with another order" and enter this number — we'll ship both cards together, with no double shipping fee.</>
       ),
       newOrder: 'Order another card',
     },

@@ -236,6 +236,10 @@ export default function Home() {
   const [refFileBack, setRefFileBack] = useState<File | null>(null)
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
+  // Numer zlecenia pokazywany na ekranie potwierdzenia (obok tego samego numeru w mailu) — żeby
+  // klient od razu, bez otwierania skrzynki, wiedział co wpisać przy kolejnym zamówieniu, jeśli
+  // zechce połączyć wysyłkę (patrz "combined" w deliveryMethod niżej).
+  const [lastOrderId, setLastOrderId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [agreed, setAgreed] = useState(false)
   const [discountCode, setDiscountCode] = useState('')
@@ -595,6 +599,7 @@ export default function Home() {
         }).catch(() => {})
       }
 
+      setLastOrderId(orderData?.id ? String(orderData.id).slice(0, 8) : null)
       setSent(true)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : (lang === 'pl' ? 'Nieznany błąd' : 'Unknown error')
@@ -649,6 +654,11 @@ export default function Home() {
             <span>{cardObj.label} × {quantity}</span>
             <strong>{totalPrice} zł</strong>
           </div>
+          {lastOrderId && (
+            <p className="mb-5 rounded-[var(--radius)] bg-[var(--surface2)] px-4 py-3 text-left text-xs leading-[1.6] text-muted-foreground">
+              {t.sent.orderNumberNote(lastOrderId)}
+            </p>
+          )}
           <button className={styles.btnPrimary} onClick={() => { setSent(false); setStep(1); setForm({ name:'',email:'',emailConfirm:'',phone:'',address:'',notesBack:'',customDesc:'',notes:'',cardYear:'',cardRarity:'',cardName:'',attr1Label:'',attr1Value:'',cardSkill:'',attr2Label:'',attr2Value:'',cardDesc:'',cardBottomText:'' }); setPhoto(null); setPhotoPreview(null); setRefFileFront(null); setRefFileBack(null); setFinishBreakdown({ standard: { qty: 1, nfcQty: 0 } }); setLaminatedQty(1); setHoloEffect(false); setFrameColor('neon_purple'); setDeliveryMethod('address'); setPaczkomatId(''); setPaczkomatConfirmed(false); setAgreed(false); setDiscountCode(''); setDiscountApplied(false); setDiscountPct(0); setDiscountMsg(null) }}>
             {t.sent.newOrder}
           </button>
