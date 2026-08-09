@@ -179,11 +179,14 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
                 style={{ opacity: isActive ? 1 : 0 }}
               />
 
+              {/* Etykieta kategorii — zawsze w lewym górnym rogu (aktywny i nieaktywny kafelek),
+                  nie w bloku treści na dole — widoczna na pierwszy rzut oka, bez potrzeby hover. */}
+              <span className="pointer-events-none absolute left-3 top-3 z-10 inline-block w-fit rounded-full border border-white/30 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md sm:left-4 sm:top-4">
+                {lang === 'pl' ? photo.tagPl : photo.tagEn}
+              </span>
+
               {/* Treść aktywnego kafelka */}
               <div className={`absolute inset-x-0 bottom-0 flex flex-col gap-1.5 p-4 transition-all duration-500 sm:p-6 ${isActive ? 'translate-y-0 opacity-100 delay-200' : 'translate-y-8 opacity-0'}`}>
-                <span className="inline-block w-fit rounded-full border border-white/30 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md">
-                  {lang === 'pl' ? photo.tagPl : photo.tagEn}
-                </span>
                 <h4 className="text-xl font-black uppercase leading-tight text-white sm:text-3xl">
                   {lang === 'pl' ? photo.titlePl : photo.titleEn}
                 </h4>
@@ -195,14 +198,15 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
                 </a>
               </div>
 
-              {/* Etykieta nieaktywnego kafelka — pionowy tekst na desktopie (wąska kolumna),
-                  krótka pozioma etykieta na mobile (niski, zwinięty pasek) */}
+              {/* Etykieta nieaktywnego kafelka — tytuł (nie tag, ten jest już zawsze widoczny w
+                  rogu wyżej), pionowo na desktopie (wąska kolumna), poziomo na mobile (niski,
+                  zwinięty pasek) */}
               <div className={`pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 transition-all duration-500 sm:bottom-6 ${isActive ? 'scale-50 opacity-0' : 'opacity-100 delay-300'}`}>
                 <span className="hidden whitespace-nowrap text-sm font-bold uppercase tracking-widest text-white sm:block" style={{ writingMode: 'vertical-rl' }}>
                   {lang === 'pl' ? photo.titlePl : photo.titleEn}
                 </span>
                 <span className="block text-[11px] font-bold uppercase tracking-wide text-white sm:hidden">
-                  {lang === 'pl' ? photo.tagPl : photo.tagEn}
+                  {lang === 'pl' ? photo.titlePl : photo.titleEn}
                 </span>
               </div>
             </div>
