@@ -495,7 +495,7 @@ export default function Home() {
         card_finish: cardFinishSummary, card_finish_breakdown: cardFinishBreakdownForDb,
         unit_price: unitPrice, total_price: totalPrice, has_discount: hasDiscount,
         name: form.name, email: form.email, phone: form.phone, address: form.address,
-        notes: combinedNotes, card_text: form.notesBack, custom_desc: form.customDesc, qr_link: form.notesBack,
+        notes: combinedNotes, card_text: form.notesBack, custom_desc: form.customDesc,
         card_year: form.cardYear, card_rarity: form.cardRarity, card_name_custom: form.cardName,
         attr1_label: form.attr1Label, attr1_value: form.attr1Value, card_skill: form.cardSkill,
         attr2_label: form.attr2Label, attr2_value: form.attr2Value, card_desc: form.cardDesc,

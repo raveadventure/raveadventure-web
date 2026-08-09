@@ -467,6 +467,16 @@ designs/{id}-{timestamp}-back-original.ext / -back.jpg — analogicznie dla tył
 co zawsze, patrz „Aplikacja towarzysząca" wyżej, to on jest importowany przez
 Cards Creator) trafia do `orders/{id8}/zlecenie-{id8}.txt` w Supabase na DWA
 sposoby:
+
+**[⚠️ ZMIANA FORMATU 2026-08-09 — zasygnalizować w Cards Creator, jeśli parser szuka starego
+markera]** Sekcja `--- QR LINK ---` (zawsze wypełniana z `qr_link`, który w `app/page.tsx`
+bezwarunkowo dublował `form.notesBack` niezależnie od wybranego wariantu rewersu — legacy błąd,
+mylące dla Michała przy rewersie Logo/Czysta karta/Dedykacja) zastąpiona sekcją `--- REWERS ---`:
+`Wariant: {backLabel}` (Standard Logo / Pusta biała karta / Dedykacja / Custom Artwork / QR Code),
+a pod spodem komentarz do rewersu (`card_text`/`notes_back`), jeśli klient go podał. Kolumna
+`qr_link` **nie jest już zapisywana** przy nowych zamówieniach (usunięto z `app/page.tsx`) — stare
+zamówienia z wypełnionym `qr_link` w bazie są ignorowane przy eksporcie (liczy się tylko
+`card_text`), nic się dla nich nie zmienia poza zniknięciem zdublowanej sekcji.
 - **Automatycznie** (`/api/generate-order-txt`, publiczny endpoint bez
   logowania) — wywoływane z `app/page.tsx` zaraz po złożeniu zamówienia i
   zapisaniu zdjęcia, więc folder `orders/{id8}/` jest kompletny od razu, bez

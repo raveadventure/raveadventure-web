@@ -90,10 +90,15 @@ export function buildOrderExportLines(order: Record<string, any>): string[] {
     })
   }
   if (o.custom_desc) lines.push('', '--- OPIS (CUSTOM) ---', o.custom_desc)
-  if (o.qr_link) lines.push('', '--- QR LINK ---', o.qr_link)
   if (o.notes) lines.push('', '--- UWAGI (PRZÓD) ---', o.notes)
+  // Zgłoszone przez Michała 2026-08-09 — dawniej ta sekcja nazywała się "--- QR LINK ---" i była
+  // wypełniana bezwarunkowo z o.qr_link (który w app/page.tsx zawsze dublował form.notesBack,
+  // niezależnie od wybranego wariantu rewersu — legacy błąd, qr_link nie jest już nigdzie zapisywany
+  // ani czytany poza tym plikiem). Teraz jasno pokazuje WYBRANY wariant rewersu + komentarz do niego,
+  // zamiast mylącej etykiety "QR LINK" nawet przy rewersie Logo/Czysta karta/Dedykacja.
   const backNotes = o.card_text || o.notes_back
-  if (backNotes) lines.push('', '--- UWAGI / DEDYKACJA (TYŁ) ---', backNotes)
+  lines.push('', '--- REWERS ---', `Wariant: ${backLabel}`)
+  if (backNotes) lines.push(backNotes)
   if (o.review_notes) lines.push('', '--- UWAGI Z KOREKTY PROJEKTU ---', o.review_notes)
 
   // Dopisane na końcu (nigdy nie wstawiane w środku) — patrz uwaga dla Cards Creator na górze pliku.
