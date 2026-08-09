@@ -1119,6 +1119,30 @@ export default function AdminPage() {
                 </div>
               ))}
             </div>
+
+            {/* Notatki klienta — skonsolidowane pod atrybutami (2026-08-09, na życzenie Michała),
+                bo komentarz do zdjęcia/NFC i uwagi do rewersu wcześniej były widoczne tylko jako
+                małe boksy pod miniaturkami FRONT/TYŁ w ClientMaterials, wyżej w layoucie — łatwo
+                było je przeoczyć przy przewijaniu prosto do atrybutów/uploadu projektu. Te same
+                pola trafiają też do eksportu .txt (lib/orderExportText.ts — sekcje UWAGI (PRZÓD) /
+                UWAGI / DEDYKACJA (TYŁ)), więc to czysto dodatkowe miejsce wyświetlania, nie nowe dane. */}
+            {((selected as any).notes || (selected as any).card_text || (selected as any).notes_back) && (
+              <div style={{ background: '#16162a', borderRadius: '10px', overflow: 'hidden', marginTop: '8px' }}>
+                <p style={{ margin: 0, padding: '10px 16px 6px', fontSize: '10px', color: '#b44dff', letterSpacing: '2px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>NOTATKI KLIENTA</p>
+                {(selected as any).notes && (
+                  <div style={{ padding: '10px 16px', borderBottom: ((selected as any).card_text || (selected as any).notes_back) ? '1px solid rgba(255,255,255,0.05)' : undefined }}>
+                    <p style={{ margin: '0 0 4px', fontSize: '11px', color: 'rgba(240,238,255,0.4)' }}>Komentarz do zdjęcia / wytyczne NFC</p>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#f0eeff', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{(selected as any).notes}</p>
+                  </div>
+                )}
+                {((selected as any).card_text || (selected as any).notes_back) && (
+                  <div style={{ padding: '10px 16px' }}>
+                    <p style={{ margin: '0 0 4px', fontSize: '11px', color: 'rgba(240,238,255,0.4)' }}>Uwagi do rewersu</p>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#f0eeff', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{(selected as any).card_text || (selected as any).notes_back}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
