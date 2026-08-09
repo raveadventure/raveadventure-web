@@ -85,7 +85,11 @@ export default function HoloCardShowcase({ lang = 'pl' }: { lang?: 'pl' | 'en' }
       <h2 className="font-heading text-[clamp(20px,2.6vw,28px)] font-bold text-foreground mb-1.5">{t.title}</h2>
       <p className="mb-6 text-sm text-muted-foreground">{t.sub}</p>
 
-      <div ref={sceneRef} style={{ perspective: '1000px' }} className="mx-auto flex w-[min(280px,68vw)] items-center justify-center">
+      {/* touchAction: 'none' — bez tego dotknięcie karty na telefonie jednocześnie scrollowało
+          stronę (przeglądarka domyślnie interpretuje przeciąganie palcem jako scroll), zanim GSAP
+          Observer zdążył przejąć gest do tiltu. To wyłącza natywne gesty dotykowe (scroll/pinch)
+          w obrębie tego kontenera, żeby cały gest szedł do Observera. */}
+      <div ref={sceneRef} style={{ perspective: '1000px', touchAction: 'none' }} className="mx-auto flex w-[min(280px,68vw)] items-center justify-center">
         <div
           ref={cardRef}
           style={{ transformStyle: 'preserve-3d', willChange: 'transform', aspectRatio: '638 / 1011' }}

@@ -316,6 +316,10 @@ export default function HeroCardAnimation({ lang = 'pl' }: { lang?: 'pl' | 'en' 
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        // Bez tego dotknięcie karty na telefonie scrollowało stronę zamiast tylko przechylać
+        // kartę — przeglądarka domyślnie zamienia przeciąganie palcem w scroll, zanim GSAP
+        // Observer przejmie gest. touch-action: none oddaje cały gest dotykowy Observerowi.
+        touchAction: 'none',
       }}>
       <div style={{ position: 'relative', width: frameSize.width, height: frameSize.height }}>
         {showCard && (
