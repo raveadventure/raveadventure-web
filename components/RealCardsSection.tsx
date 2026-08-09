@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { ArrowUpRight } from 'lucide-react'
 
 const TXT = {
   pl: {
@@ -30,12 +31,12 @@ const PHOTOS = [
 // lodówce, świadomie oddzielone od zwykłej galerii "karta w dłoni" powyżej: pokazuje eskalację
 // od codziennego noszenia (portfel) do wystawienia na widoku (biurko/lodówka).
 const PREMIUM_PHOTOS = [
-  { id: 'top-holder-1', captionPl: 'Karta w Top Holderze na stojaku — mini-plakat z najlepszej nocy w Amsterdamie.', captionEn: 'A card in a Top Holder stand — a mini-poster from your best night in Amsterdam.' },
-  { id: 'top-holder-2', captionPl: 'Dwie karty, dwóch ulubionych DJ-ów — Twoja mini-galeria na biurku.', captionEn: 'Two cards, two favorite DJs — your own mini-gallery on the desk.' },
-  { id: 'fridge-1', captionPl: 'Top Holder na lodówce — pamiątka, którą widzisz codziennie.', captionEn: 'A Top Holder on the fridge — a keepsake you see every day.' },
-  { id: 'fridge-2', captionPl: 'Ekipa z Twojego ulubionego festiwalu, zawsze na widoku w kuchni.', captionEn: 'Your crew from your favorite festival, always in view in the kitchen.' },
-  { id: 'fridge-3', captionPl: 'Cała kolekcja na lodówce — Top Holder do każdej karty, mini-galeria Twoich wspomnień.', captionEn: 'Your whole collection on the fridge — a Top Holder for every card, a mini-gallery of your memories.' },
-  { id: 'fridge-4', captionPl: 'Wersja bez etui — sam magnes, prosto na lodówkę.', captionEn: 'The no-case version — just the magnet, straight on the fridge.' },
+  { id: 'top-holder-1', tagPl: 'STOJAK NA BIURKO', tagEn: 'DESK STAND', titlePl: 'Mini-plakat', titleEn: 'Mini-poster', captionPl: 'Karta w Top Holderze na stojaku — mini-plakat z najlepszej nocy w Amsterdamie.', captionEn: 'A card in a Top Holder stand — a mini-poster from your best night in Amsterdam.' },
+  { id: 'top-holder-2', tagPl: 'DWIE KARTY', tagEn: 'TWO CARDS', titlePl: 'Mini-galeria', titleEn: 'Mini-gallery', captionPl: 'Dwie karty, dwóch ulubionych DJ-ów — Twoja mini-galeria na biurku.', captionEn: 'Two cards, two favorite DJs — your own mini-gallery on the desk.' },
+  { id: 'fridge-1', tagPl: 'NA LODÓWCE', tagEn: 'ON THE FRIDGE', titlePl: 'Zawsze na widoku', titleEn: 'Always on display', captionPl: 'Top Holder na lodówce — pamiątka, którą widzisz codziennie.', captionEn: 'A Top Holder on the fridge — a keepsake you see every day.' },
+  { id: 'fridge-2', tagPl: 'NA LODÓWCE', tagEn: 'ON THE FRIDGE', titlePl: 'Cała ekipa', titleEn: 'The whole crew', captionPl: 'Ekipa z Twojego ulubionego festiwalu, zawsze na widoku w kuchni.', captionEn: 'Your crew from your favorite festival, always in view in the kitchen.' },
+  { id: 'fridge-3', tagPl: 'CAŁA KOLEKCJA', tagEn: 'FULL COLLECTION', titlePl: 'Mini-galeria wspomnień', titleEn: 'A gallery of memories', captionPl: 'Cała kolekcja na lodówce — Top Holder do każdej karty, mini-galeria Twoich wspomnień.', captionEn: 'Your whole collection on the fridge — a Top Holder for every card, a mini-gallery of your memories.' },
+  { id: 'fridge-4', tagPl: 'SAM MAGNES', tagEn: 'JUST THE MAGNET', titlePl: 'Bez etui', titleEn: 'No case', captionPl: 'Wersja bez etui — sam magnes, prosto na lodówkę.', captionEn: 'The no-case version — just the magnet, straight on the fridge.' },
 ]
 
 // Tymczasowe ograniczenie do 2×2 (Michał, 2026-08-04) — docelowo sekcja ma pokazywać 4 rzędy
@@ -48,14 +49,18 @@ const PREMIUM_FEATURED_IDS = ['top-holder-1', 'top-holder-2', 'fridge-1', 'fridg
 
 export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
   const t = TXT[lang]
-  const [lightbox, setLightbox] = useState<{ src: string; caption: string } | null>(null)
-
   // Galeria "prawdziwe karty" (4 zdjęcia) — rozszerzanie na hover + lightbox z nawigacją
   // strzałka/licznik, zamiast zwykłej siatki. Świadomie osobny stan od `lightbox` wyżej (ten
   // zostaje bez zmian dla galerii akcesoriów premium) — tu lightbox musi znać SWÓJ indeks w
   // PHOTOS, żeby strzałki przewijały wewnątrz tej samej czwórki zdjęć.
   const [galleryHover, setGalleryHover] = useState<number | null>(null)
   const [galleryLightbox, setGalleryLightbox] = useState<number | null>(null)
+
+  // Galeria "akcesoria premium" — jeden aktywny kafelek na raz (accordion, nie hover-expand
+  // wszystkich naraz jak wyżej): domyślnie 2. zdjęcie już rozwinięte, żeby sekcja od razu
+  // wyglądała interesująco, nie płasko, zanim ktokolwiek najedzie kursorem.
+  const featuredPremium = PREMIUM_PHOTOS.filter(p => PREMIUM_FEATURED_IDS.includes(p.id))
+  const [activePremium, setActivePremium] = useState(featuredPremium[1]?.id ?? featuredPremium[0]?.id)
 
   useEffect(() => {
     if (galleryLightbox === null) return
@@ -67,22 +72,6 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [galleryLightbox])
-
-  const renderPhotoGrid = (photos: typeof PHOTOS, gridClassName = 'grid-cols-[repeat(auto-fit,minmax(150px,1fr))]') => (
-    <div className={`mb-7 grid ${gridClassName} gap-3.5 text-left`}>
-      {photos.map(photo => (
-        <div key={photo.id}>
-          <div
-            onClick={() => setLightbox({ src: `/real-cards/${photo.id}.jpg`, caption: lang === 'pl' ? photo.captionPl : photo.captionEn })}
-            className="relative aspect-[0.8] cursor-pointer overflow-hidden rounded-2xl border border-border"
-          >
-            <Image src={`/real-cards/${photo.id}.jpg`} alt={lang === 'pl' ? photo.captionPl : photo.captionEn} fill sizes="(max-width: 640px) 45vw, 220px" className="object-cover" loading="lazy" />
-          </div>
-          <p className="mt-2 text-xs leading-[1.5] text-muted-foreground">{lang === 'pl' ? photo.captionPl : photo.captionEn}</p>
-        </div>
-      ))}
-    </div>
-  )
 
   return (
     <section id="prawdziwe-karty" data-reveal className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-10 text-center [scroll-margin-top:var(--nav-height,70px)]">
@@ -159,20 +148,67 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
           głównej galerii, żeby wizualnie odróżnić standardowe noszenie od dodatkowego wykończenia. */}
       <h3 className="font-heading text-[clamp(18px,2.4vw,24px)] font-bold text-foreground mb-2">{t.premiumTitle}</h3>
       <p className="mx-auto mb-7 max-w-[560px] text-sm leading-[1.7] text-muted-foreground">{t.premiumSub}</p>
-      {renderPhotoGrid(
-        PREMIUM_PHOTOS.filter(p => PREMIUM_FEATURED_IDS.includes(p.id)),
-        'mx-auto max-w-[520px] grid-cols-2'
-      )}
 
-      {/* LIGHTBOX ZDJĘĆ (akcesoria premium — bez zmian) */}
-      {lightbox && (
-        <div
-          onClick={() => setLightbox(null)}
-          className="fixed inset-0 z-[1000] flex cursor-pointer items-center justify-center bg-[rgba(8,8,16,0.92)] p-5"
-        >
-          <img src={lightbox.src} alt={lightbox.caption} className="max-h-[90vh] max-w-[90vw] rounded-xl" />
-        </div>
-      )}
+      {/* Galeria "elastyczna" — jeden kafelek naraz rośnie (flex-[4] vs flex-[1]) kosztem
+          pozostałych, jaśnieje na aktywnym/hover, przyciemnia resztę. Pionowo na mobile (kafelki
+          rosną WYSOKOŚCIĄ, flex-col), poziomo na desktopie (flex-row, rosną SZEROKOŚCIĄ) — ten sam
+          kontener obsługuje oba dzięki temu, że flex kieruje się flex-direction, nie potrzeba
+          osobnego renderowania jak w galerii "prawdziwe karty" wyżej. Czysty CSS
+          `transition-[flex,filter]`, zero nowych zależności (next/image i lucide-react już są
+          w projekcie). CTA "Zamów →" prowadzi do formularza, nie do nieistniejącej "strony
+          projektu" — to jedyna realna akcja, jaką klient może tu wykonać. */}
+      <div className="mx-auto flex h-[480px] w-full max-w-[700px] flex-col gap-2 sm:h-[420px] sm:flex-row sm:gap-3">
+        {featuredPremium.map(photo => {
+          const isActive = activePremium === photo.id
+          return (
+            <div
+              key={photo.id}
+              onMouseEnter={() => setActivePremium(photo.id)}
+              onClick={() => setActivePremium(photo.id)}
+              className={`relative cursor-pointer overflow-hidden rounded-2xl border border-border transition-[flex,filter] duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${isActive ? 'flex-[4] brightness-100' : 'flex-[1] brightness-50 hover:brightness-75'}`}
+            >
+              <Image
+                src={`/real-cards/${photo.id}.jpg`}
+                alt={lang === 'pl' ? photo.captionPl : photo.captionEn}
+                fill
+                sizes="(max-width: 640px) 92vw, 700px"
+                className={`object-cover transition-transform duration-1000 ${isActive ? 'scale-100' : 'scale-110'}`}
+              />
+              <div
+                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent transition-opacity duration-500"
+                style={{ opacity: isActive ? 1 : 0 }}
+              />
+
+              {/* Treść aktywnego kafelka */}
+              <div className={`absolute inset-x-0 bottom-0 flex flex-col gap-1.5 p-4 transition-all duration-500 sm:p-6 ${isActive ? 'translate-y-0 opacity-100 delay-200' : 'translate-y-8 opacity-0'}`}>
+                <span className="inline-block w-fit rounded-full border border-white/30 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md">
+                  {lang === 'pl' ? photo.tagPl : photo.tagEn}
+                </span>
+                <h4 className="text-xl font-black uppercase leading-tight text-white sm:text-3xl">
+                  {lang === 'pl' ? photo.titlePl : photo.titleEn}
+                </h4>
+                <p className="max-w-[320px] text-xs leading-[1.5] text-white/75 sm:text-[13px]">
+                  {lang === 'pl' ? photo.captionPl : photo.captionEn}
+                </p>
+                <a href="#order" className="mt-1 flex w-fit items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-white/90 transition-colors hover:text-primary">
+                  {lang === 'pl' ? 'Zamów' : 'Order now'} <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
+
+              {/* Etykieta nieaktywnego kafelka — pionowy tekst na desktopie (wąska kolumna),
+                  krótka pozioma etykieta na mobile (niski, zwinięty pasek) */}
+              <div className={`pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 transition-all duration-500 sm:bottom-6 ${isActive ? 'scale-50 opacity-0' : 'opacity-100 delay-300'}`}>
+                <span className="hidden whitespace-nowrap text-sm font-bold uppercase tracking-widest text-white sm:block" style={{ writingMode: 'vertical-rl' }}>
+                  {lang === 'pl' ? photo.titlePl : photo.titleEn}
+                </span>
+                <span className="block text-[11px] font-bold uppercase tracking-wide text-white sm:hidden">
+                  {lang === 'pl' ? photo.tagPl : photo.tagEn}
+                </span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
 
       {/* LIGHTBOX GALERII "PRAWDZIWE KARTY" — z nawigacją strzałka/licznik, osobny od powyższego */}
       {galleryLightbox !== null && (
