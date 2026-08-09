@@ -247,7 +247,7 @@ export default function Home() {
   const [discountPct, setDiscountPct] = useState(0)
   const [discountMsg, setDiscountMsg] = useState<string | null>(null)
 
-  const DISCOUNT_CODES: Record<string, number> = { SIERRA: 90 } // SIERRA — 90% rabat dla znajomych, celowo bez promocji/banera na stronie
+  const DISCOUNT_CODES: Record<string, number> = { SIERRA: 90, RAVE20: 20 } // SIERRA — 90% rabat dla znajomych, celowo bez promocji/banera na stronie; RAVE20 — 20% rabat na całość zamówienia
 
   const applyDiscount = () => {
     const code = discountCode.trim().toUpperCase()

@@ -252,8 +252,11 @@ unitPrice = cena_typu_karty + cena_opcji_tyłu
 hasDiscount (ilość ≥ 3) → -35% na (unitPrice × ilość)  [baseTotal]
   (QUANTITY_DISCOUNT_RATE w app/page.tsx — obniżone z -50% 2026-07-30, bo realny
   koszt wytworzenia z BOM pokazał zerową/ujemną marżę na zamówieniach 3+ szt.)
-kod rabatowy → dodatkowy % od baseTotal (mechanizm gotowy, DISCOUNT_CODES puste —
-  LSF2026 — 25%, promocja Łódź Summer Festival — wygasł 27.07.2026, usunięty 2026-07-31)
+kod rabatowy → dodatkowy % od baseTotal (mechanizm gotowy, `DISCOUNT_CODES` w app/page.tsx —
+  aktualnie: SIERRA 90% (rabat dla znajomych, celowo bez promocji/banera na stronie),
+  RAVE20 20% (rabat na całość zamówienia, dodany 2026-08-09, bez ograniczenia czasowego
+  na razie — do wygaszenia ręcznie przez usunięcie z mapy, tak jak wcześniej LSF2026 25%,
+  promocja Łódź Summer Festival, wygasła 27.07.2026, usunięta 2026-07-31)
 
 NFC/RFID (tylko dla karty PVC, opcjonalny dodatek):
   - ≤3 sztuki: +15 zł/kartę
