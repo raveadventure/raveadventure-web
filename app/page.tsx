@@ -1129,10 +1129,13 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => setShowMoreFinishes(true)}
-                      style={{ boxShadow: 'var(--glow-neon)' }}
-                      className="mb-5 inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-primary bg-[var(--neon-dim)] px-5 py-2.5 text-[13px] font-bold text-primary transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:shadow-[0_0_28px_rgba(180,77,255,0.5)] hover:scale-[1.03] active:scale-95 cursor-pointer"
+                      className={styles.premiumCta}
                     >
-                      {lang === 'pl' ? '✦ Dodaj akcesoria premium do swojej karty' : '✦ Add premium accessories to your card'}
+                      <span aria-hidden="true" className={styles.premiumSheen} />
+                      <span aria-hidden="true" className={styles.premiumIcon}>✦</span>
+                      <span className={styles.premiumLabel}>
+                        {lang === 'pl' ? 'Dodaj akcesoria premium do swojej karty' : 'Add premium accessories to your card'}
+                      </span>
                     </button>
                   )}
                   {quantity === 0 && (

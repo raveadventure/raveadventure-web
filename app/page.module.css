@@ -485,3 +485,81 @@
   0% { background-position: 200% 0; }
   100% { background-position: -100% 0; }
 }
+
+/* "Dodaj akcesoria premium" CTA (krok 1 formularza, 2026-08-09) — świadomie NIE reużywa
+   standardowej "glowing pill" klasy z resztą strony (patrz DESIGN.md „CTA buttons: what got
+   unified, what deliberately didn't"). To jedyny moment w formularzu, gdzie chcemy klienta
+   realnie skusić na dopłatę (upsell), więc dostaje własny, wyraźnie odróżniający się język:
+   animowana obwódka fioletowo-cyjanowa (te same 2 kolory co reszta marki, tylko w ruchu),
+   oddychający glow i złota iskierka — "premium" bez wychodzenia poza zatwierdzoną paletę. */
+.premiumCta {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 20px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(#12081f, #0d0418) padding-box,
+    linear-gradient(120deg, var(--neon), var(--neon2), var(--neon)) border-box;
+  background-size: 100% 100%, 300% 300%;
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 220ms ease;
+  animation: premiumBorderShift 5s ease infinite, premiumBreathe 2.4s ease-in-out infinite;
+}
+.premiumCta:hover {
+  transform: scale(1.045);
+}
+.premiumCta:active {
+  transform: scale(0.96);
+}
+.premiumSheen {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,0.4) 50%, transparent 58%);
+  transform: translateX(-130%);
+  animation: premiumSheenSweep 3.4s ease-in-out infinite;
+  pointer-events: none;
+}
+.premiumIcon {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  color: var(--warning);
+  font-size: 16px;
+  text-shadow: 0 0 10px rgba(245,158,11,0.7);
+  animation: premiumIconPulse 2.4s ease-in-out infinite;
+}
+.premiumLabel {
+  position: relative;
+  z-index: 1;
+}
+@keyframes premiumBorderShift {
+  0%, 100% { background-position: 0% 0%, 0% 50%; }
+  50% { background-position: 0% 0%, 100% 50%; }
+}
+@keyframes premiumBreathe {
+  0%, 100% { box-shadow: 0 0 16px rgba(180,77,255,0.35), 0 0 0 rgba(0,240,255,0); }
+  50% { box-shadow: 0 0 32px rgba(180,77,255,0.55), 0 0 20px rgba(0,240,255,0.35); }
+}
+@keyframes premiumSheenSweep {
+  0% { transform: translateX(-130%); }
+  55%, 100% { transform: translateX(130%); }
+}
+@keyframes premiumIconPulse {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.25) rotate(14deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .premiumCta, .premiumSheen, .premiumIcon {
+    animation: none !important;
+  }
+}
