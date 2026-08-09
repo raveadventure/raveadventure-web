@@ -11,6 +11,7 @@ import RealCardsSection from '../components/RealCardsSection'
 import AdShowcase from '../components/AdShowcase'
 import FaqReviews from '../components/FaqReviews'
 import WhyUs from '../components/WhyUs'
+import CostTransparency from '../components/CostTransparency'
 import InpostGeowidget from '../components/InpostGeowidget'
 import InpostAutocomplete from '../components/InpostAutocomplete'
 import HeroCardAnimation from '../components/HeroCardAnimation'
@@ -844,6 +845,8 @@ export default function Home() {
       <RealCardsSection lang={lang} />
 
       <WhyUs lang={lang} />
+
+      <CostTransparency lang={lang} />
 
       <section className={styles.section} id="jak-zamowic" data-reveal>
         <div className={styles.mobileCollapse}>
