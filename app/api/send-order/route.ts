@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
         statusPrompt: 'Chcesz sprawdzić status zamówienia w dowolnym momencie?',
         statusBtn: 'Sprawdź status zamówienia →',
         statusNote: 'Link jest przypisany do Twojego zamówienia i zawsze aktualny.',
+        orderNumberNote: (orderNum: string) => `Twój numer zlecenia to <strong style="color:#b44dff;">#${orderNum}</strong>. Zamawiasz jeszcze jedną kartę? Podaj ten numer w kroku 5 formularza ("Połącz z innym zamówieniem"), a wyślemy obie karty razem, bez podwójnej opłaty za wysyłkę.`,
         toPay: 'Do zapłaty',
         paymentNote: 'Płatność przelewem po zatwierdzeniu projektu. Dane do przelewu wyślemy razem z projektem.',
         questions: 'Masz pytania? Napisz do nas:',
@@ -75,6 +76,7 @@ export async function POST(req: NextRequest) {
         statusPrompt: 'Want to check your order status anytime?',
         statusBtn: 'Check order status →',
         statusNote: "This link is tied to your order and always up to date.",
+        orderNumberNote: (orderNum: string) => `Your order number is <strong style="color:#b44dff;">#${orderNum}</strong>. Ordering another card? Enter this number in step 5 of the form ("Combine with another order") and we'll ship both cards together, with no double shipping fee.`,
         toPay: 'Total due',
         paymentNote: "Payment by bank transfer after the design is approved. We'll send payment details along with the design.",
         questions: 'Questions? Get in touch:',
@@ -325,6 +327,13 @@ export async function POST(req: NextRequest) {
                 ${L.statusBtn}
               </a>
               <p style="margin:10px 0 0;font-size:11px;color:rgba(240,238,255,0.3);">${L.statusNote}</p>
+            </td></tr>
+          </table>
+
+          <!-- NUMER ZLECENIA + POŁĄCZENIE WYSYŁKI -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#16162a;border-radius:10px;padding:14px 20px;margin-bottom:28px;">
+            <tr><td>
+              <p style="margin:0;font-size:12px;line-height:1.6;color:rgba(240,238,255,0.6);">${L.orderNumberNote(orderId ? String(orderId).slice(0, 8) : '—')}</p>
             </td></tr>
           </table>
 

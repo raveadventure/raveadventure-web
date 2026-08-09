@@ -792,6 +792,9 @@ export default function AdminPage() {
                         {(order as any).shipping_region === 'intl' && (
                           <span title={`Wysyłka za granicę — ${(order as any).shipping_cost ?? 40} zł`} style={{ fontSize: '11px', fontWeight: 700, color: '#f59e0b', fontFamily: 'monospace' }}>🌍 UE</span>
                         )}
+                        {(order as any).linked_order_ref && (
+                          <span title={`Wysyłka połączona z zamówieniem #${(order as any).linked_order_ref} — nie doliczono osobnej wysyłki, spakuj razem`} style={{ fontSize: '11px', fontWeight: 700, color: '#00f0ff', fontFamily: 'monospace' }}>🔗 #{(order as any).linked_order_ref}</span>
+                        )}
                         <LangBadge lang={order.lang} size="small" />
                       </p>
                       <p style={{ margin: 0, fontSize: '12px', color: 'rgba(240,238,255,0.4)' }}>
@@ -1073,7 +1076,9 @@ export default function AdminPage() {
                 { label: 'Klient', value: selected.name },
                 { label: 'Email', value: selected.email, link: `mailto:${selected.email}` },
                 { label: 'Telefon', value: selected.phone || '—' },
-                (selected as any).delivery_method === 'paczkomat'
+                (selected as any).delivery_method === 'combined'
+                  ? { label: '🔗 Wysyłka połączona', value: `z zamówieniem #${(selected as any).linked_order_ref || '—'} — nie doliczono osobnej wysyłki, spakuj razem` }
+                  : (selected as any).delivery_method === 'paczkomat'
                   ? {
                       label: '📦 Paczkomat',
                       value: selected.address + ((selected as any).paczkomat_id && !selected.address?.includes((selected as any).paczkomat_id)

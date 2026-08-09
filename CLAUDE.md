@@ -346,6 +346,36 @@ bez konsultacji**.
   eksport zamówień krajowych (zdecydowana większość) zostaje bajt w bajt identyczny jak wcześniej,
   parser Cards Creator nic nie traci.
 
+### Łączenie wysyłki dwóch różnych zamówień (od 2026-08-09)
+
+Problem: klient zamawiający dwie RÓŻNE karty (dwa osobne zamówienia — inny motyw/zdjęcie każde,
+formularz obsługuje tylko jeden motyw na zamówienie) płacił dotąd za wysyłkę dwa razy, mimo że
+Michał i tak wysyła je fizycznie razem w jednej kopercie. Rozwiązanie zaprojektowane wspólnie
+z Michałem — świadomie **bez** automatycznej walidacji/wyszukiwania referencyjnego zamówienia
+(zbędna złożoność przy tej skali, 10-30 kart dziennie, i tak ręcznie kuratorowanej).
+
+- Krok 5 formularza: trzecia opcja w przełączniku „sposób dostawy" — obok „Adres wysyłki" /
+  „Paczkomat InPost" — **„🔗 Połącz z innym zamówieniem"** (`deliveryMethod` w `app/page.tsx`
+  rozszerzony z `'address' | 'paczkomat'` na `'address' | 'paczkomat' | 'combined'`). Po wybraniu:
+  toggle kraju wysyłki (PL/zagranica) i pole adresu/paczkomatu znikają (nieistotne — ta karta
+  jedzie z inną przesyłką), pokazuje się jedno pole tekstowe „Numer poprzedniego zlecenia"
+  (`linkedOrderRef`, wymagane w tym trybie) z podpowiedzią że wysyłka nie zostanie doliczona.
+- `SHIPPING_COST` automatycznie = 0 zł, gdy `deliveryMethod === 'combined'`, niezależnie od
+  regionu — liczone deterministycznie z jawnego wyboru w formularzu, bez potrzeby ręcznej korekty
+  ceny przez Michała w panelu admina (rozważana wcześniej, odrzucona jako zbędna, skoro pole jest
+  ustrukturyzowane, nie wolnym tekstem w uwagach).
+- Zapis: nowa kolumna `orders.linked_order_ref` (text, nullable) — surowy tekst, który klient
+  wpisał (np. pierwsze 8 znaków ID, ten sam skrót co wszędzie indziej w projekcie), NIE
+  zwalidowany względem realnych zamówień w czasie rzeczywistym — Michał ręcznie weryfikuje
+  i fizycznie pakuje razem podczas realizacji.
+- Widoczność dla Michała: badge „🔗 #XXXXXXXX" na liście zamówień w `/admin` (ten sam wzorzec co
+  badge „🌍 UE"), oraz wiersz „🔗 Wysyłka połączona" w szczegółach zamówienia zamiast zwykłego
+  adresu.
+- Mail potwierdzający (`/api/send-order`) dostał nowy blok tuż pod linkiem do statusu zamówienia:
+  „Twój numer zlecenia to #XXXXXXXX. Zamawiasz jeszcze jedną kartę? Podaj ten numer w kroku 5
+  formularza..." — bez tego klient nie miałby skąd wziąć numeru do wpisania przy drugim
+  zamówieniu.
+
 ## Schemat bazy danych — tabela `orders` (Supabase)
 
 ```
@@ -363,7 +393,8 @@ design_url_2, design_original_url_2, approved_design_option,
 delivery_method, paczkomat_id,
 card_finish_breakdown, nfc_qty,
 shipping_region, shipping_cost,
-paybylink_transaction_id
+paybylink_transaction_id,
+linked_order_ref
 ```
 
 ### Tabela `page_views` (licznik odwiedzin strony głównej)

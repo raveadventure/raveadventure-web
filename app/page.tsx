@@ -179,7 +179,12 @@ export default function Home() {
   const [frameColor, setFrameColor] = useState('neon_purple')
   const [holoEffect, setHoloEffect] = useState(false)
   const [backOption, setBackOption] = useState('logo')
-  const [deliveryMethod, setDeliveryMethod] = useState<'address' | 'paczkomat'>('address')
+  const [deliveryMethod, setDeliveryMethod] = useState<'address' | 'paczkomat' | 'combined'>('address')
+  // Klient zamawia drugą (inną) kartę i chce ją wysłać razem z wcześniejszym zamówieniem zamiast
+  // płacić za wysyłkę dwa razy — wpisuje numer poprzedniego zlecenia (ten sam #XXXXXXXX co w mailu
+  // potwierdzającym), SHIPPING_COST dla TEGO zamówienia spada do 0 (patrz niżej), a Michał w panelu
+  // admina widzi obie karty jako powiązane i fizycznie pakuje je razem.
+  const [linkedOrderRef, setLinkedOrderRef] = useState('')
   // Kraj wysyłki — dodane 2026-08-02 na wyraźną prośbę Michała (wcześniej wysyłka tylko PL).
   // Wpływa na SHIPPING_COST niżej; przy zmianie na 'intl' czyścimy ewentualnie już wybrany polski
   // paczkomat (wyszukiwarka InPost, patrz niżej, obsługuje tylko polskie punkty).
@@ -368,7 +373,11 @@ export default function Home() {
   // znalazł, więc nie są dowolne do zmiany bez konsultacji.
   const SHIPPING_COST_INTL_PACZKOMAT = 40
   const SHIPPING_COST_INTL_ADDRESS = 80
-  const SHIPPING_COST = shippingRegion === 'intl'
+  // "combined" — karta jedzie razem z innym zamówieniem klienta (patrz linkedOrderRef wyżej),
+  // więc TA karta nie jest osobno obciążana wysyłką, niezależnie od kraju.
+  const SHIPPING_COST = deliveryMethod === 'combined'
+    ? 0
+    : shippingRegion === 'intl'
     ? (deliveryMethod === 'paczkomat' ? SHIPPING_COST_INTL_PACZKOMAT : SHIPPING_COST_INTL_ADDRESS)
     : 15
   const NFC_PRICE_STANDARD = 15
@@ -453,8 +462,9 @@ export default function Home() {
 
   const handleSubmit = async () => {
     if (!photo) { setError(t.order.step5.errPhotoRequired); setStep(2); return }
-    if (!form.name || !form.email || !form.address) { setError(t.order.step5.errRequired); return }
-    if ((deliveryMethod === 'paczkomat' || shippingRegion === 'intl') && !form.phone.trim()) { setError(t.order.step5.errPhoneRequired); return }
+    if (!form.name || !form.email || (deliveryMethod !== 'combined' && !form.address)) { setError(t.order.step5.errRequired); return }
+    if (deliveryMethod === 'combined' && !linkedOrderRef.trim()) { setError(t.order.step5.errLinkedOrderRefRequired); return }
+    if (deliveryMethod !== 'combined' && (deliveryMethod === 'paczkomat' || shippingRegion === 'intl') && !form.phone.trim()) { setError(t.order.step5.errPhoneRequired); return }
     if (!isValidEmail(form.email)) {
       setError(lang === 'pl' ? 'Podaj prawidłowy adres email (musi zawierać znak @ i domenę).' : 'Please enter a valid email address (must include @ and a domain).')
       return
@@ -481,6 +491,7 @@ export default function Home() {
         photo_url: null, status: 'new', lang,
         delivery_method: deliveryMethod, paczkomat_id: deliveryMethod === 'paczkomat' ? paczkomatId : null,
         shipping_region: shippingRegion, shipping_cost: SHIPPING_COST,
+        linked_order_ref: deliveryMethod === 'combined' ? linkedOrderRef.trim() : null,
       }
       const localMock = isSupabasePlaceholder()
       let orderData: { id: string } | null = null
@@ -1412,36 +1423,53 @@ export default function Home() {
               </div>
 
               <div className="mt-2">
-                <p className={sectionEyebrowCls}>{t.order.step5.shippingRegionEyebrow}</p>
-                <div className="flex gap-2.5 mb-4">
-                  {(['pl', 'intl'] as const).map(r => (
-                    <div key={r}
-                      onClick={() => {
-                        // Zmiana kraju czyści ewentualnie już wybrany/potwierdzony paczkomat —
-                        // polska wyszukiwarka nie ma sensu dla zagranicy i odwrotnie.
-                        setShippingRegion(r); setPaczkomatConfirmed(false); setPaczkomatId('')
-                        if (deliveryMethod === 'paczkomat') setForm({ ...form, address: '' })
-                      }} role="button" tabIndex={0}
-                      onKeyDown={e => e.key === 'Enter' && setShippingRegion(r)} aria-pressed={shippingRegion === r}
-                      className={`${toggleBtnCls} ${shippingRegion === r ? '!border-primary !bg-[var(--neon-dim)] shadow-[var(--glow-neon)]' : ''}`}>
-                      {r === 'pl' ? `🇵🇱 ${t.order.step5.shippingRegionPl}` : `🇪🇺 ${t.order.step5.shippingRegionIntl}`}
+                {/* Kraj wysyłki nie ma znaczenia dla "połącz z innym zamówieniem" — ta karta jedzie
+                    razem z inną przesyłką, więc region/adres tego zamówienia jest nieistotny. */}
+                {deliveryMethod !== 'combined' && (
+                  <>
+                    <p className={sectionEyebrowCls}>{t.order.step5.shippingRegionEyebrow}</p>
+                    <div className="flex gap-2.5 mb-4">
+                      {(['pl', 'intl'] as const).map(r => (
+                        <div key={r}
+                          onClick={() => {
+                            // Zmiana kraju czyści ewentualnie już wybrany/potwierdzony paczkomat —
+                            // polska wyszukiwarka nie ma sensu dla zagranicy i odwrotnie.
+                            setShippingRegion(r); setPaczkomatConfirmed(false); setPaczkomatId('')
+                            if (deliveryMethod === 'paczkomat') setForm({ ...form, address: '' })
+                          }} role="button" tabIndex={0}
+                          onKeyDown={e => e.key === 'Enter' && setShippingRegion(r)} aria-pressed={shippingRegion === r}
+                          className={`${toggleBtnCls} ${shippingRegion === r ? '!border-primary !bg-[var(--neon-dim)] shadow-[var(--glow-neon)]' : ''}`}>
+                          {r === 'pl' ? `🇵🇱 ${t.order.step5.shippingRegionPl}` : `🇪🇺 ${t.order.step5.shippingRegionIntl}`}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </>
+                )}
 
                 <p className={sectionEyebrowCls}>{t.order.step5.deliveryEyebrow}</p>
-                <div className="flex gap-2.5 mb-3">
-                  {(['address', 'paczkomat'] as const).map(m => (
+                <div className="flex flex-wrap gap-2.5 mb-3">
+                  {(['address', 'paczkomat', 'combined'] as const).map(m => (
                     <div key={m}
-                      onClick={() => setDeliveryMethod(m)} role="button" tabIndex={0}
+                      onClick={() => {
+                        setDeliveryMethod(m)
+                        // Region wysyłki jest nieistotny dla "połącz" — wracamy do PL, żeby po
+                        // ewentualnym powrocie do adresu/paczkomatu nie zostać z ukrytym "zagranica".
+                        if (m === 'combined') setShippingRegion('pl')
+                      }} role="button" tabIndex={0}
                       onKeyDown={e => e.key === 'Enter' && setDeliveryMethod(m)} aria-pressed={deliveryMethod === m}
                       className={`${toggleBtnCls} ${deliveryMethod === m ? '!border-primary !bg-[var(--neon-dim)] shadow-[var(--glow-neon)]' : ''}`}>
-                      {m === 'address' ? `📍 ${t.order.step5.deliveryAddressOption}` : `📦 ${t.order.step5.deliveryParcelOption}`}
+                      {m === 'address' ? `📍 ${t.order.step5.deliveryAddressOption}` : m === 'paczkomat' ? `📦 ${t.order.step5.deliveryParcelOption}` : `🔗 ${t.order.step5.deliveryCombinedOption}`}
                     </div>
                   ))}
                 </div>
 
-                {deliveryMethod === 'address' ? (
+                {deliveryMethod === 'combined' ? (
+                  <div className={fieldCls}>
+                    <label className={labelCls}>{t.order.step5.linkedOrderRefLabel}</label>
+                    <input value={linkedOrderRef} onChange={e => setLinkedOrderRef(e.target.value)} placeholder={t.order.step5.linkedOrderRefPlaceholder} />
+                    <p className="mt-1 mb-0 text-[11px] text-[var(--text-faint)]">{t.order.step5.linkedOrderRefNote}</p>
+                  </div>
+                ) : deliveryMethod === 'address' ? (
                   <div className={fieldCls}>
                     <label className={labelCls}>{t.order.step5.addressLabel}</label>
                     <input value={form.address} onChange={e => setForm({...form, address: e.target.value})} placeholder={shippingRegion === 'intl' ? t.order.step5.addressIntlPlaceholder : t.order.step5.addressPlaceholder} />
