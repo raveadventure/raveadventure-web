@@ -22,7 +22,10 @@ const TXT = {
     laborAmount: 'ZA DARMO',
     totalLabel: 'Razem koszt wytworzenia',
     priceLabel: 'Cena karty Standard',
-    footer: 'W tym projekcie nie chodzi o zarabianie — chodzi o to, żebyś dostał/a wyjątkową pamiątkę. Nie liczę sobie stawki godzinowej za projekt ani obsługę zamówienia — robię to jako pasję, obok pracy na etacie. Reszta ceny pokrywa realne koszty (materiał, druk, generowanie grafik, licencje, wysyłkę), nie zysk z taśmy produkcyjnej.',
+    quote: 'Nie chodzi mi o zarabianie — chodzi o to, żebyś dostał/a wyjątkową pamiątkę.',
+    quoteTagline: 'To pasja, nie etat.',
+    quoteAuthor: 'Michał Koch',
+    quoteRole: 'Twórca Rave Adventure',
   },
   en: {
     title: "Where does your card's price come from?",
@@ -38,7 +41,10 @@ const TXT = {
     laborAmount: 'FREE',
     totalLabel: 'Total production cost',
     priceLabel: 'Standard card price',
-    footer: "This project was never about making money — it's about you getting a genuinely special keepsake. I don't charge myself an hourly rate for design or order handling — this is a passion project I run alongside my full-time job. The rest of the price covers real costs (materials, printing, artwork generation, licenses, shipping), not assembly-line profit.",
+    quote: "This was never about the money — it's about you getting a genuinely special keepsake.",
+    quoteTagline: "It's a passion project, not a job.",
+    quoteAuthor: 'Michał Koch',
+    quoteRole: 'Founder of Rave Adventure',
   },
 }
 
@@ -95,7 +101,16 @@ export default function CostTransparency({ lang = 'pl' }: { lang?: 'pl' | 'en' }
         </div>
       </div>
 
-      <p className="mx-auto mt-6 max-w-[600px] text-[12.5px] leading-[1.7] text-muted-foreground">{t.footer}</p>
+      {/* Cytat-podpis — pełna szerokość sekcji, w tej samej ramce co karty "Jak to działa"
+          (border + rounded-[16px] + tło var(--surface)), zamiast wąskiego akapitu tekstu.
+          Krótszy, jednozdaniowy cytat + podpis (imię i rola) zamiast długiego wyjaśnienia. */}
+      <div className="mt-6 w-full rounded-[16px] border border-border bg-[var(--surface)] px-6 py-7 text-center sm:px-10">
+        <p className="mx-auto max-w-[520px] text-[15px] italic leading-[1.6] text-foreground sm:text-base">
+          „{t.quote}<br />{t.quoteTagline}”
+        </p>
+        <p className="mt-4 text-sm font-bold text-foreground">{t.quoteAuthor}</p>
+        <p className="text-xs text-muted-foreground">{t.quoteRole}</p>
+      </div>
     </section>
   )
 }
