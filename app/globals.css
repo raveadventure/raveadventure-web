@@ -111,12 +111,47 @@ html { scroll-behavior: smooth; }
    działają, tylko teraz poprawnie w kolejce za Tailwindem, nie przed nim. */
 @layer base {
   body {
+    position: relative;
     background: var(--black);
     color: var(--text);
     font-family: var(--font-body);
     font-size: 16px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ambient aurora backdrop (2026-08-10, Michał's request) — replaces the flat solid --black with
+     slow-drifting glow behind the whole page. Adapted from an external "Aurora Background" demo
+     (blue/purple/pink/green radial waves on solid black) — kept only the underlying TECHNIQUE
+     (layered radial-gradient blobs, background-position drift), reworked entirely onto the
+     protected purple/cyan palette instead of the demo's 4-color mix, since introducing new hues
+     site-wide would break brand identity. Purple stays dominant (3 blobs) with cyan kept as the
+     minority accent (1 blob) — matches the existing HeroRays ratio (~1-in-7 rays cyan) rather than
+     an even 50/50 split, so the new backdrop reads as "this brand's atmosphere," not a generic
+     aurora template.
+     `body::before` (not a React component) so it's one shared layer for every page using the
+     plain body background — automatically stays OFF `/admin`, `/login`, `/review`, `/status`
+     (each already paints its own opaque full-viewport wrapper on top, per those pages' pre-redesign
+     styling, see DESIGN.md) without any extra scoping code. `position: fixed` keeps it anchored to
+     the viewport (doesn't scroll away); `z-index: -1` + `pointer-events: none` keep it inert and
+     behind all real content. Opacity kept low (0.08–0.16 per blob) — this session already learned
+     once, on the holo card effect, that a "glow" reads as broken UI polish past that range. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      radial-gradient(ellipse 900px 700px at 12% 12%, rgba(180, 77, 255, 0.16), transparent 60%),
+      radial-gradient(ellipse 700px 600px at 88% 22%, rgba(0, 240, 255, 0.10), transparent 55%),
+      radial-gradient(ellipse 850px 750px at 25% 88%, rgba(180, 77, 255, 0.13), transparent 60%),
+      radial-gradient(ellipse 650px 550px at 80% 92%, rgba(180, 77, 255, 0.09), transparent 55%);
+    background-repeat: no-repeat;
+    animation: auroraDrift 24s ease-in-out infinite alternate;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body::before { animation: none; }
   }
 
   a { color: inherit; text-decoration: none; }
@@ -137,6 +172,12 @@ html { scroll-behavior: smooth; }
   input::placeholder, textarea::placeholder { color: var(--text-faint); }
   textarea { resize: vertical; min-height: 100px; }
   button { font-family: var(--font-body); cursor: pointer; border: none; outline: none; }
+}
+
+@keyframes auroraDrift {
+  0% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
+  50% { background-position: 4% -3%, -4% 4%, -3% -4%, 3% 3%; }
+  100% { background-position: -3% 4%, 3% -3%, 4% 3%, -4% -3%; }
 }
 
 ::selection { background: rgba(180, 77, 255, 0.3); }
