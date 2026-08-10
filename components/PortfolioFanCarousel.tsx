@@ -27,19 +27,25 @@ const TXT = {
     title: 'Wersja 2 — karuzela w wachlarzu',
     sub: 'Ta sama pula kart, inny sposób przeglądania — przeciągnij w bok albo kliknij dowolną kartę.',
     card: (i: number) => `Karta ${i}`,
+    galleryBtn: 'Zobacz całą naszą galerię',
+    orderBtn: 'Zamów swoją kartę z ostatniego eventu →',
   },
   en: {
     title: 'Version 2 — fan carousel',
     sub: 'The same set of cards, a different way to browse them — drag sideways or click any card.',
     card: (i: number) => `Card ${i}`,
+    galleryBtn: 'See our full gallery',
+    orderBtn: 'Order your card from the latest event →',
   },
 }
 
+// Wymiary powiększone o 20% (2026-08-10, na życzenie Michała) względem pierwszej wersji tego
+// komponentu — same proporcje, po prostu w większej skali.
 const MAX_OFFSET = 2
-const CARD_W = 148
-const CARD_SPACING = 78
+const CARD_W = 178
+const CARD_SPACING = 94
 const STEP_DEG = 16
-const ARC_Y = 16
+const ARC_Y = 19
 
 function wrap(n: number, len: number) {
   if (len <= 0) return 0
@@ -138,8 +144,8 @@ export default function PortfolioFanCarousel({ lang = 'pl' }: { lang?: 'pl' | 'e
       const isActive = off === 0
       gsap.to(el, {
         x: off * CARD_SPACING,
-        y: abs * ARC_Y + (isActive ? -14 : 0),
-        z: -abs * 70,
+        y: abs * ARC_Y + (isActive ? -17 : 0),
+        z: -abs * 84,
         rotationZ: off * STEP_DEG,
         rotationX: isActive ? 0 : 8,
         scale: isActive ? 1.08 : 1 - abs * 0.13,
@@ -163,12 +169,20 @@ export default function PortfolioFanCarousel({ lang = 'pl' }: { lang?: 'pl' | 'e
         </span>
         <h2 className="font-heading text-[clamp(18px,2.4vw,24px)] font-bold text-foreground">{t.title}</h2>
       </div>
-      <p className="mb-8 text-center text-sm text-muted-foreground">{t.sub}</p>
+      <p className="mb-6 text-center text-sm text-muted-foreground">{t.sub}</p>
+
+      <div className="mb-8 text-center">
+        <a href="/portfolio"
+          className="inline-block rounded-full border-[1.5px] border-primary bg-[var(--neon-dim)] px-7 py-3 text-sm font-bold text-primary no-underline transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:shadow-[0_0_32px_rgba(180,77,255,0.5)] hover:scale-[1.03] active:scale-95"
+          style={{ boxShadow: 'var(--glow-neon)' }}>
+          {t.galleryBtn}
+        </a>
+      </div>
 
       <div
         ref={stageRef}
         className="relative mx-auto flex items-center justify-center select-none overflow-hidden"
-        style={{ height: '300px', perspective: '1200px', cursor: dragging ? 'grabbing' : 'grab', touchAction: 'pan-y' }}
+        style={{ height: '360px', perspective: '1200px', cursor: dragging ? 'grabbing' : 'grab', touchAction: 'pan-y' }}
       >
         {items.map((item, i) => {
           const off = signedOffset(i, active, items.length)
@@ -205,6 +219,14 @@ export default function PortfolioFanCarousel({ lang = 'pl' }: { lang?: 'pl' | 'e
               className={`h-1.5 rounded-[3px] border-none cursor-pointer p-0 transition-all duration-300 ${i === active ? 'w-5 bg-primary' : 'w-1.5 bg-border'}`} />
           ))}
         </div>
+      </div>
+
+      <div className="mt-8 text-center">
+        <a href="#order"
+          className="inline-block rounded-full border-[1.5px] border-primary bg-[var(--neon-dim)] px-7 py-3 text-sm font-bold text-primary no-underline transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:shadow-[0_0_32px_rgba(180,77,255,0.5)] hover:scale-[1.03] active:scale-95"
+          style={{ boxShadow: 'var(--glow-neon)' }}>
+          {t.orderBtn}
+        </a>
       </div>
     </section>
   )
