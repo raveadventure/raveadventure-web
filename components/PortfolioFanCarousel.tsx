@@ -6,11 +6,11 @@ import { isSupabasePlaceholder, PORTFOLIO_LOCAL_MOCK } from '../lib/portfolioLoc
 
 gsap.registerPlugin(Observer)
 
-// Wersja porównawcza karuzeli (2026-08-10, na wyraźną prośbę Michała: "dodaj dwie abym mógł sobie
-// porównać") — ta sama pula kart co PortfolioCarousel.tsx (identyczne dane, żeby porównanie było
-// uczciwe — różni się tylko MECHANIKA prezentacji), renderowana bezpośrednio pod istniejącą
-// karuzelą na stronie głównej. Świadomie TYMCZASOWA — Michał ma wybrać, którą zostawić, a którą
-// usunąć; nie traktować obu jako docelowego, podwójnego stanu strony.
+// Karuzela portfolio na stronie głównej — karty w wachlarzu 3D wokół aktywnej, przeciąganie/klik
+// do zmiany. Zastąpiła 2026-08-10 poprzednią, prostszą PortfolioCarousel.tsx (usuniętą) po tym, jak
+// Michał porównał obie wersje żywcem na stronie ("dodaj dwie abym mógł sobie porównać") i wybrał tę.
+// `id="realizacje"` przejęty z usuniętego komponentu — quickNav i sekundarne CTA w Hero
+// (`href="#realizacje"`) linkują tu bez zmian, nic po ich stronie nie wymagało aktualizacji.
 //
 // Michał podesłał gotowy komponent `CardStack` (framer-motion + Draggable spring physics, karty w
 // formacie landscape 520×320 z podpisem na nakładce). CLAUDE.md dokumentuje świadomą decyzję z tej
@@ -24,15 +24,15 @@ type Item = { id: string; name: string; card_url: string; theme: string }
 
 const TXT = {
   pl: {
-    title: 'Wersja 2 — karuzela w wachlarzu',
-    sub: 'Ta sama pula kart, inny sposób przeglądania — przeciągnij w bok albo kliknij dowolną kartę.',
+    title: 'Nasze karty',
+    sub: 'Każda karta to unikalna historia — przeciągnij w bok albo kliknij dowolną kartę, żeby zobaczyć więcej.',
     card: (i: number) => `Karta ${i}`,
     galleryBtn: 'Zobacz całą naszą galerię',
     orderBtn: 'Zamów swoją kartę z ostatniego eventu →',
   },
   en: {
-    title: 'Version 2 — fan carousel',
-    sub: 'The same set of cards, a different way to browse them — drag sideways or click any card.',
+    title: 'Our cards',
+    sub: 'Every card is a unique story — drag sideways or click any card to see more.',
     card: (i: number) => `Card ${i}`,
     galleryBtn: 'See our full gallery',
     orderBtn: 'Order your card from the latest event →',
@@ -162,13 +162,8 @@ export default function PortfolioFanCarousel({ lang = 'pl' }: { lang?: 'pl' | 'e
   if (items.length === 0) return null
 
   return (
-    <section data-reveal className="mx-auto max-w-[1100px] px-[5vw] pt-4 pb-14 [scroll-margin-top:var(--nav-height,70px)]">
-      <div className="mb-2 flex items-center justify-center gap-2">
-        <span className="rounded-full border border-[rgba(0,240,255,0.4)] bg-[rgba(0,240,255,0.08)] px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[2px] text-[#00f0ff]">
-          A/B
-        </span>
-        <h2 className="font-heading text-[clamp(18px,2.4vw,24px)] font-bold text-foreground">{t.title}</h2>
-      </div>
+    <section id="realizacje" data-reveal className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-14 [scroll-margin-top:var(--nav-height,70px)]">
+      <h2 className="mb-2 text-center font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground">{t.title}</h2>
       <p className="mb-6 text-center text-sm text-muted-foreground">{t.sub}</p>
 
       <div className="mb-8 text-center">

@@ -6,7 +6,6 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { supabase } from '../lib/supabase'
 import { isSupabasePlaceholder, mockInsertOrder, mockUpdateOrder } from '../lib/ordersLocalMock'
 import styles from './page.module.css'
-import PortfolioCarousel from '../components/PortfolioCarousel'
 import PortfolioFanCarousel from '../components/PortfolioFanCarousel'
 import RealCardsSection from '../components/RealCardsSection'
 import AdShowcase from '../components/AdShowcase'
@@ -888,7 +887,6 @@ export default function Home() {
       </div>
 
       <AdShowcase lang={lang} />
-      <PortfolioCarousel lang={lang} />
       <PortfolioFanCarousel lang={lang} />
       <HoloCardShowcase lang={lang} />
       <RealCardsSection lang={lang} />
