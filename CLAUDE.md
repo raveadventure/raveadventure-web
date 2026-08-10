@@ -92,7 +92,34 @@ Michał dostał zewnętrzną analizę/plan marketingowy strony i poprosił o zap
 - **Portfolio**: ✅ zrobione — `components/PortfolioCarousel.tsx` ma teraz widoczne chipy filtrów (Wszystkie/Rave/Festiwal/Podróże/Custom/**Fan Art** — ten ostatni motyw dodany 2026-08-09 na wyraźną prośbę Michała, wcześniej celowo pominięty w tym skróconym, homepage'owym teaserze, teraz spójny z pełną listą na `/portfolio`) i CTA „Zamów swoją kartę z kolejnego eventu →" pod karuzelą, linkujące do `#order`. Pełna strona `/portfolio` (`app/portfolio/page.tsx`) miała filtry/grid/lightbox (w tym `fan_art` z plakietką „Fan Art · Not for sale") już wcześniej — dopasowano tylko treść jej istniejącego CTA do tego samego sformułowania z briefu.
 - **„Jak to działa"**: sekcja już istnieje (`id="jak-zamowic"`), ale krok 3 briefu („Płacisz wygodnie PayByLink") wymaga najpierw aktywacji PayByLink (patrz wyżej) — do zaktualizowania razem z integracją płatności, nie wcześniej. Krok 2 briefu („2 propozycje grafiki do akceptacji") **już jest wspierane w bazie** (`design_url_2`/`design_original_url_2`/`approved_design_option` w `orders`, wysyłka dwóch wariantów w adminie) — to kwestia dopilnowania, żeby treść kroku to odzwierciedlała, nie budowy nowej funkcji.
 - **Opinie i FAQ**: **już zbudowane w tej sesji** (`components/FaqReviews.tsx`, `/admin/opinie`) — 9 pytań FAQ, siatka opinii z gwiazdkami/opcjonalnym zdjęciem, formularz dodawania z moderacją. Pomysł briefu na **screenshoty wiadomości/postów** jako format social proof — **✅ zrobione 2026-08-02**: nowa kolumna `reviews.quote` (nullable text), opcjonalne pole „Krótki cytat" w formularzu opinii, wyświetlane jako wyróżniony cytat nad treścią (na stronie i w `/admin/opinie`); `photo_url` już obsługiwał dowolne zdjęcie, więc screenshot da się wgrać bez zmian.
-- **Kolejność sekcji na stronie**: ✅ ustalone — obecny, faktyczny porządek w `app/page.tsx` to `quickNav → Hero (H1/CTA) → AdShowcase → PortfolioCarousel → RealCardsSection → WhyUs → „Jak to działa" → Formularz → FaqReviews`. Hero zostało fizycznie przesunięte na górę, zaraz pod `quickNav` — zgodnie z priorytetem #1 briefu (Hero jako pierwszy ekran, ścieżka wzroku animacja→przycisk→formularz).
+- **Kolejność sekcji na stronie**: ✅ ustalone, ale patrz **„[2026-08-10] Rozbicie strony głównej na podstrony"** niżej — od tej daty strona główna jest krótsza, część sekcji przeniesiona na osobne podstrony. Obecny, faktyczny porządek w `app/page.tsx` to `quickNav → Hero (H1/CTA) → AdShowcase → PortfolioFanCarousel → RealCardsSection → WhyUs → „Co możesz zamówić" → Formularz`. Hero zostało fizycznie przesunięte na górę, zaraz pod `quickNav` — zgodnie z priorytetem #1 briefu (Hero jako pierwszy ekran, ścieżka wzroku animacja→przycisk→formularz).
+
+### [2026-08-10] Rozbicie strony głównej na podstrony
+
+Michał: „Strona jest dla mnie za długa" — trzy sekcje przeniesione ze strony głównej na osobne,
+klikalne podstrony (świadomie MVP na razie, ma być dopracowane wizualnie później — Michał: „Później
+będziemy dopracowywać te podstrony"):
+
+- **`/cena`** — dawna sekcja `<CostTransparency />` ("Skąd bierze się cena Twojej karty?"), bez zmian w treści, tylko nowe miejsce.
+- **`/jak-to-dziala`** — 4 kroki procesu zamówienia (dawniej `id="jak-zamowic"` na stronie głównej, owinięte w mechanizm zwijania na mobile `.mobileCollapse` — **usunięty razem z przeniesieniem**, bo cały sens zwijania był oszczędzanie miejsca na długiej stronie głównej; na dedykowanej podstronie kroki są od razu w pełni widoczne). Wyodrębnione do `components/HowItWorksSteps.tsx` (własna kopia `StepsRays`/`buildRays`, nie dzielona z `HeroRays` w `app/page.tsx` — dwie prawie identyczne funkcje w dwóch plikach są tu prostsze niż wspólny plik importowany w dwie strony).
+- **`/faq-opinie`** — dawna sekcja `<FaqReviews />`, bez zmian w treści, tylko nowe miejsce.
+
+**Akordeon „Co możesz zamówić" (opcje tyłu karty/NFC) ZOSTAŁ na stronie głównej**, mimo że wcześniej
+dzielił tę samą sekcję z krokami "Jak to działa" — formularz zamówienia ma przyciski „(i)" przy
+NFC/motyw/rewers/wykończenie, które przez `jumpToOption()` skaczą bezpośrednio do konkretnej pozycji
+tego akordeonu i rozwijają ją (żeby nie tłumaczyć każdej opcji dwa razy — raz krótko w formularzu,
+raz szczegółowo obok). Przeniesienie tego akordeonu razem z krokami zerwałoby tę funkcję — świadomy,
+przemyślany podział, nie przeoczenie.
+
+Wspólna, celowo lekka „obudowa" (nav + stopka) dla tych trzech podstron w `components/SubpageChrome.tsx`
+(`SubpageNav`/`SubpageBack`/`SubpageFooter`) — prostsza niż fixed nav strony głównej (bez quickNav,
+bez blur/scroll-shrink), bo te podstrony mają być na razie „do klikania", nie od razu w pełni
+dopracowane wizualnie.
+
+quickNav na stronie głównej zaktualizowany: pigułki „Cena" (nowa), „Jak to działa", „FAQ i opinie"
+prowadzą teraz do tych podstron zamiast kotwic na tej samej stronie. `PortfolioCarousel.tsx` (stary
+komponent karuzeli, zastąpiony 2026-08-09 przez `PortfolioFanCarousel.tsx`) — ten drugi przejął
+`id="realizacje"`, więc pigułka „Realizacje" nadal działa bez zmian.
 
 ### Treść z briefu — do wykorzystania przy wdrożeniu (skrót, pełne uzasadnienia w oryginalnej wiadomości Michała)
 
@@ -201,6 +228,9 @@ app/api/reject/route.ts          — klient odrzuca projekt z uwagami (token-bas
 app/api/login/route.ts           — logowanie admina
 app/review/page.tsx              — strona klienta do zatwierdzenia/odrzucenia projektu (token-based)
 app/status/page.tsx              — strona sprawdzania statusu zamówienia
+app/cena/page.tsx                — podstrona "Cena" (CostTransparency, wydzielona ze strony głównej 2026-08-10)
+app/jak-to-dziala/page.tsx       — podstrona "Jak to działa" (4 kroki, wydzielona 2026-08-10)
+app/faq-opinie/page.tsx          — podstrona "FAQ i opinie" (FaqReviews, wydzielona 2026-08-10)
 lib/translations.tsx             — T, CARD_TYPES_I18N, FRONT_THEMES_I18N, BACK_OPTIONS_I18N, Lang
 lib/supabase.ts                  — klient Supabase
 components/HeroCardAnimation.tsx — animacja „zdjęcie → karta" w hero

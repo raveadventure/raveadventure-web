@@ -49,28 +49,6 @@
 }
 .heroContent { position: relative; z-index: 1; max-width: 680px; width: 100%; }
 
-/* Wariant promieni dla "Jak to działa" — dyskretniejszy niż w Hero (rodzinne echo, nie kopia),
-   wyśrodkowany za całym rzędem numerowanych kroków. */
-.stepsRays {
-  position: absolute; left: 50%; top: 50%; width: min(720px, 96%); aspect-ratio: 1;
-  transform: translate(-50%, -50%); pointer-events: none; z-index: 0;
-  mask-image: radial-gradient(circle at 50% 50%, black 4%, transparent 58%);
-}
-.stepsWrap { position: relative; overflow: hidden; padding: 32px 0; margin-bottom: 6px; }
-.stepCard {
-  position: relative; z-index: 1;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
-  padding: 22px 20px 30px; transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-}
-.stepCard:hover { border-color: rgba(180,77,255,0.5); box-shadow: var(--glow-neon); transform: translateY(-2px); }
-/* Numer siedzi w prawej kolumnie karty na każdej wysokości — opis dostaje stały prawy margines
-   (nie tylko dolny padding), więc dłuższy tekst (np. krok 2) nigdy nie "wjeżdża" pod cyfrę,
-   niezależnie od tego, ile linijek zajmie. */
-.stepDesc { padding-right: 34px; }
-.stepNum {
-  position: absolute; right: 14px; bottom: 10px;
-  font-family: var(--font-hero); font-size: 32px; line-height: 1; color: rgba(180,77,255,0.2);
-}
 .heroTitle { font-family: var(--font-hero); font-size: clamp(32px, 4vw, 54px); line-height: 1.12; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 20px; color: var(--text); }
 .neon { color: var(--neon); }
 .heroSub { font-size: 17px; color: var(--text-muted); line-height: 1.7; margin-bottom: 24px; max-width: 560px; margin-left: auto; margin-right: auto; }
@@ -139,36 +117,6 @@
 .quickNavBtn:hover { color: #0a0014; border-color: var(--neon); background: var(--neon); box-shadow: 0 0 16px rgba(180,77,255,0.4); }
 .quickNavBtn:active { transform: scale(0.95); }
 
-/* ── ROZWIJANE MODUŁY (tylko na mobile) — "Jak to działa" i "co możesz zamówić" są długie
-   i na telefonie robią stronę bardzo długą. Sterowane stanem Reacta (nie natywnym
-   <details>/[open] — w części przeglądarek zwinięta zawartość <details> chowa się przez
-   content-visibility, którego nie da się łatwo przebić samym display:block!important).
-   Na desktopie .mobileCollapseBody jest zawsze widoczne; dopiero @media (max-width: 768px)
-   animuje wysokość trickiem grid-template-rows 0fr→1fr (jedyny sposób na płynne przejście
-   do "auto" bez JS-owego mierzenia wysokości) zamiast skokowego display:none↔block. ── */
-.mobileCollapse { margin-bottom: 8px; }
-.mobileCollapseSummary {
-  width: 100%; background: none; border: none; padding: 0; margin: 0; text-align: left;
-  cursor: default; pointer-events: none; display: flex; align-items: center; gap: 8px; font: inherit;
-}
-.collapseIcon { display: none; }
-.mobileCollapseBody { display: block; }
-
-@media (max-width: 768px) {
-  .mobileCollapseSummary { cursor: pointer; pointer-events: auto; padding: 10px 0; }
-  .collapseIcon { display: inline-block; color: var(--neon); transition: transform 250ms cubic-bezier(0.23, 1, 0.32, 1); margin-left: auto; }
-  .mobileCollapseBody {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 300ms cubic-bezier(0.23, 1, 0.32, 1);
-  }
-  .mobileCollapseBodyInner { overflow: hidden; min-height: 0; }
-  .mobileCollapseBodyOpen { grid-template-rows: 1fr; }
-
-  @media (prefers-reduced-motion: reduce) {
-    .mobileCollapseBody, .collapseIcon { transition-duration: 1ms; }
-  }
-}
 
 /* ── THEMES ── */
 /* Zawsze 2×2 — symetrycznie niezależnie od szerokości, bez wpadania w układ 3+1 */
@@ -215,14 +163,6 @@
   transition: border-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
 }
 .infoBtnInline:hover { border-color: var(--neon); color: var(--neon); box-shadow: 0 0 8px rgba(180,77,255,0.4); }
-
-/* ── HOW IT WORKS ── */
-.stepsGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
-.stepCard { composes: glassPanel from global; border-radius: var(--radius-lg); padding: 28px 24px; transition: transform 0.2s, box-shadow 0.2s; }
-.stepCard:hover { transform: translateY(-3px); box-shadow: var(--glass-shadow), var(--glow-neon); }
-.stepNum { font-family: var(--font-hero); font-size: 28px; color: var(--neon); display: block; margin-bottom: 12px; }
-.stepTitle { font-weight: 700; font-size: 16px; margin-bottom: 8px; }
-.stepDesc { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
 
 /* ── ORDER FORM ── */
 /* Pasek postępu (5 kroków) — numer i opis połączone w jedną "pigułkę", zamiast osobnego kółka

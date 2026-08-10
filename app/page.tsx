@@ -9,9 +9,7 @@ import styles from './page.module.css'
 import PortfolioFanCarousel from '../components/PortfolioFanCarousel'
 import RealCardsSection from '../components/RealCardsSection'
 import AdShowcase from '../components/AdShowcase'
-import FaqReviews from '../components/FaqReviews'
 import WhyUs from '../components/WhyUs'
-import CostTransparency from '../components/CostTransparency'
 import HoloCardShowcase from '../components/HoloCardShowcase'
 import InpostGeowidget from '../components/InpostGeowidget'
 import InpostAutocomplete from '../components/InpostAutocomplete'
@@ -119,28 +117,6 @@ function HeroRays() {
           stroke={r.isAccent ? '#00f0ff' : '#b44dff'}
           strokeOpacity={r.isAccent ? 0.5 : 0.28}
           strokeWidth={1.1}
-          strokeLinecap="round"
-          transform={`rotate(${r.angle})`}
-        />
-      ))}
-    </svg>
-  )
-}
-
-// Wariant dla sekcji "Jak to działa" — mniej promieni, niższe opacity, umieszczony za rzędem
-// numerowanych kroków (echo kierunku Hero, nie duplikat: patrz DESIGN.md).
-function StepsRays() {
-  const rays = buildRays(20)
-  return (
-    <svg viewBox="-50 -50 100 100" className={styles.stepsRays} aria-hidden="true">
-      {rays.map((r, i) => (
-        <line
-          key={i}
-          x1={0} y1={-6}
-          x2={0} y2={-6 - r.len}
-          stroke={r.isAccent ? '#00f0ff' : '#b44dff'}
-          strokeOpacity={r.isAccent ? 0.32 : 0.16}
-          strokeWidth={1}
           strokeLinecap="round"
           transform={`rotate(${r.angle})`}
         />
@@ -278,7 +254,6 @@ export default function Home() {
   // (ilość, NFC, wykończenie, kod rabatowy) realnie przeliczyła sumę, nie tylko odświeżyła tekst.
   const totalPriceRef = useRef<HTMLElement>(null)
   const prevTotalPriceRef = useRef<number | null>(null)
-  const [howItWorksOpen, setHowItWorksOpen] = useState(false)
   // "co możesz zamówić" — akordeon per-pozycja (nie sekcja jako całość): każda opcja to tylko
   // ikonka + napis, dopóki klient jej nie kliknie — docelowo dojdą tam też zdjęcia/modele
   // przykładowe, więc trzymanie wszystkiego zwiniętego domyślnie chroni przed rozdęciem sekcji.
@@ -768,8 +743,9 @@ export default function Home() {
           { href: '#realizacje', label: lang === 'pl' ? 'Realizacje' : 'Portfolio' },
           { href: '#prawdziwe-karty', label: lang === 'pl' ? 'Prawdziwy produkt' : 'Real product' },
           { href: '#dlaczego-my', label: lang === 'pl' ? 'Dlaczego my' : 'Why us' },
-          { href: '#jak-zamowic', label: lang === 'pl' ? 'Jak to działa' : 'How it works' },
-          { href: '#faq-opinie', label: lang === 'pl' ? 'FAQ i opinie' : 'FAQ & reviews' },
+          { href: '/cena', label: lang === 'pl' ? 'Cena' : 'Price' },
+          { href: '/jak-to-dziala', label: lang === 'pl' ? 'Jak to działa' : 'How it works' },
+          { href: '/faq-opinie', label: lang === 'pl' ? 'FAQ i opinie' : 'FAQ & reviews' },
           { href: '#order', label: lang === 'pl' ? 'Zamówienie' : 'Order' },
         ].map(item => (
           <a
@@ -893,32 +869,12 @@ export default function Home() {
 
       <WhyUs lang={lang} />
 
-      <CostTransparency lang={lang} />
-
-      <section className={styles.section} id="jak-zamowic" data-reveal>
-        <div className={styles.mobileCollapse}>
-          <button type="button" className={styles.mobileCollapseSummary} onClick={() => setHowItWorksOpen(o => !o)}>
-            <h2 className="font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground m-0">{t.howItWorks.title}</h2>
-            <span className={styles.collapseIcon} style={{ transform: howItWorksOpen ? 'rotate(180deg)' : 'none' }}>▾</span>
-          </button>
-          <div className={`${styles.mobileCollapseBody} ${howItWorksOpen ? styles.mobileCollapseBodyOpen : ''}`}>
-            <div className={styles.mobileCollapseBodyInner}>
-              <div className={styles.stepsWrap}>
-                <StepsRays />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-                  {t.howItWorks.steps.map(s => (
-                    <div key={s.n} className={styles.stepCard}>
-                      <p className={`m-0 mb-1.5 text-sm font-semibold text-foreground ${styles.stepDesc}`}>{s.t}</p>
-                      <p className={`m-0 text-[11px] text-muted-foreground leading-[1.5] ${styles.stepDesc}`}>{s.d}</p>
-                      <span className={styles.stepNum} aria-hidden="true">{s.n}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      {/* "Skąd bierze się cena" i "Jak to działa" (4 kroki) przeniesione 2026-08-10 na osobne
+          podstrony /cena i /jak-to-dziala (Michał: "Strona jest dla mnie za długa") — linki w
+          quickNav niżej. "Co możesz zamówić" ZOSTAJE tutaj — formularz zamówienia skacze do
+          konkretnych pozycji tego akordeonu przez jumpToOption(), więc przeniesienie zerwałoby tę
+          funkcję (patrz komentarz przy jumpToOption wyżej). */}
+      <section className={styles.section} id="co-mozesz-zamowic" data-reveal>
         <div>
           <h2 className="font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground mb-3">{t.options.title}</h2>
           <Accordion
@@ -969,8 +925,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <FaqReviews lang={lang} />
 
       <section className={styles.section} id="order" data-reveal>
         <h2 className={styles.sectionTitle}>{t.order.title}</h2>

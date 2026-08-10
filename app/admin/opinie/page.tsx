@@ -72,7 +72,7 @@ export default function AdminReviews() {
             {pendingCount} do zatwierdzenia
           </span>
         )}
-        <a href="/#faq-opinie" target="_blank" rel="noopener noreferrer" style={{ marginLeft: 'auto', fontSize: '12px', color: '#b44dff', textDecoration: 'none' }}>
+        <a href="/faq-opinie" target="_blank" rel="noopener noreferrer" style={{ marginLeft: 'auto', fontSize: '12px', color: '#b44dff', textDecoration: 'none' }}>
           Zobacz sekcję na stronie →
         </a>
       </nav>

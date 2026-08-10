@@ -1,0 +1,21 @@
+/* Wyodrębnione z app/page.module.css (2026-08-10) przy przenoszeniu sekcji "Jak to działa" na
+   osobną podstronę /jak-to-dziala — te same reguły co wcześniej na stronie głównej, 1:1. */
+.stepsRays {
+  position: absolute; left: 50%; top: 50%; width: min(720px, 96%); aspect-ratio: 1;
+  transform: translate(-50%, -50%); pointer-events: none; z-index: 0;
+  mask-image: radial-gradient(circle at 50% 50%, black 4%, transparent 58%);
+}
+.stepsWrap { position: relative; overflow: hidden; padding: 32px 0; margin-bottom: 6px; }
+.stepCard {
+  position: relative; z-index: 1;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 22px 20px 30px; transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.stepCard:hover { border-color: rgba(180,77,255,0.5); box-shadow: var(--glow-neon); transform: translateY(-2px); }
+/* Numer siedzi w prawej kolumnie karty na każdej wysokości — opis dostaje stały prawy margines
+   (nie tylko dolny padding), więc dłuższy tekst nigdy nie "wjeżdża" pod cyfrę. */
+.stepDesc { padding-right: 34px; }
+.stepNum {
+  position: absolute; right: 14px; bottom: 10px;
+  font-family: var(--font-hero); font-size: 32px; line-height: 1; color: rgba(180,77,255,0.2);
+}
