@@ -25,14 +25,12 @@ type Item = { id: string; name: string; card_url: string; theme: string }
 const TXT = {
   pl: {
     title: 'Nasze karty',
-    sub: 'Każda karta to unikalna historia — przeciągnij w bok albo kliknij dowolną kartę, żeby zobaczyć więcej.',
     card: (i: number) => `Karta ${i}`,
     galleryBtn: 'Zobacz całą naszą galerię',
     orderBtn: 'Zamów swoją kartę z ostatniego eventu →',
   },
   en: {
     title: 'Our cards',
-    sub: 'Every card is a unique story — drag sideways or click any card to see more.',
     card: (i: number) => `Card ${i}`,
     galleryBtn: 'See our full gallery',
     orderBtn: 'Order your card from the latest event →',
@@ -163,8 +161,7 @@ export default function PortfolioFanCarousel({ lang = 'pl' }: { lang?: 'pl' | 'e
 
   return (
     <section id="realizacje" data-reveal className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-14 [scroll-margin-top:var(--nav-height,70px)]">
-      <h2 className="mb-2 text-center font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground">{t.title}</h2>
-      <p className="mb-6 text-center text-sm text-muted-foreground">{t.sub}</p>
+      <h2 className="mb-6 text-center font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground">{t.title}</h2>
 
       <div className="mb-8 text-center">
         <a href="/portfolio"

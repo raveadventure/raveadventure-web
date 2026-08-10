@@ -9,14 +9,12 @@ const TXT = {
     sub: 'Każda karta trafia do Ciebie jako prawdziwy, namacalny przedmiot — plastikowa karta w formacie karty bankomatowej, którą nosisz w portfelu razem z resztą kart.',
     walletCaption: '✅ Prawdziwe nagranie — bez CGI',
     premiumTitle: 'Twoja pamiątka w akcesoriach premium',
-    premiumSub: 'Top Holder ze stojakiem na biurko albo na lodówkę — Twoja karta zawsze na widoku, nie w szufladzie.',
   },
   en: {
     title: 'Not just a design on a screen',
     sub: 'Every card arrives as a real, tangible object — a PVC card in ATM-card format that lives in your wallet alongside the rest of your cards.',
     walletCaption: '✅ Real footage — no CGI',
     premiumTitle: 'Your keepsake in premium accessories',
-    premiumSub: 'Top Holder with a desk stand or fridge mount — your card always on display, not in a drawer.',
   },
 }
 
@@ -146,8 +144,7 @@ export default function RealCardsSection({ lang = 'pl' }: { lang?: 'pl' | 'en' }
       {/* AKCESORIA PREMIUM: Top Holder na stojaku / na lodówce — eskalacja od "noszę przy sobie"
           (galeria + wideo wyżej) do "mam wystawione na widoku". Osobny nagłówek, nie wrzucone do
           głównej galerii, żeby wizualnie odróżnić standardowe noszenie od dodatkowego wykończenia. */}
-      <h3 className="font-heading text-[clamp(18px,2.4vw,24px)] font-bold text-foreground mb-2">{t.premiumTitle}</h3>
-      <p className="mx-auto mb-7 max-w-[560px] text-sm leading-[1.7] text-muted-foreground">{t.premiumSub}</p>
+      <h3 className="font-heading text-[clamp(18px,2.4vw,24px)] font-bold text-foreground mb-7">{t.premiumTitle}</h3>
 
       {/* Galeria "elastyczna" — jeden kafelek naraz rośnie (flex-[4] vs flex-[1]) kosztem
           pozostałych, jaśnieje na aktywnym/hover, przyciemnia resztę. Pionowo na mobile (kafelki

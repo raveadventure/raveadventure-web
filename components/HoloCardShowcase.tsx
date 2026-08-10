@@ -16,9 +16,12 @@ gsap.registerPlugin(useGSAP, Observer)
 // ten sam mechanizm co typowe karty "holo" w grach kolekcjonerskich). Dostosowane do PIONOWEGO
 // formatu prawdziwej karty RA (638×1011, proporcja 0.631) zamiast poziomego demo (aspect 1.586).
 export default function HoloCardShowcase({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
+  // `caption` zostaje w danych (jako alt zdjęcia, patrz niżej) mimo że widoczny akapit z tym
+  // tekstem pod kartą został usunięty 2026-08-10 (Michał: mniej tekstu na stronie głównej,
+  // szczegóły przenosimy na osobne podstrony) — tekst nadal potrzebny dla czytników ekranu/SEO.
   const t = lang === 'pl'
-    ? { title: 'Poczuj efekt holo na żywo', sub: 'Przesuń kursorem po karcie.', caption: 'Przykładowa karta z naszej realizacji „Cambodia Style" — Twoja będzie unikalna, zaprojektowana specjalnie dla Ciebie.' }
-    : { title: 'Feel the holo effect live', sub: 'Move your cursor across the card.', caption: 'A sample card from our "Cambodia Style" order — yours will be unique, designed just for you.' }
+    ? { title: 'Poczuj efekt holo na żywo', caption: 'Przykładowa karta z naszej realizacji „Cambodia Style" — Twoja będzie unikalna, zaprojektowana specjalnie dla Ciebie.' }
+    : { title: 'Feel the holo effect live', caption: 'A sample card from our "Cambodia Style" order — yours will be unique, designed just for you.' }
 
   const sceneRef = useRef<HTMLDivElement>(null)
   const cardRef = useRef<HTMLDivElement>(null)
@@ -82,8 +85,7 @@ export default function HoloCardShowcase({ lang = 'pl' }: { lang?: 'pl' | 'en' }
         }
       `}</style>
 
-      <h2 className="font-heading text-[clamp(20px,2.6vw,28px)] font-bold text-foreground mb-1.5">{t.title}</h2>
-      <p className="mb-6 text-sm text-muted-foreground">{t.sub}</p>
+      <h2 className="font-heading text-[clamp(20px,2.6vw,28px)] font-bold text-foreground mb-6">{t.title}</h2>
 
       {/* touchAction: 'none' — bez tego dotknięcie karty na telefonie jednocześnie scrollowało
           stronę (przeglądarka domyślnie interpretuje przeciąganie palcem jako scroll), zanim GSAP
@@ -99,8 +101,6 @@ export default function HoloCardShowcase({ lang = 'pl' }: { lang?: 'pl' | 'en' }
           <div ref={foilRef} className="holoFoil" aria-hidden="true" />
         </div>
       </div>
-
-      <p className="mx-auto mt-4 max-w-[420px] text-xs leading-[1.6] text-muted-foreground">{t.caption}</p>
     </section>
   )
 }
