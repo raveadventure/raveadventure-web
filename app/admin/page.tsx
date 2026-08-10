@@ -325,7 +325,10 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [visitCount, setVisitCount] = useState<number | null>(null)
-  const [filter, setFilter] = useState('all')
+  // "open" — domyślny widok (2026-08-10, na życzenie Michała): wszystkie zamówienia OPRÓCZ
+  // zakończonych, żeby zamknięte sprawy nie zaśmiecały głównej listy. Zakończone nadal dostępne
+  // pod osobnym kafelkiem "Zakończone" w STATUSES niżej.
+  const [filter, setFilter] = useState('open')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Order | null>(null)
   const [updating, setUpdating] = useState<string | null>(null)
@@ -685,7 +688,7 @@ export default function AdminPage() {
   }
 
   const filtered = orders
-    .filter(o => filter === 'all' || o.status === filter)
+    .filter(o => filter === 'open' ? o.status !== 'done' : o.status === filter)
     .filter(o => !search.trim() || o.id.toLowerCase().startsWith(search.trim().toLowerCase()))
   const statusObj = (id: string) => STATUSES.find(s => s.id === id) || STATUSES[0]
   const formatDate = (d: string) => new Date(d).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -701,6 +704,7 @@ export default function AdminPage() {
     return 'teraz'
   }
   const counts = STATUSES.reduce((acc, s) => { acc[s.id] = orders.filter(o => o.status === s.id).length; return acc }, {} as Record<string, number>)
+  const openCount = orders.filter(o => o.status !== 'done').length
 
   return (
     <div style={{ minHeight: '100vh', background: '#080810', color: '#f0eeff', fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -751,12 +755,12 @@ export default function AdminPage() {
         <div style={{ padding: '24px' }}>
           {/* STATYSTYKI */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '10px', marginBottom: '24px' }}>
-            <div onClick={() => setFilter('all')} style={{ background: filter === 'all' ? 'rgba(180,77,255,0.15)' : '#0e0e1a', border: `1px solid ${filter === 'all' ? '#b44dff' : 'rgba(255,255,255,0.08)'}`, borderRadius: '10px', padding: '14px 16px', cursor: 'pointer' }}>
-              <p style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: 700, color: '#f0eeff' }}>{orders.length}</p>
-              <p style={{ margin: 0, fontSize: '12px', color: 'rgba(240,238,255,0.5)' }}>Wszystkie</p>
+            <div onClick={() => setFilter('open')} style={{ background: filter === 'open' ? 'rgba(180,77,255,0.15)' : '#0e0e1a', border: `1px solid ${filter === 'open' ? '#b44dff' : 'rgba(255,255,255,0.08)'}`, borderRadius: '10px', padding: '14px 16px', cursor: 'pointer' }}>
+              <p style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: 700, color: '#f0eeff' }}>{openCount}</p>
+              <p style={{ margin: 0, fontSize: '12px', color: 'rgba(240,238,255,0.5)' }}>Otwarte</p>
             </div>
             {STATUSES.map(s => (
-              <div key={s.id} onClick={() => setFilter(filter === s.id ? 'all' : s.id)} style={{ background: filter === s.id ? `${s.color}22` : '#0e0e1a', border: `1px solid ${filter === s.id ? s.color : 'rgba(255,255,255,0.08)'}`, borderRadius: '10px', padding: '14px 16px', cursor: 'pointer' }}>
+              <div key={s.id} onClick={() => setFilter(filter === s.id ? 'open' : s.id)} style={{ background: filter === s.id ? `${s.color}22` : '#0e0e1a', border: `1px solid ${filter === s.id ? s.color : 'rgba(255,255,255,0.08)'}`, borderRadius: '10px', padding: '14px 16px', cursor: 'pointer' }}>
                 <p style={{ margin: '0 0 4px', fontSize: '22px', fontWeight: 700, color: s.color }}>{counts[s.id] || 0}</p>
                 <p style={{ margin: 0, fontSize: '12px', color: 'rgba(240,238,255,0.5)' }}>{s.label}</p>
               </div>
