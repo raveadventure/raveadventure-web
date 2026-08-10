@@ -733,9 +733,27 @@ export default function Home() {
             jeden pod drugim (max-md:flex-col), więc pionowa kreska między nimi nie ma sensu i
             wyglądała krzywo. Kolor podbity z szarego na przytłumiony neon-fiolet, spójnie z paletą. */}
         <span className="text-[rgba(180,77,255,0.35)] max-md:hidden">|</span>
-        <span className="text-xs text-[rgba(240,238,255,0.6)]">
-          ⏱ {lang === 'pl' ? 'Aktualny czas realizacji' : 'Current turnaround'}: <strong className="text-foreground">{lang === 'pl' ? CURRENT_TURNAROUND_PL : CURRENT_TURNAROUND_EN}</strong>
-        </span>
+        {/* Przyciski do OSOBNYCH PODSTRON (2026-08-10) — celowo prostokątne (rounded-md), nie
+            pigułki jak reszta quickNav niżej, żeby "przenosi na inną stronę" i "przewija tę samą
+            stronę" wyglądały wyraźnie inaczej, nie tylko różniły się etykietą. Wcześniej stały
+            jako pigułki w quickNav; Michał: "przyciski nawigacyjne muszą różnić się od przycisków
+            do oddzielnych stron". Zajęły miejsce dawnego "Aktualny czas realizacji" — ten tekst
+            przeniesiony do kroku 1 formularza (patrz niżej, pod blokami wykończenia). */}
+        <div className="flex items-center gap-2 flex-wrap justify-center">
+          {[
+            { href: '/cena', label: lang === 'pl' ? 'Cena' : 'Price' },
+            { href: '/jak-to-dziala', label: lang === 'pl' ? 'Jak to działa' : 'How it works' },
+            { href: '/faq-opinie', label: lang === 'pl' ? 'FAQ i opinie' : 'FAQ & reviews' },
+          ].map(item => (
+            <a
+              key={item.href}
+              href={item.href}
+              className="text-[12px] font-bold text-primary py-[6px] px-3.5 rounded-md border border-[rgba(180,77,255,0.45)] bg-[var(--neon-dim)] no-underline whitespace-nowrap transition-all duration-150 hover:text-primary-foreground hover:border-primary hover:bg-primary hover:shadow-[0_0_16px_rgba(180,77,255,0.4)] active:scale-95"
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
       </div>
 
       <nav className="flex justify-center flex-wrap gap-2 py-3.5 px-[5vw] max-w-[1100px] mx-auto" aria-label={lang === 'pl' ? 'Szybka nawigacja' : 'Quick navigation'}>
@@ -743,9 +761,6 @@ export default function Home() {
           { href: '#realizacje', label: lang === 'pl' ? 'Realizacje' : 'Portfolio' },
           { href: '#prawdziwe-karty', label: lang === 'pl' ? 'Prawdziwy produkt' : 'Real product' },
           { href: '#dlaczego-my', label: lang === 'pl' ? 'Dlaczego my' : 'Why us' },
-          { href: '/cena', label: lang === 'pl' ? 'Cena' : 'Price' },
-          { href: '/jak-to-dziala', label: lang === 'pl' ? 'Jak to działa' : 'How it works' },
-          { href: '/faq-opinie', label: lang === 'pl' ? 'FAQ i opinie' : 'FAQ & reviews' },
           { href: '#order', label: lang === 'pl' ? 'Zamówienie' : 'Order' },
         ].map(item => (
           <a
@@ -1099,6 +1114,13 @@ export default function Home() {
                   )}
                 </div>
               )}
+              {/* Przeniesione z banera pod głównym nav (2026-08-10) — to miejsce zajęły tam
+                  prostokątne przyciski do podstron Cena/Jak to działa/FAQ. Tu, pod blokami
+                  wykończenia w kroku 1, ten sam tekst działa jako mała, uspokajająca notka tuż
+                  przed przejściem dalej w formularzu, zamiast ogólnego nagłówka strony. */}
+              <p className="mt-1 text-center text-xs text-[rgba(240,238,255,0.6)]">
+                ⏱ {lang === 'pl' ? 'Aktualny czas realizacji' : 'Current turnaround'}: <strong className="text-foreground">{lang === 'pl' ? CURRENT_TURNAROUND_PL : CURRENT_TURNAROUND_EN}</strong>
+              </p>
               <button className={btnPrimaryCls} onClick={() => setStep(2)} disabled={cardType === 'pvc' && quantity === 0}>{t.order.step1.next}</button>
             </div>
           )}
