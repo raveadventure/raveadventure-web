@@ -279,7 +279,7 @@ export default function LogoEqualizer() {
 
   return (
     <div ref={rootRef} style={{ position: 'relative', width: '100%', maxWidth: '720px', margin: '0 auto' }}>
-      <img src="/logo_white.png" alt="RaveAdventure" style={{ width: '100%', height: 'auto', display: 'block' }} />
+      <img src="/logo_white.png" alt="RaveAdventure" style={{ width: '100%', height: 'auto', display: 'block', mixBlendMode: 'screen' }} />
 
       {/* equalizer w ramce — pozycja 1:1 ze złotej ramki (rect39 po transformie) w logo_strona.svg.
           Wyłączony (SHOW_EQUALIZER=false) na prośbę, kod zostaje na później. */}
