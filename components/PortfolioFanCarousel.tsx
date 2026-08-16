@@ -28,12 +28,16 @@ const TXT = {
     card: (i: number) => `Karta ${i}`,
     galleryBtn: 'Zobacz całą naszą galerię',
     orderBtn: 'Zamów swoją kartę z ostatniego eventu →',
+    prev: 'Poprzednia karta',
+    next: 'Następna karta',
   },
   en: {
     title: 'Our cards',
     card: (i: number) => `Card ${i}`,
     galleryBtn: 'See our full gallery',
     orderBtn: 'Order your card from the latest event →',
+    prev: 'Previous card',
+    next: 'Next card',
   },
 }
 
@@ -171,35 +175,59 @@ export default function PortfolioFanCarousel({ lang = 'pl' }: { lang?: 'pl' | 'e
         </a>
       </div>
 
-      <div
-        ref={stageRef}
-        className="relative mx-auto flex items-center justify-center select-none overflow-hidden"
-        style={{ height: '360px', perspective: '1200px', cursor: dragging ? 'grabbing' : 'grab', touchAction: 'pan-y' }}
-      >
-        {items.map((item, i) => {
-          const off = signedOffset(i, active, items.length)
-          if (Math.abs(off) > MAX_OFFSET) return null
-          const isActive = off === 0
-          return (
-            <div
-              key={item.id}
-              ref={el => { cardRefs.current[item.id] = el }}
-              onClick={() => { if (!dragging) setActive(i) }}
-              className="absolute overflow-hidden rounded-[14px] border shadow-[0_18px_40px_-16px_rgba(0,0,0,0.6)]"
-              style={{
-                width: CARD_W,
-                aspectRatio: '638 / 1011',
-                borderColor: isActive ? 'var(--neon)' : 'var(--border)',
-                borderWidth: isActive ? '1.5px' : '1px',
-                boxShadow: isActive ? '0 0 28px rgba(180,77,255,0.3), 0 18px 40px -16px rgba(0,0,0,0.6)' : undefined,
-                transformStyle: 'preserve-3d',
-                cursor: isActive ? 'grab' : 'pointer',
-              }}
-            >
-              <img src={item.card_url} alt={item.name} className="h-full w-full object-cover pointer-events-none" draggable={false} />
-            </div>
-          )
-        })}
+      <div className="relative mx-auto w-full max-w-[640px]">
+        {items.length > 1 && (
+          <button
+            type="button"
+            onClick={() => go(-1)}
+            aria-label={t.prev}
+            className="absolute left-0 top-1/2 z-[110] flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-[rgba(8,8,16,0.68)] text-foreground backdrop-blur-sm transition-all duration-150 hover:border-primary hover:bg-[var(--neon-dim)] hover:text-primary active:scale-90"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+          </button>
+        )}
+
+        <div
+          ref={stageRef}
+          className="relative mx-auto flex items-center justify-center select-none overflow-hidden"
+          style={{ height: '360px', perspective: '1200px', cursor: dragging ? 'grabbing' : 'grab', touchAction: 'pan-y' }}
+        >
+          {items.map((item, i) => {
+            const off = signedOffset(i, active, items.length)
+            if (Math.abs(off) > MAX_OFFSET) return null
+            const isActive = off === 0
+            return (
+              <div
+                key={item.id}
+                ref={el => { cardRefs.current[item.id] = el }}
+                onClick={() => { if (!dragging) setActive(i) }}
+                className="absolute overflow-hidden rounded-[14px] border shadow-[0_18px_40px_-16px_rgba(0,0,0,0.6)]"
+                style={{
+                  width: CARD_W,
+                  aspectRatio: '638 / 1011',
+                  borderColor: isActive ? 'var(--neon)' : 'var(--border)',
+                  borderWidth: isActive ? '1.5px' : '1px',
+                  boxShadow: isActive ? '0 0 28px rgba(180,77,255,0.3), 0 18px 40px -16px rgba(0,0,0,0.6)' : undefined,
+                  transformStyle: 'preserve-3d',
+                  cursor: isActive ? 'grab' : 'pointer',
+                }}
+              >
+                <img src={item.card_url} alt={item.name} className="h-full w-full object-cover pointer-events-none" draggable={false} />
+              </div>
+            )
+          })}
+        </div>
+
+        {items.length > 1 && (
+          <button
+            type="button"
+            onClick={() => go(1)}
+            aria-label={t.next}
+            className="absolute right-0 top-1/2 z-[110] flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-[rgba(8,8,16,0.68)] text-foreground backdrop-blur-sm transition-all duration-150 hover:border-primary hover:bg-[var(--neon-dim)] hover:text-primary active:scale-90"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+          </button>
+        )}
       </div>
 
       <div className="mt-6 text-center">
