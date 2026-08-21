@@ -10,6 +10,7 @@ import PortfolioFanCarousel from '../components/PortfolioFanCarousel'
 import RealCardsSection from '../components/RealCardsSection'
 import AdShowcase from '../components/AdShowcase'
 import WhyUs from '../components/WhyUs'
+import BrandShowcase from '../components/BrandShowcase'
 import HoloCardShowcase from '../components/HoloCardShowcase'
 import InpostGeowidget from '../components/InpostGeowidget'
 import InpostAutocomplete from '../components/InpostAutocomplete'
@@ -883,6 +884,7 @@ export default function Home() {
       <RealCardsSection lang={lang} />
 
       <WhyUs lang={lang} />
+      <BrandShowcase lang={lang} />
 
       {/* "Skąd bierze się cena" i "Jak to działa" (4 kroki) przeniesione 2026-08-10 na osobne
           podstrony /cena i /jak-to-dziala (Michał: "Strona jest dla mnie za długa") — linki w
