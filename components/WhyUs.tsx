@@ -1,17 +1,25 @@
 'use client'
+import { Target, CreditCard, SmartphoneNfc, Cog } from 'lucide-react'
+import RadialOrbitalTimeline, { type OrbitalNode } from './ui/radial-orbital-timeline'
 
 const TXT = {
   pl: {
     title: 'Co wyróżnia RaveAdventure?',
+    hint: 'Kliknij węzeł, żeby zobaczyć szczegóły — powiązane cechy podświetlą się na orbicie.',
+    connected: 'Powiązane',
+    close: 'Zamknij',
     items: [
-      { icon: '🎯', tag: '1:1, NIE SZABLON', heading: 'Personalizacja 1:1', detail: 'Każda karta powstaje na bazie Twojego zdjęcia i opisu — nie gotowego szablonu.' },
-      { icon: '🎴', tag: 'NAMACALNE', heading: 'Fizyczny produkt, nie plik JPG', detail: 'Prawdziwa karta z subkultury rave/techno — coś, co możesz trzymać w ręku, w portfelu, na lodówce.' },
-      { icon: '📲', tag: 'MODUŁOWE DODATKI', heading: 'NFC, magnes, Top Holder, stojak', detail: 'Karta jako pamiątka, dekoracja na biurku albo inteligentny link do playlisty z imprezy.', subIcons: ['📲', '🧲', '🖼', '📐'] },
-      { icon: '⚙️', tag: 'SPRAWNY PROCES', heading: 'Proces zoptymalizowany przez inżyniera', detail: 'Szybka realizacja, wysoka jakość i jasna komunikacja na każdym etapie zamówienia.' },
+      { icon: '🎯', tag: '1:1, NIE SZABLON', heading: 'Personalizacja 1:1', detail: 'Każda karta powstaje na bazie Twojego zdjęcia i opisu — nie gotowego szablonu.' },
+      { icon: '🎴', tag: 'NAMACALNE', heading: 'Fizyczny produkt, nie plik JPG', detail: 'Prawdziwa karta z subkultury rave/techno — coś, co możesz trzymać w ręku, w portfelu, na lodówce.' },
+      { icon: '📲', tag: 'MODUŁOWE DODATKI', heading: 'NFC, magnes, Top Holder, stojak', detail: 'Karta jako pamiątka, dekoracja na biurku albo inteligentny link do playlisty z imprezy.', subIcons: ['📲', '🧲', '🖼', '📐'] },
+      { icon: '⚙️', tag: 'SPRAWNY PROCES', heading: 'Proces zoptymalizowany przez inżyniera', detail: 'Szybka realizacja, wysoka jakość i jasna komunikacja na każdym etapie zamówienia.' },
     ],
   },
   en: {
     title: 'What makes RaveAdventure different?',
+    hint: 'Click a node to see details — related features light up on the orbit.',
+    connected: 'Connected',
+    close: 'Close',
     items: [
       { icon: '🎯', tag: '1:1, NOT A TEMPLATE', heading: '1:1 personalization', detail: 'Every card is built from your own photo and description — not a ready-made template.' },
       { icon: '🎴', tag: 'TANGIBLE', heading: 'A physical product, not a JPG', detail: 'A real card from rave/techno culture — something you can hold, keep in your wallet, or put on the fridge.' },
@@ -25,8 +33,27 @@ const TXT = {
 // każda karta dostaje inny akcent, cyklicznie, żeby siatka 2×2 nie wyglądała jednolicie płasko.
 const ACCENTS = ['var(--neon)', 'var(--neon2)', 'var(--success)', 'var(--warning)']
 
+// Ikony lucide dla widoku orbitalnego (desktop/tablet, patrz niżej) — 1:1 dopasowane do tych
+// samych 4 cech co siatka mobilna, tylko inny nośnik wizualny.
+const ORBIT_ICONS = [Target, CreditCard, SmartphoneNfc, Cog]
+
+// Powiązania między węzłami na orbicie — "Personalizacja 1:1" łączy się z "Procesem inżyniera"
+// (oba mówią o dbałości/indywidualnym podejściu), "Fizyczny produkt" z "Modułowymi dodatkami"
+// (oba mówią o namacalnej formie karty) — czysto tematyczne powiązanie do interaktywnej
+// eksploracji orbity, nie twierdzenie faktograficzne.
+const RELATED_IDS = [[3], [2], [1], [0]].map(arr => arr.map(i => i + 1))
+
 export default function WhyUs({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
   const t = TXT[lang]
+
+  const orbitalItems: OrbitalNode[] = t.items.map((item, i) => ({
+    id: i + 1,
+    title: item.heading,
+    tag: item.tag,
+    detail: item.detail,
+    icon: ORBIT_ICONS[i],
+    relatedIds: RELATED_IDS[i],
+  }))
 
   return (
     <section id="dlaczego-my" data-reveal className="mx-auto max-w-[1100px] px-[5vw] pt-8 pb-10 text-center [scroll-margin-top:var(--nav-height,70px)]">
@@ -34,6 +61,14 @@ export default function WhyUs({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
         .whyUsGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; text-align: left; }
         @media (max-width: 640px) {
           .whyUsGrid { grid-template-columns: 1fr; }
+        }
+        /* .whyUsGrid to unlayered CSS (ten blok style nie przechodzi przez warstwy Tailwinda) —
+           niewarstwowe reguły zawsze wygrywają z warstwowymi niezależnie od media query, więc
+           sama klasa lg:hidden na tym elemencie nie wystarczy (patrz CLAUDE.md, ta sama pułapka
+           co przy mx-auto w AdShowcase). Widoczność na progu lg ustawiona więc tutaj, w tym samym
+           arkuszu co reszta .whyUsGrid, nie przez osobną klasę Tailwinda. */
+        @media (min-width: 1024px) {
+          .whyUsGrid { display: none; }
         }
         .whyUsCard {
           position: relative;
@@ -71,7 +106,16 @@ export default function WhyUs({ lang = 'pl' }: { lang?: 'pl' | 'en' }) {
           border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
         }
       `}</style>
-      <h2 className="font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground mb-7">{t.title}</h2>
+      <h2 className="font-heading text-[clamp(22px,3vw,32px)] font-bold text-foreground mb-2.5">{t.title}</h2>
+
+      {/* Widok orbitalny — TYLKO od lg: (1024px+). Mechanika (klik węzła → rozwinięcie, promień
+          170px + rozwijana karta 256px szerokości) potrzebuje realnej przestrzeni ekranu; poniżej
+          tego progu zostaje sprawdzona siatka 2×2 (ten sam wzorzec dwóch osobnych renderowań co
+          hover-expand galeria w RealCardsSection — "na mobile hover nie istnieje, więc..."). */}
+      <div className="hidden lg:block">
+        <p className="mx-auto mb-2 max-w-[480px] text-xs text-muted-foreground">{t.hint}</p>
+        <RadialOrbitalTimeline items={orbitalItems} connectedLabel={t.connected} closeLabel={t.close} />
+      </div>
 
       <div className="whyUsGrid">
         {t.items.map((item, i) => (
